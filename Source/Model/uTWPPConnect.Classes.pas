@@ -1,16 +1,35 @@
 ﻿{####################################################################################################################
+  License
+  Copyright 2022 WPPConnect Team https://wppconnect-team.github.io/
+
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+  an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations under the License.
+
                               WPPCONNECT - Componente de comunicação (Não Oficial)
                                            https://wppconnect-team.github.io/
                                             Maio de 2022
 ####################################################################################################################
-    Owner.....: Marcelo           - marcelo.broz@hotmail.com   -
-    Developer.: Marcelo           - marcelo.broz@hotmail.com   - +55 17 9.8138-8414
-
+    Owner.....: Mike W. Lustosa            - mikelustosa@gmail.com   - +55 81 9.9630-2385
+    Developer.: Joathan Theiller           - jtheiller@hotmail.com   -
+                Daniel Oliveira Rodrigues  - Dor_poa@hotmail.com     - +55 51 9.9155-9228
 ####################################################################################################################
   Obs:
      - Código aberto a comunidade Delphi, desde que mantenha os dados dos autores e mantendo sempre o nome do IDEALIZADOR
-       Marcelo;
+       Mike W. Lustosa;
 
+####################################################################################################################
+                                  Evolução do Código
+####################################################################################################################
+  Autor........: Marcelo Oliveira
+  Email........: marcelo.broz@hotmail.com
+  Data.........: 07/06/2022
+  Identificador: @Marcelo
+  Modificação..: Ajustado para Trabalhar com o WPPConnect
 ####################################################################################################################
 }
 
@@ -27,7 +46,6 @@ uses Generics.Collections, Rest.Json, uTWPPConnect.FrmQRCode, Vcl.Graphics, Syst
   {$ENDIF}
   IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient, Vcl.Imaging.jpeg,
   IdSSLOpenSSL, UrlMon;
-
 type
 
   TQrCodeRet   = (TQR_Http, TQR_Img, TQR_Data);
@@ -165,10 +183,21 @@ type
   end;
 
 
-  TResponseGetProfilePicThumb = class(TClassPadrao)
+  {TResponseGetProfilePicThumb = class(TClassPadrao)
   private
     fBase64: String;
   Public
+    Property Base64 : String   Read fBase64  Write fBase64;
+    constructor Create(pAJsonString: string);
+    destructor  Destroy;       override;
+  end;}
+  //Marcelo 01/06/2022
+  TResponseGetProfilePicThumb = class(TClassPadrao)
+  private
+    fID : String;
+    fBase64: String;
+  Public
+    Property ID : String read FID write FID;
     Property Base64 : String   Read fBase64  Write fBase64;
     constructor Create(pAJsonString: string);
     destructor  Destroy;       override;
@@ -468,6 +497,10 @@ type
     FProfilePicThumbObj: TProfilePicThumbObjClass;
     FisContactSyncCompleted: Extended;
     FshortName: String;
+
+    //Marcelo 30/05/2022
+    FprivacyMode: String;
+    FverifiedLevel: Extended;
   public
     constructor Create(pAJsonString: string);
     destructor Destroy; override;
@@ -497,6 +530,11 @@ type
     //MARCELO 27/04/2022
     property isContactSyncCompleted:  Extended read FisContactSyncCompleted  write FisContactSyncCompleted;
     property shortName:       String          Read FshortName          Write FshortName;
+
+    //Marcelo 30/05/2022
+    property privacyMode:     String          Read FprivacyMode        Write FprivacyMode;
+    property verifiedLevel:   Extended        Read FverifiedLevel      Write FverifiedLevel;
+
   end;
 
   TLastReceivedKeyClass = class(TClassPadrao)
@@ -518,12 +556,18 @@ type
     FDisplayText   :string;
     FSubtype       :string;
     FSelectionId   :string;
+    //Adicionado por Marcelo 30/05/2022
+    Furl: String;
+    FphoneNumber: String;
 
   public
     property    ID          :string read FID          write FID;
     property    DisplayText :string read FDisplayText write FDisplayText;
     property    Subtype     :string read FSubtype     write FSubtype;
     property    SelectionId :string read FSelectionId write FSelectionId;
+    //Adicionado por Marcelo 30/05/2022
+    property url:          String   read Furl          write Furl;
+    property phoneNumber:  String   read FphoneNumber  write FphoneNumber;
   end;
 
   //Marcelo 01/05/2022
@@ -612,6 +656,33 @@ type
 
   end;
 
+  //Marcelo 18/06/2022
+  TSingleSelectReplyClass = class(TClassPadrao)
+  private
+    //F$$unknownFieldCount: Extended;
+    FSelectedRowId: String;
+  public
+    //property $$unknownFieldCount: Extended read F$$unknownFieldCount write F$$unknownFieldCount;
+    property selectedRowId: String read FSelectedRowId write FSelectedRowId;
+  end;
+
+  //Marcelo 18/06/2022
+  TlistResponseClass = class(TClassPadrao)
+  private
+    //F$$unknownFieldCount: Extended;
+    FDescription: String;
+    FListType: Extended;
+    FSingleSelectReply: TSingleSelectReplyClass;
+    FTitle: String;
+  public
+    //property $$unknownFieldCount: Extended read F$$unknownFieldCount write F$$unknownFieldCount;
+    property description: String                        read FDescription       write FDescription;
+    property listType: Extended                         read FListType          write FListType;
+    property singleSelectReply: TSingleSelectReplyClass read FSingleSelectReply write FSingleSelectReply;
+    property title: String                              read FTitle             write FTitle;
+  end;
+
+
   TMessagesClass = class(TClassPadrao)
   private
     FId              : String;
@@ -699,6 +770,13 @@ type
     FinteractiveAnnotations: TArray<TinteractiveAnnotationsClass>;
     FencFilehash: string;
     FlastPlaybackProgress: Extended;
+
+    //Marcelo 30/05/2022
+    FurlText: string;
+    FurlNumber: string;
+    Ffooter: string;
+    Ftitle: string;
+    FlistResponse: TlistResponseClass;
 
   public
     constructor Create(pAJsonString: string);
@@ -789,8 +867,19 @@ type
     property encFilehash                 : string   read FencFilehash                  write FencFilehash;
     property lastPlaybackProgress        : Extended read FlastPlaybackProgress         write FlastPlaybackProgress;
 
+    //Marcelo 30/05/2022
+    property urlText                     : string   read FurlText                      write FurlText;
+    property urlNumber                   : string   read FurlNumber                    write FurlNumber;
+    property footer                      : string   read Ffooter                       write Ffooter;
+    property title                       : string   read Ftitle                        write Ftitle;
+
+    //Marcelo 18/06/2022
+    property listResponse                : TlistResponseClass  read FlistResponse      write FlistResponse;
+
+
     //encFilehash
   end;
+
 
   //Marcelo 27/04/2022
   TtcTokenClass = class(TClassPadrao)
@@ -879,7 +968,10 @@ type
     FtcTokenSenderTimestamp: Extended;
     FendOfHistoryTransferType: Extended;
     FmsgUnsyncedButtonReplyMsgs: TArray<TmsgUnsyncedButtonReplyMsgsClass>;
-    //FtcToken: TtcTokenClass; //Não Implementada, não sei o que vem no JSON }
+
+    //MARCELO 30/05/2022
+    FpendingInitialLoading: Boolean;
+    FtcToken: TtcTokenClass; //Não Implementada, não sei o que vem no JSON }
 
   public
     constructor Create(pAJsonString: string);
@@ -920,12 +1012,57 @@ type
     property endOfHistoryTransferType : Extended          read FendOfHistoryTransferType       write FendOfHistoryTransferType;
     property formattedTitle              : string         read FformattedTitle                 write FformattedTitle;
     property msgUnsyncedButtonReplyMsgs : TArray<TmsgUnsyncedButtonReplyMsgsClass> read FmsgUnsyncedButtonReplyMsgs write FmsgUnsyncedButtonReplyMsgs;
-    //property tcToken: TtcTokenClass                       read FtcToken                     write FtcToken;
+
+    //MARCELO 30/05/2022
+    property pendingInitialLoading      : Boolean         read FpendingInitialLoading          write FpendingInitialLoading;
+    property tcToken: TtcTokenClass                       read FtcToken                        write FtcToken;
   end;
 
 {##########################################################################################
                                 RETORNOS AO CONSOLE
 ##########################################################################################}
+
+//Marcelo 18/06/2022
+TIncomingiCall = class(TClassPadrao)
+private
+  FId: String;
+  FIsGroup: Boolean;
+  FIsVideo: Boolean;
+  FOfferTime: Int64;
+  FPeerJid: String;
+  FSender: String;
+public
+  property id:           String     read FId          write FId;
+  property isGroup:      Boolean    read FIsGroup     write FIsGroup;
+  property isVideo:      Boolean    read FIsVideo     write FIsVideo;
+  property offerTime:    Int64      read FOfferTime   write FOfferTime;
+  property peerJid:      String     read FPeerJid     write FPeerJid;
+  property sender:       String     read FSender      write FSender;
+  constructor Create(pAJsonString: string);
+  function ToJsonString: string;
+  class function FromJsonString(AJsonString: string): TIncomingiCall;
+end;
+
+//temis 03-06-2022
+TResponsesendTextMessage  = class(TClassPadrao)
+private
+  fSeuID : String;
+  fID : String;
+  fTelefone : String;
+  fAck      : Extended;
+  fJsonMessage: String;
+  fMessageClass : TMessagesClass;
+
+Public
+  Property SeuID : String read FSeuID ;
+  Property Telefone : String read FTelefone;
+  Property Ack      : Extended read FAck;
+  Property ID    : String read FID;
+//    Property Mensagem : TMessagesClass   Read fMessageClass;
+  constructor Create(pAJsonString: string);
+  destructor  Destroy;       override;
+end;
+
 TRetornoAllContacts = class(TClassPadraoList<TContactClass>)
 Public
   constructor Create(pAJsonString: string);
@@ -940,7 +1077,7 @@ TRetornoAllGroups = class(TClassPadrao)
   private
     FNumbers: TStringList;
   public
-    property    Numbers: TStringList   read FNumbers;
+    property    Numbers: TStringList   read FNumbers write FNumbers;
     constructor Create(pAJsonString: string);
     destructor Destroy; override;
 end;
@@ -1076,6 +1213,43 @@ uses
 var
   FUltimoQrCode: String;
 
+//Marcelo 18/06/2022
+function TIncomingiCall.ToJsonString: string;
+begin
+  result := TJson.ObjectToJsonString(self);
+end;
+
+//Marcelo 18/06/2022
+constructor TIncomingiCall.Create(pAJsonString: string);
+var
+  vJson : string;
+  lAJsonObj: TJSONValue;
+  lAJsonObj2: TJSONValue;
+  lAJsonObj3: TJSONValue;
+  myarr: TJSONArray;
+begin
+  vJson := pAJsonString;
+  lAJsonObj := TJSONObject.ParseJSONValue(pAJsonString) as TJSONObject;
+
+  if lAJsonObj.TryGetValue('result', lAJsonObj2) then
+  begin
+    vJson := lAJsonObj2.ToJSON;
+    lAJsonObj := TJSONObject.ParseJSONValue(vJson) as TJSONObject;
+    if lAJsonObj.TryGetValue('result', lAJsonObj3) then
+    begin
+      vJson := Copy(lAJsonObj3.ToJSON,2,Length(lAJsonObj3.ToJSON)-2);
+      inherited Create(vJson);
+    end;
+  end;
+
+end;
+
+//Marcelo 18/06/2022
+class function TIncomingiCall.FromJsonString(AJsonString: string): TIncomingiCall;
+begin
+  result := TJson.JsonToObject<TIncomingiCall>(AJsonString)
+end;
+
 Procedure ClearLastQrcodeCtr;
 Begin
   FUltimoQrCode:= '';
@@ -1089,7 +1263,7 @@ Begin
     if Assigned(GlobalCEFApp) then
     Begin
       //Garante um arquivo novo e limpo a cada hora
-      LName := GlobalCEFApp.LogConsole+ 'ConsoleMessage'+FormatDateTime('yymmdd_HH', now) +'.log';
+      LName := GlobalCEFApp.LogConsole + 'ConsoleMessage' + FormatDateTime('yymmdd_HH', now) +'.log';
 
       if (not GlobalCEFApp.LogConsoleActive) or (GlobalCEFApp.LogConsole = '') Then
          Exit;
@@ -1567,7 +1741,8 @@ begin
     FTImeOutIndy.Enabled     := True;
     try
       //Get(Purl, FReturnUrl);
-
+      //temis  03-06-2022
+      //DownLoadInternetFile(Purl, 'js.abr');
       DownLoadInternetFile(TWPPConnectJS_JSUrlPadrao, 'js.abr');
       //DownLoadInternetFile(TWPPConnectJS_JSUrlPadrao, 'wppconnect-wa.js');
 
@@ -1647,10 +1822,23 @@ end;
 
 { TResponseGetProfilePicThumb }
 
-constructor TResponseGetProfilePicThumb.Create(pAJsonString: string);
+{constructor TResponseGetProfilePicThumb.Create(pAJsonString: string);
 begin
   Base64 :=  copy(pAJsonString, 34, length(pAJsonString) - 35);
-  //Base64 := pAJsonString;
+end;}
+
+//Marcelo 01/06/2022
+constructor TResponseGetProfilePicThumb.Create(pAJsonString: string);
+var
+  lAJsonObj: TJSONValue;
+  v : String;
+begin
+  // TEMI
+//  Base64 :=  copy(pAJsonString, 34, length(pAJsonString) - 35);
+  v := copy(pAJsonString, 11, length(pAJsonString) - 11);
+  inherited Create(v);
+  Base64 :=  copy(Base64, 23, length(Base64));
+
 end;
 
 destructor TResponseGetProfilePicThumb.Destroy;
@@ -1662,6 +1850,10 @@ end;
 { TRetornoAllGroups }
 
 constructor TRetornoAllGroups.Create(pAJsonString: string);
+var
+  vJson : string;
+  lAJsonObj: TJSONValue;
+  lAJsonObj2: TJSONValue;
 begin
   inherited Create(pAJsonString);
   FNumbers      := TStringList.create;
@@ -1671,6 +1863,25 @@ begin
   FNumbers.Text := StringReplace(FNumbers.Text, '"' , '',    [rfReplaceAll]);
   FNumbers.Text := StringReplace(FNumbers.Text, '{result:[' , '',    [rfReplaceAll]);
   FNumbers.Text := StringReplace(FNumbers.Text, ']}' , '',    [rfReplaceAll]);
+
+  if Trim(FNumbers.Text) = '' then
+  begin
+    vJson := pAJsonString;
+    lAJsonObj := TJSONObject.ParseJSONValue(pAJsonString) as TJSONObject;
+
+    if lAJsonObj.TryGetValue('result', lAJsonObj2) then
+    begin
+      vJson := Copy(lAJsonObj2.ToJSON,2,Length(lAJsonObj2.ToJSON)-2);
+      inherited Create(vJson);
+      FNumbers      := TStringList.create;
+      FNumbers.Text := vJson;
+      //Quebrar linhas de acordo com cada valor separado por virgula
+      FNumbers.Text := StringReplace(FNumbers.Text, '",', Enter, [rfReplaceAll]);
+      FNumbers.Text := StringReplace(FNumbers.Text, '"' , '',    [rfReplaceAll]);
+      FNumbers.Text := StringReplace(FNumbers.Text, '{result:[' , '',    [rfReplaceAll]);
+      FNumbers.Text := StringReplace(FNumbers.Text, ']}' , '',    [rfReplaceAll]);
+    end;
+  end;
 end;
 
 destructor TRetornoAllGroups.Destroy;
@@ -1769,5 +1980,28 @@ begin
   //FResult := (Copy (FResult, Pos ('@c.us_', FResult) + 2, Length (FResult)));
 end;
 
+{ TResponssendTextMessage }
+
+//temis  03-06-2022
+constructor TResponsesendTextMessage.Create(pAJsonString: string);
+var
+  v : String;
+begin
+
+  v := copy(pAJsonString, 11, length(pAJsonString) - 11);
+  inherited Create(v);
+  fMessageClass := TMessagesClass.Create(FJsonMessage);
+  //true_1234434@us
+  FTelefone := Copy(FMessageclass.FId,6,Pos('@',FMessageclass.FId)-6);
+  FAck      := FMessageClass.ack;
+  FID    := FMessageClass.id;
+  FMessageClass.Free;
+end;
+
+destructor TResponsesendTextMessage.Destroy;
+begin
+
+  inherited;
+end;
 
 End.

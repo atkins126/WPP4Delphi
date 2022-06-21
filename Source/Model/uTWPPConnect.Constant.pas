@@ -1,16 +1,35 @@
 ﻿{####################################################################################################################
+  License
+  Copyright 2022 WPPConnect Team https://wppconnect-team.github.io/
+
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+  an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations under the License.
+
                               WPPCONNECT - Componente de comunicação (Não Oficial)
                                            https://wppconnect-team.github.io/
                                             Maio de 2022
 ####################################################################################################################
-    Owner.....: Marcelo           - marcelo.broz@hotmail.com   -
-    Developer.: Marcelo           - marcelo.broz@hotmail.com   - +55 17 9.8138-8414
-
+    Owner.....: Mike W. Lustosa            - mikelustosa@gmail.com   - +55 81 9.9630-2385
+    Developer.: Joathan Theiller           - jtheiller@hotmail.com   -
+                Daniel Oliveira Rodrigues  - Dor_poa@hotmail.com     - +55 51 9.9155-9228
 ####################################################################################################################
   Obs:
      - Código aberto a comunidade Delphi, desde que mantenha os dados dos autores e mantendo sempre o nome do IDEALIZADOR
-       Marcelo;
+       Mike W. Lustosa;
 
+####################################################################################################################
+                                  Evolução do Código
+####################################################################################################################
+  Autor........: Marcelo Oliveira
+  Email........: marcelo.broz@hotmail.com
+  Data.........: 07/06/2022
+  Identificador: @Marcelo
+  Modificação..: Ajustado para Trabalhar com o WPPConnect
 ####################################################################################################################
 }
 unit uTWPPConnect.Constant;
@@ -96,21 +115,21 @@ Const
   FrmConsole_JS_VAR_getProfilePicThumb      = 'window.WAPI.teste("<#PROFILE_PICTHUMB_URL#>");';
   //MARCELO 02/05/2022
   FrmConsole_JS_VAR_getProfilePicture       = 'WPP.contact.getProfilePicture("<#PHONE#>");';
-  FrmConsole_JS_VAR_CreateGroup             = 'window.WAPI.createGroup("<#GROUP_NAME#>", "<#PARTICIPANT_NUMBER#>");setTimeout(function(){ window.WAPI.getAllGroups(); }, 3000);';
+  FrmConsole_JS_VAR_CreateGroup             = 'WPP.group.create("<#GROUP_NAME#>", "<#PARTICIPANT_NUMBER#>");setTimeout(function(){ window.WAPI.getAllGroups(); }, 3000);';
   FrmConsole_JS_GetAllGroups                = 'window.WAPI.getAllGroups();';//'window.WAPI.listMyGroups();';
   FrmConsole_JS_GetGroupAdmins              = 'window.WAPI.getGroupAdmins("<#GROUP_ID#>");';
   FrmConsole_JS_VAR_listGroupContacts       = 'window.WAPI.getGroupParticipantIDs("<#GROUP_ID#>");';
-  FrmConsole_JS_VAR_groupAddParticipant     = 'window.WAPI.addParticipant("<#GROUP_ID#>", "<#PARTICIPANT_NUMBER#>");setTimeout(function(){ window.WAPI.getGroupParticipantIDs("<#GROUP_ID#>"); }, 3000);';
-  FrmConsole_JS_VAR_groupRemoveParticipant  = 'window.WAPI.removeParticipant("<#GROUP_ID#>", "<#PARTICIPANT_NUMBER#>");setTimeout(function(){ window.WAPI.getGroupParticipantIDs("<#GROUP_ID#>"); }, 3000);';
-  FrmConsole_JS_VAR_groupPromoteParticipant = 'window.WAPI.promoteParticipant("<#GROUP_ID#>", "<#PARTICIPANT_NUMBER#>");setTimeout(function(){ window.WAPI.getGroupAdmins("<#GROUP_ID#>"); }, 3000);';
-  FrmConsole_JS_VAR_groupDemoteParticipant  = 'window.WAPI.demoteParticipant("<#GROUP_ID#>", "<#PARTICIPANT_NUMBER#>");setTimeout(function(){ window.WAPI.getGroupAdmins("<#GROUP_ID#>"); }, 3000);';
+  FrmConsole_JS_VAR_groupAddParticipant     = 'WPP.group.addParticipants("<#GROUP_ID#>", "<#PARTICIPANT_NUMBER#>");setTimeout(function(){ window.WAPI.getGroupParticipantIDs("<#GROUP_ID#>"); }, 3000);';
+  FrmConsole_JS_VAR_groupRemoveParticipant  = 'WPP.group.removeParticipants("<#GROUP_ID#>", "<#PARTICIPANT_NUMBER#>");setTimeout(function(){ window.WAPI.getGroupParticipantIDs("<#GROUP_ID#>"); }, 3000);';
+  FrmConsole_JS_VAR_groupPromoteParticipant = 'WPP.group.promoteParticipants("<#GROUP_ID#>", "<#PARTICIPANT_NUMBER#>");setTimeout(function(){ window.WAPI.getGroupAdmins("<#GROUP_ID#>"); }, 3000);';
+  FrmConsole_JS_VAR_groupDemoteParticipant  = 'WPP.group.demoteParticipants("<#GROUP_ID#>", "<#PARTICIPANT_NUMBER#>");setTimeout(function(){ window.WAPI.getGroupAdmins("<#GROUP_ID#>"); }, 3000);';
   FrmConsole_JS_VAR_groupLeave              = 'window.WAPI.leaveGroup("<#GROUP_ID#>");';
   FrmConsole_JS_VAR_groupDelete             = 'window.WAPI.deleteConversation("<#GROUP_ID#>");setTimeout(function(){ window.WAPI.getAllGroups(); }, 3000);';
   FrmConsole_JS_VAR_groupJoinViaLink        = 'window.WAPI.joinGroupViaLink("<#GROUP_LINK#>");setTimeout(function(){ window.WAPI.getAllGroups(); }, 3000);';
   FrmConsole_JS_VAR_setProfileName          = 'window.WAPI.setMyName("<#NEW_NAME#>");';
   FrmConsole_JS_VAR_setMyStatus             = 'window.WAPI.setMyStatus("<#NEW_STATUS#>");';
   FrmConsole_JS_VAR_getStatus               = 'window.WAPI.getStatus("<#PHONE#>");';
-  FrmConsole_JS_VAR_ClearChat               = 'window.WAPI.clearChat("<#PHONE#>");';
+  FrmConsole_JS_VAR_ClearChat               = 'WPP.chat.clear("<#PHONE#>");';
   FrmConsole_JS_VAR_getMe                   = 'window.WAPI.getMe();';
   FrmConsole_JS_VAR_getGroupInviteLink      = 'window.WAPI.getGroupInviteLink("<#GROUP_ID#>");';
   FrmConsole_JS_VAR_removeGroupInviteLink   = 'window.WAPI.revokeGroupInviteLink("<#GROUP_ID#>");';
@@ -121,31 +140,38 @@ Const
 
   //WPPConnect
 
+  //MARCELO 13/06/2022
+  FrmConsole_JS_VAR_setKeepAlive        = 'WPP.conn.setKeepAlive(<#ATIVO#>);';
+
   //MARCELO 03/05/2022
   FrmConsole_JS_VAR_markIsComposing     = 'WPP.chat.markIsComposing("<#MSG_PHONE#>", <#MSG_DURATION#>);';
   FrmConsole_JS_VAR_markIsRead          = 'WPP.chat.markIsRead("<#MSG_PHONE#>");';
-  FrmConsole_JS_VAR_markIsRecording     = 'WPP.chat.markIsRecording("<#MSG_PHONE#>", 5000);';
+  FrmConsole_JS_VAR_markIsRecording     = 'WPP.chat.markIsRecording("<#MSG_PHONE#>", <#MSG_DURATION#>);';
   FrmConsole_JS_VAR_markIsUnread        = 'WPP.chat.markIsUnread("<#MSG_PHONE#>");';
+
   //FrmConsole_JS_VAR_getMessageById      = 'WPP.chat.getMessageById(["<#MSGKEY#>"]);';
   FrmConsole_JS_VAR_getMessageById      = 'window.WAPI.getMessageById2("<#MSGKEY#>");';
 
-
-  //Adicionado Por Marcelo 26/04/2022
-  //FrmConsole_JS_VAR_SendButtons         = 'window.WAPI.sendButtons("<#MSG_PHONE#>","<#MSG_TITLE#>",<#MSG_BUTTONS#>,"<#MSG_FOOTER#>")';
-  FrmConsole_JS_VAR_SendButtons         = 'WPP.chat.sendTextMessage("<#MSG_PHONE#>","<#MSG_TITLE#>",{<#MSG_BUTTONS#>});';
-
-  //Alterado Por Marcelo 10/05/2022
-  FrmConsole_JS_VAR_SendTextMessage     = 'WPP.chat.sendTextMessage("<#MSG_PHONE#>","<#MSG_CONTENT#>",{<#MSG_OPTIONS#>});';
   FrmConsole_JS_VAR_SendReactionMessage = 'WPP.chat.sendReactionToMessage("<#MSG_UNIQUE_ID#>", <#MSG_REACTION#>);';
 
 
-  //Adicionado Por Marcelo 30/04/2022
-  FrmConsole_JS_VAR_sendListMessage     = 'WPP.chat.sendListMessage("<#MSG_PHONE#>",{<#MSG_MENU#>} );';
+  //Adicionado Por Marcelo 26/04/2022
+  //FrmConsole_JS_VAR_SendButtons        = 'window.WAPI.sendButtons("<#MSG_PHONE#>","<#MSG_TITLE#>",<#MSG_BUTTONS#>,"<#MSG_FOOTER#>")';
+                                        //Alterado Por Marcelo 31/05/2022
+  FrmConsole_JS_VAR_SendButtons         = 'window.WAPI.sendTextMessage2("<#MSG_PHONE#>","<#MSG_TITLE#>",{<#MSG_BUTTONS#>});';
+
+  //Alterado Por Marcelo 10/05/2022     //Alterado Por Marcelo 31/05/2022
+  FrmConsole_JS_VAR_SendTextMessage     = 'window.WAPI.sendTextMessage2("<#MSG_PHONE#>","<#MSG_CONTENT#>",{<#MSG_OPTIONS#>});';
+
+  //Adicionado Por Marcelo 30/04/2022     //Alterado Por Marcelo 31/05/2022
   FrmConsole_JS_VAR_sendFileMessage     = 'window.WAPI.sendFileMessage2("<#MSG_PHONE#>","<#MSG_CONTENT#>",{<#MSG_OPTIONS#>} );';
+  FrmConsole_JS_VAR_sendListMessage     = 'window.WAPI.sendListMessage2("<#MSG_PHONE#>",{<#MSG_MENU#>} );';
+
+
   FrmConsole_JS_VAR_sendLocationMessage = 'WPP.chat.sendLocationMessage("<#MSG_PHONE#>",{<#MSG_OPTIONS#>} );';
 
-  //Adicionado Por Marcelo 09/05/2022
-  FrmConsole_JS_VAR_SendLinkPreview     = 'WPP.chat.sendTextMessage("<#MSG_PHONE#>", "<#MSG_LINK#>", {<#MSG_CORPO#>} );';
+  //Adicionado Por Marcelo 09/05/2022     //Alterado Por Marcelo 31/05/2022
+  FrmConsole_JS_VAR_SendLinkPreview     = 'window.WAPI.sendTextMessage2("<#MSG_PHONE#>", "<#MSG_LINK#>", {<#MSG_CORPO#>} );';
   //FrmConsole_JS_VAR_SendLinkPreview     = 'window.WAPI.sendLinkWithAutoPreview("<#MSG_PHONE#>", "<#MSG_LINK#>", "<#MSG_CORPO#>")';
 
   //MARCELO 02/05/2022
@@ -154,8 +180,28 @@ Const
   //DANIEL 25/05/2022
   FrmConsole_JS_VAR_BlockContact        = 'WPP.blocklist.blockContact("<#CTT_NAME#>");';
   FrmConsole_JS_VAR_unBlockContact      = 'WPP.blocklist.unblockContact("<#CTT_NAME#>");';
+  FrmConsole_JS_VAR_ArchiveChat         = 'WPP.chat.archive("<#CTT_NAME#>");';
+  FrmConsole_JS_VAR_UnarchiveChat       = 'WPP.chat.unarchive("<#CTT_NAME#>");';
+  FrmConsole_JS_VAR_ArchiveAllChats     = 'archiveAllChats()';
+  FrmConsole_JS_VAR_DeleteAllChats      = 'deleteAllChats()';
+  FrmConsole_JS_VAR_PinChat             = 'WPP.chat.pin("<#CTT_NAME#>");';
+  FrmConsole_JS_VAR_UnPinChat           = 'WPP.chat.unpin("<#CTT_NAME#>");';
+  FrmConsole_JS_VAR_CreatePoolMessage   = 'WPP.chat.sendCreatePollMessage("<#GROUP_ID#>","<#MSG_CONTENT#>",<#POOL_OPTIONS#>);';
+
   //Marcelo 18/05/2022
   FrmConsole_JS_VAR_sendRawMessage      = 'WPP.chat.sendRawMessage("<#MSG_PHONE#>","<#MSG_RAW#>",{<#MSG_OPTIONS#>} );';
+
+
+  //TEMIS 03-06-2022 Obtendo Retorno do Envio com SeuID
+  FrmConsole_JS_VAR_SendTextMessageEx   = 'window.WAPI.sendTextMessage2Ex("<#MSG_PHONE#>","<#MSG_CONTENT#>",{<#MSG_OPTIONS#>},"<#MSG_SEUID#>");';
+  FrmConsole_JS_VAR_sendFileMessageEx   = 'window.WAPI.sendFileMessage2Ex("<#MSG_PHONE#>","<#MSG_CONTENT#>",{<#MSG_OPTIONS#>},"<#MSG_SEUID#>" );';
+  FrmConsole_JS_VAR_sendListMessageEx   = 'window.WAPI.sendListMessage2Ex("<#MSG_PHONE#>",{<#MSG_MENU#>} );';
+
+  //Marcelo 14/06/2022
+  FrmConsole_JS_VAR_sendTextStatus   = 'WPP.status.sendTextStatus("<#MSG_CONTENT#>",{<#MSG_OPTIONS#>} );';
+
+  //Marcelo 15/06/2022
+  FrmConsole_JS_VAR_rejectCall       = 'WPP.call.rejectCall("<#MSG_ID#>");';
 
 resourcestring
   MSG_ConfigCEF_ExceptNotFoundJS       = '';
@@ -290,8 +336,10 @@ type
 
                    // Novos Eventos de Retorno by Marcelo
                    Th_GetStatusMessage=38, Th_GetGroupInviteLink=39, Th_GetMe=40, Th_NewCheckIsValidNumber=41
-                   , Th_GetCheckIsBeta=42, Th_getMessageById=43); //Marcelo 06/05/2022
-
+                   , Th_GetCheckIsBeta=42, Th_getMessageById=43 //Marcelo 06/05/2022
+                   , Th_SendFileMessage=44, Th_SendTextMessage=45, Th_SendListMessage=46 //Marcelo 31/05/2022
+                   , Th_SendTextMessageEx=47, Th_SendFileMessageEx=48, Th_SendListMessageEx=49   //Temis 03-06-2022
+                   , Th_IncomingiCall=50); //Marcelo 16-06-2022
     Function   VerificaCompatibilidadeVersao(PVersaoExterna:String; PversaoInterna:String):Boolean;
     Function   FrmConsole_JS_AlterVar(var PScript:String;  PNomeVar: String;  Const PValor:String):String;
     function   StrToTypeHeader(PText: string): TTypeHeader;
@@ -373,6 +421,43 @@ var
   Ltmp: String;
 Begin
   LExt   := LowerCase(Copy(ExtractFileExt(PFileName),2,50));
+
+  //Marcelo 31/05/2022
+  if (LExt = 'mp3') then
+    begin
+      result := 'data:audio/mpeg;base64,';
+      exit;
+    end;
+
+  //Marcelo 08/06/2022
+  if (LExt = 'ogg') then
+    begin
+      result := 'data:audio/ogg;base64,';
+      exit;
+    end;
+
+  //Marcelo 08/06/2022
+  if (LExt = 'mp4') then
+    begin
+      result := 'data:video/mp4;base64,';
+      exit;
+    end;
+
+  //Marcelo 08/06/2022
+  if (LExt = 'avi') then
+    begin
+      result := 'data:video/avi;base64,';
+      exit;
+    end;
+
+  //Marcelo 08/06/2022
+  if (LExt = 'mpeg') then
+    begin
+      result := 'data:video/mpeg;base64,';
+      exit;
+    end;
+
+
   Result := 'data:application/';
   try
     for I := 0 to 10 do
@@ -390,7 +475,7 @@ Begin
 End;
 
 function   StrToTypeHeader(PText: string): TTypeHeader;
-const LmaxCount = 43; //Marcelo 06/05/2022
+const LmaxCount = 50; //Marcelo 16-06-2022
 var
   I: Integer;
   LNome: String;

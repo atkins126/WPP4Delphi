@@ -1,16 +1,35 @@
 ﻿{####################################################################################################################
+  License
+  Copyright 2022 WPPConnect Team https://wppconnect-team.github.io/
+
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+  an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations under the License.
+
                               WPPCONNECT - Componente de comunicação (Não Oficial)
                                            https://wppconnect-team.github.io/
                                             Maio de 2022
 ####################################################################################################################
-    Owner.....: Marcelo           - marcelo.broz@hotmail.com   -
-    Developer.: Marcelo           - marcelo.broz@hotmail.com   - +55 17 9.8138-8414
-
+    Owner.....: Mike W. Lustosa            - mikelustosa@gmail.com   - +55 81 9.9630-2385
+    Developer.: Joathan Theiller           - jtheiller@hotmail.com   -
+                Robson André de Morais     - robinhodemorais@gmail.com
 ####################################################################################################################
   Obs:
      - Código aberto a comunidade Delphi, desde que mantenha os dados dos autores e mantendo sempre o nome do IDEALIZADOR
-       Marcelo;
+       Mike W. Lustosa;
 
+####################################################################################################################
+                                  Evolução do Código
+####################################################################################################################
+  Autor........: Marcelo Oliveira
+  Email........: marcelo.broz@hotmail.com
+  Data.........: 07/06/2022
+  Identificador: @Marcelo
+  Modificação..: Ajustado para Trabalhar com o WPPConnect
 ####################################################################################################################
 }
 
@@ -74,7 +93,7 @@ type
     property   AutoUpdateTimeOut  : Integer   Read FAutoUpdateTimeOut    Write FAutoUpdateTimeOut   Default 4;
     property   OnUpdateJS    : TNotifyEvent   Read FOnUpdateJS           Write FOnUpdateJS;
     property   Ready         : Boolean        read FReady;
-    property   JSURL         : String         read FJSURL;
+    property   JSURL         : String         read FJSURL                write FJSURL;
     property   JSScript      : TstringList    read FJSScript             Write SeTWPPConnectScript;
   end;
 
@@ -149,6 +168,7 @@ begin
   FJSURL                     := TWPPConnectJS_JSUrlPadrao;
   FInjectJSDefine            := TWPPConnectJSDefine.Create;
   FReady                     := False;
+  //UpdateNow; Temis 03-06-2022
   UpdateNow;
 end;
 
@@ -288,6 +308,8 @@ begin
     LHttp.Request.ContentEncoding := 'raw';
 
     LHttp.TimeOut     := AutoUpdateTimeOut;
+    //Temis 03-06-2022
+    //if LHttp.GetUrl(JSURL) = true Then
     if LHttp.GetUrl(TWPPConnectJS_JSUrlPadrao) = true Then
     Begin
       LRet.LoadFromStream(LHttp.ReturnUrl);

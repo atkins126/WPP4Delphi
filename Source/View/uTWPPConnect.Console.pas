@@ -180,13 +180,27 @@ type
     //Adicionado Por Marcelo 10/05/2022
     procedure SendTextMessage(phoneNumber, content, options: string; etapa: string = '');
 
+    //Temis 03-06-2022
+    procedure SendTextMessageEx(phoneNumber, content, options: string; xSeuID: string = '');
+    procedure SendFileMessageEx(phoneNumber, content, options: string; xSeuID: string = '');
+    procedure SendListMessageEx(phoneNumber, buttonText, description, sections: string; xSeuID: string = '');
+
     //Adicionado Por Marcelo 18/05/2022
     procedure sendRawMessage(phoneNumber, rawMessage, options: string; etapa: string = '');
     procedure markIsComposing(phoneNumber, duration: string; etapa: string = '');
 
+    //Adicionado Por Marcelo 13/06/2022
+    procedure markmarkIsRecording(phoneNumber, duration: string; etapa: string = '');
+    procedure setKeepAlive(Ativo: string);
+    procedure sendTextStatus(Content, Options: string);
+
     //Adicionado Por Marcelo 10/05/2022
     procedure SendReactionMessage(UniqueID, Reaction: string; etapa: string = '');
 
+    //Adicionado Por Marcelo 15/06/2022
+    procedure rejectCall(id: string);
+
+    //Adicionado Por Marcelo 10/05/2022
     procedure getMessageById(UniqueIDs: string; etapa: string = '');
 
     //Adicionado Por Marcelo 01/03/2022
@@ -195,6 +209,13 @@ type
     //Adicionado por Daniel 25/05/2022
     procedure BloquearContato(vContato: string);
     procedure DesbloquearContato(vContato: string);
+    procedure ArquivarChat(vContato: string);
+    procedure DesarquivarChat(vContato:String);
+    procedure ArquivarTodosOsChats;
+    procedure DeletarTodosOsChats;
+    procedure FixarChat(vContato:String);
+    procedure DesfixarChat(vContato:String);
+
     procedure CheckDelivered;
     procedure SendContact(vNumDest, vNum:string; vNameContact: string = '');
     procedure SendBase64(vBase64, vNum, vFileName, vText:string);
@@ -212,6 +233,7 @@ type
     procedure GroupLeave(vIDGroup: string);
     procedure GroupDelete(vIDGroup: string);
     procedure GroupJoinViaLink(vLinkGroup: string);
+    procedure GroupPoolCreate(vIDGroup, vDescription, vPoolOptions: string);
 
     procedure getGroupInviteLink(vIDGroup: string);
     procedure revokeGroupInviteLink(vIDGroup: string);
@@ -255,6 +277,30 @@ uses
 procedure TFrmConsole.App_EventMinimize(Sender: TObject);
 begin
   Hide;
+end;
+
+procedure TFrmConsole.ArquivarChat(vContato: string);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS   := FrmConsole_JS_VAR_ArchiveChat;
+  FrmConsole_JS_AlterVar(LJS, '#CTT_NAME#', Trim(vContato));
+  ExecuteJS(LJS, true);
+end;
+
+procedure TFrmConsole.ArquivarTodosOsChats;
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS   := FrmConsole_JS_VAR_ArchiveAllChats;
+  ExecuteJS(LJS, true);
+
 end;
 
 procedure TFrmConsole.BloquearContato(vContato: string);
@@ -375,7 +421,8 @@ begin
 
       lNovoStatus    := False;
       SendNotificationCenterDirect(Th_Initializing);
-    End;
+    End else if TWPPConnect(FOwner).Config.AutoStart then
+      lNovoStatus:= true;
   finally
     FTimerConnect.Enabled := lNovoStatus;
   end;
@@ -606,6 +653,21 @@ begin
   ExecuteJS(LJS, true);
 end;
 
+procedure TFrmConsole.GroupPoolCreate(vIDGroup, vDescription,
+  vPoolOptions: string);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS   := FrmConsole_JS_VAR_CreatePoolMessage;
+  FrmConsole_JS_AlterVar(LJS, '#GROUP_ID#',           Trim(vIDGroup));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_CONTENT#',        Trim(vDescription));
+  FrmConsole_JS_AlterVar(LJS, '#POOL_OPTIONS#',        Trim(vPoolOptions));
+  ExecuteJS(LJS, true);
+end;
+
 procedure TFrmConsole.GroupPromoteParticipant(vIDGroup, vNumber: string);
 var
   Ljs: string;
@@ -710,12 +772,35 @@ begin
   ExecuteJS(FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#' , Trim(vID)), False);
 end;
 
+procedure TFrmConsole.DeletarTodosOsChats;
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS   := FrmConsole_JS_VAR_DeleteAllChats;
+  ExecuteJS(LJS, true);
+end;
+
 procedure TFrmConsole.DeleteMessages(vID: string);
 var
   LJS: String;
 begin
   LJS := FrmConsole_JS_VAR_DeleteMessages;
   ExecuteJS(FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#', Trim(vID)), False);
+end;
+
+procedure TFrmConsole.DesarquivarChat(vContato: String);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS   := FrmConsole_JS_VAR_UnarchiveChat;
+  FrmConsole_JS_AlterVar(LJS, '#CTT_NAME#', Trim(vContato));
+  ExecuteJS(LJS, true);
 end;
 
 procedure TFrmConsole.DesbloquearContato(vContato: string);
@@ -726,6 +811,18 @@ begin
     raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
 
   LJS   := FrmConsole_JS_VAR_unBlockContact ;
+  FrmConsole_JS_AlterVar(LJS, '#CTT_NAME#', Trim(vContato));
+  ExecuteJS(LJS, true);
+end;
+
+procedure TFrmConsole.DesfixarChat(vContato: String);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS   := FrmConsole_JS_VAR_UnPinChat;
   FrmConsole_JS_AlterVar(LJS, '#CTT_NAME#', Trim(vContato));
   ExecuteJS(LJS, true);
 end;
@@ -768,6 +865,19 @@ procedure TFrmConsole.ReadMessagesAndDelete(vID: string);
 begin
   ReadMessages  (Trim(vID));
   DeleteMessages(Trim(vID));
+end;
+
+procedure TFrmConsole.rejectCall(id: string);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS   := FrmConsole_JS_VAR_rejectCall;
+  FrmConsole_JS_AlterVar(LJS, '#MSG_ID#',    Trim(id));
+
+  ExecuteJS(LJS, true);
 end;
 
 procedure TFrmConsole.ReleaseConnection;
@@ -916,6 +1026,46 @@ begin
   END;
 end;
 
+procedure TFrmConsole.SendFileMessageEx(phoneNumber, content, options, xSeuID: string);
+var
+  Ljs: string;
+  LLine: string;
+  LBase64: TStringList;
+  i : integer;
+begin
+  //temis 03-06-2022
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LLine := '';
+  LBase64 := TStringList.Create;
+  TRY
+    LBase64.Text := content;
+    for i := 0 to LBase64.Count -1  do
+      LLine := LLine + LBase64[i];
+    content := LLine;
+
+    //SalvaLog(content, 'CONSOLE');
+
+    //LJS   := FrmConsole_JS_VAR_markIsComposing + FrmConsole_JS_VAR_sendFileMessage;
+    //LJS   := FrmConsole_JS_VAR_SendTyping + FrmConsole_JS_VAR_sendFileMessage;
+    LJS   := FrmConsole_JS_VAR_sendFileMessageEx;
+    FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',    Trim(phoneNumber));
+    FrmConsole_JS_AlterVar(LJS, '#MSG_CONTENT#',  Trim(content));
+    FrmConsole_JS_AlterVar(LJS, '#MSG_OPTIONS#',  Trim(options));
+    FrmConsole_JS_AlterVar(LJS, '#MSG_SEUID#',  Trim(xSeuID));
+
+    SalvaLog(LJS + #13#10, 'CONSOLE');
+
+    //FrmConsole_JS_AlterVar(LJS, '#DELAY#',  '5000');
+    ExecuteJS(LJS, true);
+
+
+  FINALLY
+    freeAndNil(LBase64);
+  END;
+end;
+
 procedure TFrmConsole.SendLinkPreview(vNum, vLinkPreview, vText: string);
 var
   Ljs: string;
@@ -971,6 +1121,25 @@ begin
   buttonText := CaractersWeb(buttonText);
 
   LJS   := FrmConsole_JS_VAR_SendTyping + FrmConsole_JS_VAR_sendListMessage;
+  FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',       Trim(phoneNumber));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_BUTTONTEXT#',  Trim(buttonText));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_DESCRIPTION#', Trim(description));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_MENU#',        Trim(sections));
+  ExecuteJS(LJS, true);
+end;
+
+procedure TFrmConsole.SendListMessageEx(phoneNumber, buttonText, description, sections, xSeuID: string);
+var
+  Ljs: string;
+begin
+  //Adicionado Por Marcelo 01/03/2022
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  description := CaractersWeb(description);
+  buttonText := CaractersWeb(buttonText);
+
+  LJS   := FrmConsole_JS_VAR_sendListMessageEx;
   FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',       Trim(phoneNumber));
   FrmConsole_JS_AlterVar(LJS, '#MSG_BUTTONTEXT#',  Trim(buttonText));
   FrmConsole_JS_AlterVar(LJS, '#MSG_DESCRIPTION#', Trim(description));
@@ -1051,6 +1220,7 @@ begin
   if not FConectado then
     raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
 
+  rawMessage := CaractersWeb(rawMessage);
   LJS   := FrmConsole_JS_VAR_sendRawMessage;
   FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',    Trim(phoneNumber));
   FrmConsole_JS_AlterVar(LJS, '#MSG_RAW#',      Trim(rawMessage));
@@ -1085,11 +1255,31 @@ begin
   if not FConectado then
     raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
 
+  content := CaractersWeb(content);
+
   LJS   := FrmConsole_JS_VAR_SendTyping + FrmConsole_JS_VAR_SendTextMessage;
   //LJS   := FrmConsole_JS_VAR_SendTextMessage;
   FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',    Trim(phoneNumber));
   FrmConsole_JS_AlterVar(LJS, '#MSG_CONTENT#',  Trim(content));
   FrmConsole_JS_AlterVar(LJS, '#MSG_OPTIONS#',  Trim(options));
+  ExecuteJS(LJS, true);
+end;
+
+procedure TFrmConsole.SendTextMessageEx(phoneNumber, content, options, xSeuID: string);
+var
+  Ljs: string;
+begin
+  //Alterado Por Marcelo 13/06/2022
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  content := CaractersWeb(content);
+  LJS   := FrmConsole_JS_VAR_SendTextMessageEx;
+  FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',    Trim(phoneNumber));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_CONTENT#',  Trim(content));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_OPTIONS#',  Trim(options));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_SEUID#',  Trim(xSeuID));
+
   ExecuteJS(LJS, true);
 end;
 
@@ -1299,6 +1489,81 @@ begin
                               SendNotificationCenterDirect(PResponse.TypeHeader, FMessagesList);
                             finally
                               //FreeAndNil(LOutClass2);
+                            end;
+                          end;
+
+    //Marcelo 31/05/2022
+    Th_sendFileMessage   : begin
+                            //LOutClass2 := TMessagesList.Create(LResultStr);
+                            LOutClass2 := TMessagesClass.Create(LResultStr);
+                            try
+                              SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass2);
+                            finally
+                              FreeAndNil(LOutClass2);
+                            end;
+                          end;
+
+    //Marcelo 31/05/2022
+    Th_sendTextMessage   : begin
+                            //LOutClass2 := TMessagesList.Create(LResultStr);
+                            LOutClass2 := TMessagesClass.Create(LResultStr);
+                            try
+                              SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass2);
+                            finally
+                              FreeAndNil(LOutClass2);
+                            end;
+                          end;
+
+    //Marcelo 31/05/2022
+    Th_sendListMessage   : begin
+                            //LOutClass2 := TMessagesList.Create(LResultStr);
+                            LOutClass2 := TMessagesClass.Create(LResultStr);
+                            try
+                              SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass2);
+                            finally
+                              FreeAndNil(LOutClass2);
+                            end;
+                          end;
+
+    //Temis 03-06-2022
+    Th_sendTextMessageEx : begin
+                            LOutClass2 := TResponsesendTextMessage.Create(LResultStr);
+                            try
+                              SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass2);
+                            finally
+                              FreeAndNil(LOutClass2);
+                            end;
+                          end;
+
+    //Temis 03-06-2022
+    Th_sendFileMessageEx : begin
+                            LOutClass2 := TResponsesendTextMessage.Create(LResultStr);
+                            try
+                              SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass2);
+                            finally
+                              FreeAndNil(LOutClass2);
+                            end;
+                          end;
+
+    //Temis 03-06-2022
+    Th_sendListMessageEx : begin
+                            LOutClass2 := TResponsesendTextMessage.Create(LResultStr);
+                            try
+                              SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass2);
+                            finally
+                              FreeAndNil(LOutClass2);
+                            end;
+                          end;
+
+    //Marcelo 16/06/2022
+    Th_IncomingiCall : begin
+                            //LOutClass2 := TResponsesendTextMessage.Create(LResultStr);
+                            //LOutClass2 := TIncomingiCall.Create(LResultStr);
+                            LOutClass2 := TIncomingiCall.Create(PResponse.JsonString);
+                            try
+                              SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass2);
+                            finally
+                              FreeAndNil(LOutClass2);
                             end;
                           end;
 
@@ -1553,6 +1818,8 @@ begin
     Form_Normal;
     If Assigned(OnNotificationCenter) then
        SendNotificationCenterDirect(Th_Connected);
+    if (TWPPConnect(FOwner).Config.AutoStart) and (not FTimerConnect.Enabled) then
+      FTimerConnect.Enabled:= True;
   end;
   if (LPaginaId <= 3) and (FFormType = Ft_Http) then
     SetZoom(-2);
@@ -1686,6 +1953,18 @@ begin
   ExecuteJS(LJS, true);
 end;
 
+procedure TFrmConsole.FixarChat(vContato: String);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS   := FrmConsole_JS_VAR_PinChat;
+  FrmConsole_JS_AlterVar(LJS, '#CTT_NAME#', Trim(vContato));
+  ExecuteJS(LJS, true);
+end;
+
 procedure TFrmConsole.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
@@ -1789,7 +2068,7 @@ procedure TFrmConsole.FormShow(Sender: TObject);
 begin
   Lbl_Caption.Caption      := 'WPPConnect '; //Text_FrmConsole_Caption;
   Lbl_Caption.Caption       := Lbl_Caption.Caption + ' CEF lib ' + uTWPPConnect.ConfigCEF.GlobalCEFApp.LibCefVersion + ' Chrome ' + uTWPPConnect.ConfigCEF.GlobalCEFApp.ChromeVersion; //+ ' TWPPConnect V. ' + TWPPConnectVersion;
-  Lbl_Versao.Caption       := 'V. 2.2.2' + ''; //TWPPConnectVersion;
+  Lbl_Versao.Caption       := 'V. 2.6.0' + ''; //TWPPConnectVersion;
 end;
 
 procedure TFrmConsole.Form_Normal;
@@ -1921,6 +2200,34 @@ begin
   ExecuteJS(LJS, false);
 end;
 
+procedure TFrmConsole.sendTextStatus(Content, Options: string);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  Content := CaractersWeb(Content);
+  LJS   := FrmConsole_JS_VAR_sendTextStatus;
+  FrmConsole_JS_AlterVar(LJS, '#MSG_CONTENT#',  Trim(Content));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_OPTIONS#',  Trim(options));
+
+  ExecuteJS(LJS, true);
+end;
+
+procedure TFrmConsole.setKeepAlive(Ativo: string);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS   := FrmConsole_JS_VAR_setKeepAlive;
+  FrmConsole_JS_AlterVar(LJS, '#ATIVO#',    Trim(Ativo));
+
+  ExecuteJS(LJS, true);
+end;
+
 procedure TFrmConsole.setNewName(newName : string);
 var
   Ljs: string;
@@ -1991,6 +2298,26 @@ begin
   end;
 
   LJS   := FrmConsole_JS_VAR_markIsComposing;
+  FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',    Trim(phoneNumber));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_DURATION#',      duration);
+
+  ExecuteJS(LJS, true);
+end;
+
+procedure TFrmConsole.markmarkIsRecording(phoneNumber, duration, etapa: string);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  try
+    duration := IntToStr(StrToInt(duration));
+  except
+    duration := '5000';
+  end;
+
+  LJS   := FrmConsole_JS_VAR_markIsRecording;
   FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',    Trim(phoneNumber));
   FrmConsole_JS_AlterVar(LJS, '#MSG_DURATION#',      duration);
 

@@ -1,16 +1,37 @@
 ﻿{####################################################################################################################
+  License
+  Copyright 2022 WPPConnect Team https://wppconnect-team.github.io/
+
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+  an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations under the License.
+
                               WPPCONNECT - Componente de comunicação (Não Oficial)
                                            https://wppconnect-team.github.io/
                                             Maio de 2022
 ####################################################################################################################
-    Owner.....: Marcelo           - marcelo.broz@hotmail.com   -
-    Developer.: Marcelo           - marcelo.broz@hotmail.com   - +55 17 9.8138-8414
+    Owner.....: Daniel Oliveira Rodrigues  - Dor_poa@hotmail.com     - +55 51 9.9155-9228
+    Developer.: Joathan Theiller           - jtheiller@hotmail.com   -
+                Mike W. Lustosa            - mikelustosa@gmail.com   - +55 81 9.9630-2385
+                Robson André de Morais     - robinhodemorais@gmail.com
 
 ####################################################################################################################
   Obs:
      - Código aberto a comunidade Delphi, desde que mantenha os dados dos autores e mantendo sempre o nome do IDEALIZADOR
-       Marcelo;
+       Mike W. Lustosa;
 
+####################################################################################################################
+                                  Evolução do Código
+####################################################################################################################
+  Autor........: Marcelo Oliveira
+  Email........: marcelo.broz@hotmail.com
+  Data.........: 07/06/2022
+  Identificador: @Marcelo
+  Modificação..: Ajustado para Trabalhar com o WPPConnect
 ####################################################################################################################
 }
 

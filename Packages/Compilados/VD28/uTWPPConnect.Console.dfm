@@ -1,7 +1,7 @@
 object FrmConsole: TFrmConsole
   Left = 0
   Top = 0
-  Caption = 'WPPConnect Team - WPP4Delphi - Whatsweb'
+  Caption = 'Servidor WhatsApp Mega Online Software'
   ClientHeight = 519
   ClientWidth = 885
   Color = clBtnFace
@@ -37,8 +37,8 @@ object FrmConsole: TFrmConsole
     object Lbl_Caption: TLabel
       Left = 1
       Top = 1
-      Width = 106
-      Height = 13
+      Width = 785
+      Height = 18
       Align = alClient
       Alignment = taCenter
       Caption = 'Mega Online Software'
@@ -49,6 +49,8 @@ object FrmConsole: TFrmConsole
       Font.Style = []
       ParentFont = False
       Layout = tlCenter
+      ExplicitWidth = 106
+      ExplicitHeight = 13
     end
     object lbl_Versao: TLabel
       AlignWithMargins = True
@@ -434,7 +436,7 @@ object FrmConsole: TFrmConsole
         7E7DB6FFA0CEF8FFE57798F46A8E6D6850A60000000049454E44AE426082}
       Proportional = True
       Transparent = True
-      OnClick = Img_BrasilClick
+      Visible = False
       OnMouseEnter = lbl_VersaoMouseEnter
     end
   end
