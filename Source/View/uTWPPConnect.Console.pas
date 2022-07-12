@@ -120,6 +120,7 @@ type
     FFormType               : TFormQrCodeType;
     FHeaderAtual            : TTypeHeader;
     FMessagesList           : TMessagesList;
+    FProductList            : TProductsList;
     FChatList               : TChatList;
     FChatList2              : TChatList;
     FMonitorLowBattry       : Boolean;
@@ -159,6 +160,7 @@ type
     Property  ChatList        : TChatList                 Read FChatList;
     //Property  ChatList       : TChatList2                Read FChatList2;
     Property  MessagesList    : TMessagesList             Read FMessagesList;
+    property  ProductList     : TProductsList             Read FProductList;
     property  OnErrorInternal : TOnErroInternal           Read FOnErrorInternal           Write FOnErrorInternal;
     Property  MonitorLowBattry     : Boolean              Read FMonitorLowBattry          Write FMonitorLowBattry;
     Property  OnNotificationCenter : TNotificationCenter  Read FOnNotificationCenter      Write FOnNotificationCenter;
@@ -194,6 +196,11 @@ type
     procedure setKeepAlive(Ativo: string);
     procedure sendTextStatus(Content, Options: string);
 
+    //MARCELO 28/06/2022
+    procedure sendImageStatus(Content, Options: string);
+    procedure sendVideoStatus(Content, Options: string);
+    procedure sendRawStatus(Content, Options: string);
+
     //Adicionado Por Marcelo 10/05/2022
     procedure SendReactionMessage(UniqueID, Reaction: string; etapa: string = '');
 
@@ -215,6 +222,8 @@ type
     procedure DeletarTodosOsChats;
     procedure FixarChat(vContato:String);
     procedure DesfixarChat(vContato:String);
+    //Daniel - 13/06/2022
+    procedure GetProductCatalog;
 
     procedure CheckDelivered;
     procedure SendContact(vNumDest, vNum:string; vNameContact: string = '');
@@ -234,11 +243,15 @@ type
     procedure GroupDelete(vIDGroup: string);
     procedure GroupJoinViaLink(vLinkGroup: string);
     procedure GroupPoolCreate(vIDGroup, vDescription, vPoolOptions: string);
+    procedure SetGroupPicture(vIDGroup, vBase64:string);
+    procedure GroupMsgAdminOnly(vIDGroup: string);
+    procedure GroupMsgAll(vIDGroup: string);
 
     procedure getGroupInviteLink(vIDGroup: string);
     procedure revokeGroupInviteLink(vIDGroup: string);
     procedure setNewName(newName: string);
     procedure setNewStatus(newStatus: string);
+    procedure SetProfilePicture(ABase64: String);
     procedure getStatus(vTelefone: string);
     procedure CleanChat(vTelefone: string);
     procedure fGetMe;
@@ -409,7 +422,7 @@ begin
   try
     If TWPPConnect(FOwner).Status = Server_Connected then
     Begin
-      ExecuteJSDir(TWPPConnect(FOwner).InjectJS.JSScript.Text);
+      ExecuteJSDir('WPPConfig = {poweredBy: "WPP4Delphi"}; ' + TWPPConnect(FOwner).InjectJS.JSScript.Text);
       SleepNoFreeze(40);
 
       If Assigned(TWPPConnect(FOwner).OnAfterInjectJs) Then
@@ -576,6 +589,11 @@ begin
   ExecuteJS(FrmConsole_JS_GetMyNumber, False);
 end;
 
+procedure TFrmConsole.GetProductCatalog;
+begin
+  ExecuteJS(FrmConsole_JS_VAR_GetProductCatalog, False);
+end;
+
 procedure TFrmConsole.GetProfilePicThumbURL(AProfilePicThumbURL: string);
 var
   LJS: String;
@@ -649,6 +667,30 @@ begin
     raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
 
   LJS   := FrmConsole_JS_VAR_groupLeave;
+  FrmConsole_JS_AlterVar(LJS, '#GROUP_ID#', Trim(vIDGroup));
+  ExecuteJS(LJS, true);
+end;
+
+procedure TFrmConsole.GroupMsgAdminOnly(vIDGroup: string);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS   := FrmConsole_JS_VAR_GroupMsgAdminOnly;
+  FrmConsole_JS_AlterVar(LJS, '#GROUP_ID#', Trim(vIDGroup));
+  ExecuteJS(LJS, true);
+end;
+
+procedure TFrmConsole.GroupMsgAll(vIDGroup: string);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS   := FrmConsole_JS_VAR_GroupMsgAll;
   FrmConsole_JS_AlterVar(LJS, '#GROUP_ID#', Trim(vIDGroup));
   ExecuteJS(LJS, true);
 end;
@@ -1066,6 +1108,34 @@ begin
   END;
 end;
 
+procedure TFrmConsole.sendImageStatus(Content, Options: string);
+var
+  Ljs: string;
+  LLine: string;
+  LBase64: TStringList;
+  i : integer;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LLine := '';
+  LBase64 := TStringList.Create;
+  TRY
+    LBase64.Text := content;
+    for i := 0 to LBase64.Count -1  do
+      LLine := LLine + LBase64[i];
+    content := LLine;
+
+    LJS   := FrmConsole_JS_VAR_sendImageStatus;
+    FrmConsole_JS_AlterVar(LJS, '#MSG_CONTENT#',  Trim(Content));
+    FrmConsole_JS_AlterVar(LJS, '#MSG_OPTIONS#',  Trim(options));
+
+    ExecuteJS(LJS, true);
+  FINALLY
+    freeAndNil(LBase64);
+  END;
+end;
+
 procedure TFrmConsole.SendLinkPreview(vNum, vLinkPreview, vText: string);
 var
   Ljs: string;
@@ -1191,6 +1261,26 @@ begin
      raise Exception.Create(MSG_ExceptGlobalCef);
 end;
 
+procedure TFrmConsole.SetProfilePicture(ABase64: String);
+var
+  Ljs,LLine, vBase64 : string;
+  i: integer;
+  LBase64: TStringList;
+begin
+  LBase64:= TStringList.Create;
+  TRY
+    LBase64.Text := ABase64;
+    for i := 0 to LBase64.Count -1  do
+       LLine := LLine + LBase64[i];
+    vBase64 := LLine;
+    LJS   := FrmConsole_JS_VAR_setProfilePicture;
+    FrmConsole_JS_AlterVar(LJS, '#BASE_64#', Trim(vBase64));
+    ExecuteJS(LJS, true);
+  FINALLY
+    LBase64.Free;
+  END;
+end;
+
 procedure TFrmConsole.SetZoom(Pvalue: Integer);
 var
   I: Integer;
@@ -1224,6 +1314,21 @@ begin
   LJS   := FrmConsole_JS_VAR_sendRawMessage;
   FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',    Trim(phoneNumber));
   FrmConsole_JS_AlterVar(LJS, '#MSG_RAW#',      Trim(rawMessage));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_OPTIONS#',  Trim(options));
+
+  ExecuteJS(LJS, true);
+end;
+
+procedure TFrmConsole.sendRawStatus(Content, Options: string);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  Content := CaractersWeb(Content);
+  LJS   := FrmConsole_JS_VAR_sendRawStatus;
+  FrmConsole_JS_AlterVar(LJS, '#MSG_CONTENT#',  Trim(Content));
   FrmConsole_JS_AlterVar(LJS, '#MSG_OPTIONS#',  Trim(options));
 
   ExecuteJS(LJS, true);
@@ -1728,6 +1833,13 @@ begin
                                 FreeAndNil(LOutClass);
                               end;
                             end;
+    Th_ProductCatalog       : begin
+                                if Assigned(FProductList) then
+                                   FProductList.Free;
+
+                                FProductList := TProductsList.Create(LResultStr);
+                                SendNotificationCenterDirect(PResponse.TypeHeader, FProductList);
+                              end;
    end;
 end;
 
@@ -1761,9 +1873,7 @@ begin
   LogAdd(message, 'CONSOLE');
 
   if message <> 'Uncaught (in promise) TypeError: output.update is not a function' then
-
-
-  AResponse := TResponseConsoleMessage.Create( message );
+    AResponse := TResponseConsoleMessage.Create( message );
   try
     if AResponse = nil then
        Exit;
@@ -2215,9 +2325,60 @@ begin
   ExecuteJS(LJS, true);
 end;
 
+procedure TFrmConsole.sendVideoStatus(Content, Options: string);
+var
+  Ljs: string;
+  LLine: string;
+  LBase64: TStringList;
+  i : integer;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LLine := '';
+  LBase64 := TStringList.Create;
+  TRY
+    LBase64.Text := content;
+    for i := 0 to LBase64.Count -1  do
+      LLine := LLine + LBase64[i];
+    content := LLine;
+
+    LJS   := FrmConsole_JS_VAR_sendVideoStatus;
+    FrmConsole_JS_AlterVar(LJS, '#MSG_CONTENT#',  Trim(Content));
+    FrmConsole_JS_AlterVar(LJS, '#MSG_OPTIONS#',  Trim(options));
+
+    ExecuteJS(LJS, true);
+
+  FINALLY
+    freeAndNil(LBase64);
+  END;
+end;
+
+procedure TFrmConsole.SetGroupPicture(vIDGroup, vBase64: string);
+var
+  Ljs, LLine: string;
+  LBase64: TStringList;
+  i:integer;
+begin
+  LJS   := FrmConsole_JS_VAR_SetGroupPicture;
+ LBase64         := TStringList.Create;
+  TRY
+    LBase64.Text := vBase64;
+    for i := 0 to LBase64.Count -1  do
+       LLine := LLine + LBase64[i];
+    vBase64 := LLine;
+    FrmConsole_JS_AlterVar(LJS, '#GROUP_ID#', Trim(vIDGroup));
+    FrmConsole_JS_AlterVar(LJS, '#BASE_64#', Trim(vBase64));
+    ExecuteJS(LJS, False);
+  FINALLY
+    LBase64.Free;
+  END;
+end;
+
 procedure TFrmConsole.setKeepAlive(Ativo: string);
 var
   Ljs: string;
+
 begin
   if not FConectado then
     raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
@@ -2226,6 +2387,7 @@ begin
   FrmConsole_JS_AlterVar(LJS, '#ATIVO#',    Trim(Ativo));
 
   ExecuteJS(LJS, true);
+
 end;
 
 procedure TFrmConsole.setNewName(newName : string);

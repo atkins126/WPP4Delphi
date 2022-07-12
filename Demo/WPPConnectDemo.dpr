@@ -14,7 +14,9 @@ uses
   uFraGrupos in 'uFraGrupos.pas' {frameGrupos: TFrame},
   uFraMEnsagensRecebidas in 'uFraMEnsagensRecebidas.pas' {frameMensagensRecebidas: TFrame},
   uFraMensagensEnviadas in 'uFraMensagensEnviadas.pas' {frameMensagensEnviadas: TFrame},
-  u_Retorno_SendFileMensagem in 'u_Retorno_SendFileMensagem.pas';
+  u_Retorno_SendFileMensagem in 'u_Retorno_SendFileMensagem.pas',
+  uFraCatalogo in 'uFraCatalogo.pas' {frameCatalogo: TFrame},
+  uFraOutros in 'uFraOutros.pas' {frameOutros: TFrame};
 
 {$R *.res}
 

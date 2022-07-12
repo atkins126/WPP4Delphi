@@ -83,6 +83,7 @@ type
   TGet_sendTextMessageEx   = procedure(Const RespMensagem: TResponsesendTextMessage) of object;
   TGet_sendFileMessageEx   = procedure(Const RespMensagem: TResponsesendTextMessage) of object;
   TGet_sendListMessageEx   = procedure(Const RespMensagem: TResponsesendTextMessage) of object;
+  TGet_ProductCatalog      = procedure(Sender : TObject; Const ProductCatalog: TProductsList) of object;
 
   //Adicionado por Marcelo 17/06/2022
   TGetIncomingiCall        = procedure(Const IncomingiCall: TIncomingiCall) of object;
@@ -170,9 +171,11 @@ type
     FOnGet_sendFileMessageEx    : TGet_sendFileMessageEx;
     FOnGet_sendListMessageEx    : TGet_sendListMessageEx;
 
+    //Daniel 13/06/2022
+    FOnGet_ProductCatalog       : TGet_ProductCatalog;
+
     //Adicionado Por Marcelo 17/06/2022
     FOnGetIncomingiCall    : TGetIncomingiCall;
-
     procedure Int_OnNotificationCenter(PTypeHeader: TTypeHeader; PValue: String; Const PReturnClass : TObject= nil);
 
     procedure Loaded; override;
@@ -206,6 +209,8 @@ type
     procedure SendTextMessageEx(phoneNumber, content, options: string; xSeuID: string = '');
     procedure SendListMessageEx(phoneNumber, buttonText, description, sections: string; xSeuID: string = '');
 
+    //Daniel - 13/06/2022
+    procedure GetProductCatalog;
     //Adicionado Por Marcelo 10/05/2022
     procedure SendTextMessage(phoneNumber, content, options: string; etapa: string = '');
     procedure SendReactionMessage(UniqueID, Reaction: string; etapa: string = '');
@@ -218,6 +223,11 @@ type
     procedure markmarkIsRecording(phoneNumber, duration: string; etapa: string = '');
     procedure setKeepAlive(Ativo: string);
     procedure sendTextStatus(Content, Options: string);
+
+    //MARCELO 28/06/2022
+    procedure sendImageStatus(Content, Options: string);
+    procedure sendVideoStatus(Content, Options: string);
+    procedure sendRawStatus(Content, Options: string);
 
     procedure rejectCall(id: string);
 
@@ -246,6 +256,9 @@ type
     procedure GroupLeave(PIDGroup: string);
     procedure GroupDelete(PIDGroup: string);
     procedure GroupCreatePool(PIDGroup, PDescription, PPoolOptions: string);
+    procedure SetGroupPicture(PIDGroup, PFileName: string);
+    procedure GroupMsgAdminOnly(PIDGroup: string);
+    procedure GroupMsgAll(PIDGroup: string);
 
     procedure BloquearContato(PIDContato: String);
     procedure DesbloquearContato(PIDContato: String);
@@ -259,6 +272,7 @@ type
     procedure GroupJoinViaLink(PLinkGroup: string);
     procedure GroupRemoveInviteLink(PIDGroup: string);
     procedure SetProfileName(vName : String);
+    procedure SetProfilePicture(vFileName: string);
     procedure SetStatus(vStatus: String);
     procedure GetStatusContact(PNumber: String);
     procedure GetGroupInviteLink(PIDGroup : string);
@@ -322,6 +336,9 @@ type
     property OnGet_sendTextMessageEx     : TGet_sendTextMessageEx     read FOnGet_sendTextMessageEx        write FOnGet_sendTextMessageEx;
     property OnGet_sendFileMessageEx     : TGet_sendFileMessageEx     read FOnGet_sendFileMessageEx        write FOnGet_sendFileMessageEx;
     property OnGet_sendListMessageEx     : TGet_sendListMessageEx     read FOnGet_sendListMessageEx        write FOnGet_sendListMessageEx;
+
+    //Daniel - 13/06/2022
+    property OnGet_ProductCatalog        : TGet_ProductCatalog        read FOnGet_ProductCatalog           write FOnGet_ProductCatalog;
 
     //Adicionado Por Marcelo 17/06/2022
     property OnGetIncomingiCall          : TGetIncomingiCall          read FOnGetIncomingiCall             write FOnGetIncomingiCall;
@@ -947,6 +964,12 @@ begin
 
 end;
 
+procedure TWPPConnect.GetProductCatalog;
+begin
+  if Assigned(FrmConsole) then
+    FrmConsole.GetProductCatalog;
+end;
+
 procedure TWPPConnect.getProfilePicThumb(AProfilePicThumbURL: string);
 begin
   if Assigned(FrmConsole) then
@@ -1194,6 +1217,70 @@ begin
   lThread.Start;
 end;
 
+procedure TWPPConnect.GroupMsgAdminOnly(PIDGroup: string);
+var
+  lThread : TThread;
+begin
+  If Application.Terminated Then
+     Exit;
+
+  if not Assigned(FrmConsole) then
+     Exit;
+
+  if Trim(PIDGroup) = '' then
+  begin
+    Int_OnErroInterno(Self, MSG_WarningNothingtoSend, PIDGroup);
+    Exit;
+  end;
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.GroupMsgAdminOnly(PIDGroup);
+          end;
+        end);
+
+      end);
+
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+end;
+
+procedure TWPPConnect.GroupMsgAll(PIDGroup: string);
+var
+  lThread : TThread;
+begin
+  If Application.Terminated Then
+     Exit;
+
+  if not Assigned(FrmConsole) then
+     Exit;
+
+  if Trim(PIDGroup) = '' then
+  begin
+    Int_OnErroInterno(Self, MSG_WarningNothingtoSend, PIDGroup);
+    Exit;
+  end;
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.GroupMsgAll(PIDGroup);
+          end;
+        end);
+
+      end);
+
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+end;
+
 procedure TWPPConnect.GroupPromoteParticipant(PIDGroup, PNumber: string);
 var
   lThread : TThread;
@@ -1272,6 +1359,51 @@ begin
 
   FrmConsole.setNewName(vName);
 
+end;
+
+procedure TWPPConnect.SetProfilePicture(vFileName: string);
+var
+  LStream     : TMemoryStream;
+  LBase64File : TBase64Encoding;
+  LExtension  : String;
+  LBase64     : String;
+begin
+ If Application.Terminated Then
+     Exit;
+  if not Assigned(FrmConsole) then
+     Exit;
+
+  LExtension   := LowerCase(Copy(ExtractFileExt(vFileName),2,5));
+
+  If not FileExists(Trim(vFileName)) then
+  begin
+    Int_OnErroInterno(Self, 'SetProfilePicture: ' + Format(MSG_ExceptPath, ['']), vFileName);
+    Exit;
+  end;
+
+  LStream     := TMemoryStream.Create;
+  LBase64File := TBase64Encoding.Create;
+  try
+    try
+      LStream.LoadFromFile(vFileName);
+      if LStream.Size = 0 then
+      Begin
+        Int_OnErroInterno(Self, 'SetProfilePicture: ' + Format(MSG_WarningErrorFile, [vFileName]), vFileName);
+        Exit;
+      end;
+
+      LStream.Position := 0;
+      LBase64      := LBase64File.EncodeBytesToString(LStream.Memory, LStream.Size);
+      LBase64      := StrExtFile_Base64Type(vFileName) + LBase64;
+    except
+      Int_OnErroInterno(Self, 'SetProfilePicture: ' + MSG_ExceptMisc, vFileName);
+    end;
+  finally
+    FreeAndNil(LStream);
+    FreeAndNil(LBase64File);
+  end;
+
+  frmConsole.SetProfilePicture(LBase64);
 end;
 
 procedure TWPPConnect.SetStatus(vStatus: String);
@@ -1698,7 +1830,6 @@ begin
       if Assigned(OnGetIncomingiCall) then
         OnGetIncomingiCall(TIncomingiCall(PReturnClass));
     end;
-
     Exit;
   end;
 
@@ -1870,6 +2001,12 @@ begin
     Exit;
   end;
 
+  if PTypeHeader = Th_ProductCatalog then
+  begin
+    if Assigned(FOnGet_ProductCatalog) then
+      FOnGet_ProductCatalog(Self, TProductsList(PReturnClass));
+
+  end;
 
   if PTypeHeader in [Th_Connecting, Th_Disconnecting, Th_ConnectingNoPhone, Th_getQrCodeForm, Th_getQrCodeForm, TH_Destroy, Th_Destroying]  then
   begin
@@ -2238,6 +2375,35 @@ begin
           begin
             FrmConsole.ReadMessages(phoneNumber); //Marca como lida a mensagem
             FrmConsole.SendFileMessageEx(phoneNumber, pBase64, options, xSeuID);
+          end;
+        end);
+
+      end);
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+
+end;
+
+procedure TWPPConnect.sendImageStatus(Content, Options: string);
+var
+  lThread : TThread;
+begin
+  //Adicionado Por Marcelo 28/06/2022
+  if Application.Terminated Then
+    Exit;
+  if not Assigned(FrmConsole) then
+    Exit;
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        if Config.AutoDelay > 0 then
+           sleep(random(Config.AutoDelay));
+
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.sendImageStatus(Content, Options);
           end;
         end);
 
@@ -2624,6 +2790,35 @@ begin
 
 end;
 
+procedure TWPPConnect.sendRawStatus(Content, Options: string);
+var
+  lThread : TThread;
+begin
+  //Adicionado Por Marcelo 28/06/2022
+  if Application.Terminated Then
+    Exit;
+  if not Assigned(FrmConsole) then
+    Exit;
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        if Config.AutoDelay > 0 then
+           sleep(random(Config.AutoDelay));
+
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.sendRawStatus(Content, Options);
+          end;
+        end);
+
+      end);
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+
+end;
+
 procedure TWPPConnect.SendReactionMessage(UniqueID, Reaction, etapa: string);
 var
   lThread : TThread;
@@ -2671,7 +2866,7 @@ var
   lThread : TThread;
 begin
   //Adicionado Por Marcelo 10/05/2022
-  if Application.Terminated Then
+  if Application.Terminated then
     Exit;
   if not Assigned(FrmConsole) then
     Exit;
@@ -2780,6 +2975,35 @@ begin
           if Assigned(FrmConsole) then
           begin
             FrmConsole.sendTextStatus(Content, Options);
+          end;
+        end);
+
+      end);
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+
+end;
+
+procedure TWPPConnect.sendVideoStatus(Content, Options: string);
+var
+  lThread : TThread;
+begin
+  //Adicionado Por Marcelo 28/06/2022
+  if Application.Terminated Then
+    Exit;
+  if not Assigned(FrmConsole) then
+    Exit;
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        if Config.AutoDelay > 0 then
+           sleep(random(Config.AutoDelay));
+
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.sendVideoStatus(Content, Options);
           end;
         end);
 
@@ -2969,6 +3193,55 @@ end;
 procedure TWPPConnect.SetdjustNumber(const Value: TWPPConnectAdjusteNumber);
 begin
   FAdjustNumber.Assign(Value);
+end;
+
+procedure TWPPConnect.SetGroupPicture(PIDGroup, PFileName: string);
+var
+  LStream     : TMemoryStream;
+  LBase64File : TBase64Encoding;
+  LExtension  : String;
+  LBase64     : String;
+begin
+ If Application.Terminated Then
+     Exit;
+  if not Assigned(FrmConsole) then
+     Exit;
+
+  LExtension   := LowerCase(Copy(ExtractFileExt(PFileName),2,5));
+  if Trim(PIDGroup) = '' then
+  begin
+    Int_OnErroInterno(Self, MSG_WarningNothingtoSend, PIDGroup);
+    Exit;
+  end;
+  If not FileExists(Trim(PFileName)) then
+  begin
+    Int_OnErroInterno(Self, 'SetGroupPicture: ' + Format(MSG_ExceptPath, [PIDGroup]), PFileName);
+    Exit;
+  end;
+
+  LStream     := TMemoryStream.Create;
+  LBase64File := TBase64Encoding.Create;
+  try
+    try
+      LStream.LoadFromFile(PFileName);
+      if LStream.Size = 0 then
+      Begin
+        Int_OnErroInterno(Self, 'SetGroupPicture: ' + Format(MSG_WarningErrorFile, [PFileName]), PIDGroup);
+        Exit;
+      end;
+
+      LStream.Position := 0;
+      LBase64      := LBase64File.EncodeBytesToString(LStream.Memory, LStream.Size);
+      LBase64      := StrExtFile_Base64Type(PFileName) + LBase64;
+    except
+      Int_OnErroInterno(Self, 'SetGroupPicture: ' + MSG_ExceptMisc, PIDGroup);
+    end;
+  finally
+    FreeAndNil(LStream);
+    FreeAndNil(LBase64File);
+  end;
+
+  frmConsole.SetGroupPicture(PIDGroup,LBase64);
 end;
 
 procedure TWPPConnect.SetInjectConfig(const Value: TWPPConnectConfig);

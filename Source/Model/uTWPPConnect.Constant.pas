@@ -82,7 +82,11 @@ Const
   FrmConsole_JS_StopMonitor             = 'stopMonitor();';
   FrmConsole_JS_IsLoggedIn              = 'WAPI.isLoggedIn();';
   FrmConsole_JS_VAR_StartMonitor        = 'startMonitor(intervalSeconds=<#TEMPO#>)';
-  FrmConsole_JS_VAR_ReadMessages        = 'window.WAPI.sendSeen("<#MSG_PHONE#>")';
+
+  //Marcelo 21/06/2022
+  //FrmConsole_JS_VAR_ReadMessages        = 'window.WAPI.sendSeen("<#MSG_PHONE#>")';
+  FrmConsole_JS_VAR_ReadMessages        = 'WPP.chat.markIsRead("<#MSG_PHONE#>");';
+
   FrmConsole_JS_VAR_DeleteMessages      = 'window.WAPI.deleteConversation("<#MSG_PHONE#>")';
   FrmConsole_JS_VAR_SendBase64          = 'window.WAPI.sendImage("<#MSG_BASE64#>","<#MSG_PHONE#>", "<#MSG_NOMEARQUIVO#>", "<#MSG_CORPO#>")';
   FrmConsole_JS_VAR_SendMsg             = 'window.WAPI.sendMessageToID("<#MSG_PHONE#>","<#MSG_CORPO#>")';
@@ -96,8 +100,10 @@ Const
                                         '.then(result => SetConsoleMessage("GetCheckIsValidNumber", JSON.stringify(result)))'+
                                         '.catch(error => SetConsoleMessage("GetCheckIsValidNumber", JSON.stringify(error)));';
   FrmConsole_JS_VAR_IsConnected         = 'window.WAPI.isConnected();';
-  FrmConsole_JS_VAR_ProfilePicThumb     = 'function convertImgToBase64URL(url, callback, outputFormat){ '+
-                                          'var img = new Image();          '+
+
+  FrmConsole_JS_VAR_ProfilePicThumb     = 'function convertImgToBase64URL(url, callback, outputFormat){ '+
+
+                                          'var img = new Image();          '+
                                           'img.crossOrigin = "Anonymous";  '+
                                           'img.onload = function(){        '+
                                           '    var canvas = document.createElement("CANVAS"), '+
@@ -112,11 +118,15 @@ Const
                                           'img.src = url;                                     '+
                                           '};';
 
-  FrmConsole_JS_VAR_getProfilePicThumb      = 'window.WAPI.teste("<#PROFILE_PICTHUMB_URL#>");';
+
+  FrmConsole_JS_VAR_getProfilePicThumb      = 'window.WAPI.teste("<#PROFILE_PICTHUMB_URL#>");';
   //MARCELO 02/05/2022
   FrmConsole_JS_VAR_getProfilePicture       = 'WPP.contact.getProfilePicture("<#PHONE#>");';
   FrmConsole_JS_VAR_CreateGroup             = 'WPP.group.create("<#GROUP_NAME#>", "<#PARTICIPANT_NUMBER#>");setTimeout(function(){ window.WAPI.getAllGroups(); }, 3000);';
-  FrmConsole_JS_GetAllGroups                = 'window.WAPI.getAllGroups();';//'window.WAPI.listMyGroups();';
+  FrmConsole_JS_VAR_GroupMsgAdminOnly       = 'WPP.group.setProperty("<#GROUP_ID#>", ''announcement'', true);';
+  FrmConsole_JS_VAR_GroupMsgAll             = 'WPP.group.setProperty("<#GROUP_ID#>", ''announcement'', false);';
+
+  FrmConsole_JS_GetAllGroups                = 'window.WAPI.getAllGroups();';//'window.WAPI.listMyGroups();';
   FrmConsole_JS_GetGroupAdmins              = 'window.WAPI.getGroupAdmins("<#GROUP_ID#>");';
   FrmConsole_JS_VAR_listGroupContacts       = 'window.WAPI.getGroupParticipantIDs("<#GROUP_ID#>");';
   FrmConsole_JS_VAR_groupAddParticipant     = 'WPP.group.addParticipants("<#GROUP_ID#>", "<#PARTICIPANT_NUMBER#>");setTimeout(function(){ window.WAPI.getGroupParticipantIDs("<#GROUP_ID#>"); }, 3000);';
@@ -127,12 +137,14 @@ Const
   FrmConsole_JS_VAR_groupDelete             = 'window.WAPI.deleteConversation("<#GROUP_ID#>");setTimeout(function(){ window.WAPI.getAllGroups(); }, 3000);';
   FrmConsole_JS_VAR_groupJoinViaLink        = 'window.WAPI.joinGroupViaLink("<#GROUP_LINK#>");setTimeout(function(){ window.WAPI.getAllGroups(); }, 3000);';
   FrmConsole_JS_VAR_setProfileName          = 'window.WAPI.setMyName("<#NEW_NAME#>");';
+  FrmConsole_JS_VAR_setProfilePicture       = 'WPP.profile.setMyProfilePicture("<#BASE_64#>")';
   FrmConsole_JS_VAR_setMyStatus             = 'window.WAPI.setMyStatus("<#NEW_STATUS#>");';
   FrmConsole_JS_VAR_getStatus               = 'window.WAPI.getStatus("<#PHONE#>");';
   FrmConsole_JS_VAR_ClearChat               = 'WPP.chat.clear("<#PHONE#>");';
   FrmConsole_JS_VAR_getMe                   = 'window.WAPI.getMe();';
   FrmConsole_JS_VAR_getGroupInviteLink      = 'window.WAPI.getGroupInviteLink("<#GROUP_ID#>");';
   FrmConsole_JS_VAR_removeGroupInviteLink   = 'window.WAPI.revokeGroupInviteLink("<#GROUP_ID#>");';
+  FrmConsole_JS_VAR_SetGroupPicture         = 'WPP.group.setIcon("<#GROUP_ID#>","<#BASE_64#>");';
   FrmConsole_JS_VAR_checkNumberStatus       = 'window.WAPI.checkNumberStatus("<#PHONE#>");';
   //Adicionado Por Marcelo 01/03/2022 deprecated
   FrmConsole_JS_VAR_SendListMenu        = 'window.WAPI.sendListMenu("<#MSG_PHONE#>","<#MSG_TITLE#>","<#MSG_SUBTITLE#>","<#MSG_DESCRIPTION#>","<#MSG_BUTTONTEXT#>",<#MSG_MENU#>);';
@@ -197,8 +209,17 @@ Const
   FrmConsole_JS_VAR_sendFileMessageEx   = 'window.WAPI.sendFileMessage2Ex("<#MSG_PHONE#>","<#MSG_CONTENT#>",{<#MSG_OPTIONS#>},"<#MSG_SEUID#>" );';
   FrmConsole_JS_VAR_sendListMessageEx   = 'window.WAPI.sendListMessage2Ex("<#MSG_PHONE#>",{<#MSG_MENU#>} );';
 
+  //Daniel - 26/06/2022
+  FrmConsole_JS_VAR_GetProductCatalog   = 'window.WAPI.ProductCatalog();';
+
   //Marcelo 14/06/2022
   FrmConsole_JS_VAR_sendTextStatus   = 'WPP.status.sendTextStatus("<#MSG_CONTENT#>",{<#MSG_OPTIONS#>} );';
+
+  //Marcelo 28/06/2022
+  FrmConsole_JS_VAR_sendImageStatus  = 'WPP.status.sendImageStatus("<#MSG_CONTENT#>",{<#MSG_OPTIONS#>} );';
+  FrmConsole_JS_VAR_sendVideoStatus  = 'WPP.status.sendVideoStatus("<#MSG_CONTENT#>",{<#MSG_OPTIONS#>} );';
+  FrmConsole_JS_VAR_sendRawStatus    = 'WPP.status.sendRawStatus("<#MSG_CONTENT#>",{<#MSG_OPTIONS#>} );';
+  FrmConsole_JS_VAR_getMyStatus      = 'getMyStatus();';
 
   //Marcelo 15/06/2022
   FrmConsole_JS_VAR_rejectCall       = 'WPP.call.rejectCall("<#MSG_ID#>");';
@@ -339,7 +360,9 @@ type
                    , Th_GetCheckIsBeta=42, Th_getMessageById=43 //Marcelo 06/05/2022
                    , Th_SendFileMessage=44, Th_SendTextMessage=45, Th_SendListMessage=46 //Marcelo 31/05/2022
                    , Th_SendTextMessageEx=47, Th_SendFileMessageEx=48, Th_SendListMessageEx=49   //Temis 03-06-2022
-                   , Th_IncomingiCall=50); //Marcelo 16-06-2022
+                   , Th_IncomingiCall=50  //Marcelo 16-06-2022
+                   , Th_ProductCatalog=51); //Daniel 26/06/2022
+
     Function   VerificaCompatibilidadeVersao(PVersaoExterna:String; PversaoInterna:String):Boolean;
     Function   FrmConsole_JS_AlterVar(var PScript:String;  PNomeVar: String;  Const PValor:String):String;
     function   StrToTypeHeader(PText: string): TTypeHeader;
@@ -475,7 +498,7 @@ Begin
 End;
 
 function   StrToTypeHeader(PText: string): TTypeHeader;
-const LmaxCount = 50; //Marcelo 16-06-2022
+const LmaxCount = 51; //Daniel 26-06-2022
 var
   I: Integer;
   LNome: String;

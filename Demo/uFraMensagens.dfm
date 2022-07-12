@@ -2,7 +2,7 @@ object frameMensagem: TframeMensagem
   Left = 0
   Top = 0
   Width = 968
-  Height = 563
+  Height = 653
   Align = alClient
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -16,7 +16,7 @@ object frameMensagem: TframeMensagem
     Left = 3
     Top = 3
     Width = 241
-    Height = 557
+    Height = 647
     Align = alLeft
     TabOrder = 0
     object Label1: TLabel
@@ -69,7 +69,7 @@ object frameMensagem: TframeMensagem
     Left = 250
     Top = 3
     Width = 231
-    Height = 557
+    Height = 647
     Align = alLeft
     Caption = 'Envio de Mensagens'
     TabOrder = 1
@@ -271,13 +271,39 @@ object frameMensagem: TframeMensagem
       TabOrder = 14
       OnClick = btnStatusTextoClick
     end
+    object btnStatusImagem: TButton
+      AlignWithMargins = True
+      Left = 5
+      Top = 560
+      Width = 221
+      Height = 30
+      Align = alTop
+      Caption = 'Enviar Imagem Status'
+      ImageIndex = 5
+      Images = ImageList1
+      TabOrder = 15
+      OnClick = btnStatusImagemClick
+    end
+    object btnVideoStatus: TButton
+      AlignWithMargins = True
+      Left = 5
+      Top = 596
+      Width = 221
+      Height = 30
+      Align = alTop
+      Caption = 'Enviar Video Status'
+      ImageIndex = 3
+      Images = ImageList1
+      TabOrder = 16
+      OnClick = btnVideoStatusClick
+    end
   end
   object GroupBox2: TGroupBox
     AlignWithMargins = True
     Left = 487
     Top = 3
     Width = 231
-    Height = 557
+    Height = 647
     Align = alLeft
     Caption = 'Op'#231#245'es de Chat'
     TabOrder = 2
@@ -480,7 +506,7 @@ object frameMensagem: TframeMensagem
     Left = 724
     Top = 3
     Width = 231
-    Height = 557
+    Height = 647
     Align = alLeft
     Caption = 'Fun'#231#245'es Diversas'
     TabOrder = 3
@@ -543,7 +569,7 @@ object frameMensagem: TframeMensagem
       Left = 2
       Top = 252
       Width = 227
-      Height = 303
+      Height = 393
       Align = alClient
       Caption = 'Listar Chats'
       Font.Charset = DEFAULT_CHARSET
@@ -577,7 +603,7 @@ object frameMensagem: TframeMensagem
         Left = 5
         Top = 49
         Width = 217
-        Height = 249
+        Height = 339
         Align = alClient
         Columns = <>
         LargeImages = ImageList1

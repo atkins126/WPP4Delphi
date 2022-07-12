@@ -1,13 +1,13 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{18AA9C4B-78DB-476B-96ED-1647F1C392DF}</ProjectGuid>
-        <MainSource>WPPConnectDemo.dpr</MainSource>
+        <ProjectGuid>{62588EE0-31C9-4D7E-B5F9-D43E555673A9}</ProjectGuid>
+        <MainSource>TWpp4DelphiSetup.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
-        <TargetedPlatforms>3</TargetedPlatforms>
+        <Config Condition="'$(Config)'==''">Release</Config>
+        <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Application</AppType>
         <FrameworkType>VCL</FrameworkType>
-        <ProjectVersion>19.1</ProjectVersion>
+        <ProjectVersion>19.2</ProjectVersion>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
@@ -34,12 +34,6 @@
         <Cfg_1>true</Cfg_1>
         <Base>true</Base>
     </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win64)'!=''">
-        <Cfg_1_Win64>true</Cfg_1_Win64>
-        <CfgParent>Cfg_1</CfgParent>
-        <Cfg_1>true</Cfg_1>
-        <Base>true</Base>
-    </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
         <Cfg_2>true</Cfg_2>
         <CfgParent>Base</CfgParent>
@@ -51,141 +45,84 @@
         <Cfg_2>true</Cfg_2>
         <Base>true</Base>
     </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win64)'!=''">
-        <Cfg_2_Win64>true</Cfg_2_Win64>
-        <CfgParent>Cfg_2</CfgParent>
-        <Cfg_2>true</Cfg_2>
-        <Base>true</Base>
-    </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
-        <DCC_E>false</DCC_E>
-        <DCC_F>false</DCC_F>
-        <DCC_K>false</DCC_K>
-        <DCC_N>false</DCC_N>
         <DCC_S>false</DCC_S>
-        <DCC_ImageBase>00400000</DCC_ImageBase>
-        <SanitizedProjectName>WPPConnectDemo</SanitizedProjectName>
-        <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;$(DCC_Namespace)</DCC_Namespace>
-        <VerInfo_Locale>1046</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;CFBundleName=</VerInfo_Keys>
+        <DCC_ImageBase>00400000</DCC_ImageBase>
+        <DCC_N>false</DCC_N>
+        <DCC_F>false</DCC_F>
+        <SanitizedProjectName>TWpp4DelphiSetup</SanitizedProjectName>
+        <DCC_E>false</DCC_E>
+        <DCC_DcuOutput>$(Platform)\$(Config)</DCC_DcuOutput>
+        <DCC_ExeOutput>..\</DCC_ExeOutput>
+        <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;System.Win;$(DCC_Namespace)</DCC_Namespace>
+        <DCC_K>false</DCC_K>
+        <VerInfo_Locale>1046</VerInfo_Locale>
+        <Custom_Styles>Sky|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Sky.vsf</Custom_Styles>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
-        <DCC_Namespace>System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
-        <BT_BuildType>Debug</BT_BuildType>
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
-        <VerInfo_Locale>1033</VerInfo_Locale>
+        <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
+        <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
+        <VerInfo_Keys>CompanyName=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(ModuleName);FileDescription=$(ModuleName);ProductName=$(ModuleName)</VerInfo_Keys>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
-        <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
+        <DCC_Namespace>Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
+        <Icon_MainIcon>frceinstall.ico</Icon_MainIcon>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <DCC_UsePackage>rtl;vclwinx;dbrtl;DbxCommonDriver;IndySystem;IndyProtocols;IndyCore;vcldb;VclSmp;dsnap;dbexpress;RESTComponents;vclFireDAC;FireDAC;FireDACCommonDriver;FireDACCommon;FireDACIBDriver;adortl;CEF4Delphi;$(DCC_UsePackage)</DCC_UsePackage>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
-        <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
-        <DCC_Namespace>System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
-        <BT_BuildType>Debug</BT_BuildType>
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <VerInfo_Locale>1033</VerInfo_Locale>
-        <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
+        <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
+        <Icon_MainIcon>frceInstall_Icon.ico</Icon_MainIcon>
+        <DCC_UsePackage>rtl;vclwinx;dbrtl;DbxCommonDriver;IndySystem;IndyProtocols;IndyCore;vcldb;VclSmp;dsnap;dbexpress;RESTComponents;vclFireDAC;FireDAC;FireDACCommonDriver;FireDACCommon;FireDACIBDriver;adortl;CEF4Delphi;$(DCC_UsePackage)</DCC_UsePackage>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
-        <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
         <DCC_DebugInformation>0</DCC_DebugInformation>
+        <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <VerInfo_Keys>CompanyName=Setup TWPP4Delphi;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.twpp4delphi.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <AppDPIAwarenessMode>PerMonitor</AppDPIAwarenessMode>
+        <Icon_MainIcon>TWpp4DelphiSetup_Icon.ico</Icon_MainIcon>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
-        <DCC_ExeOutput>C:\Executaveis\WPPConnectDemo\</DCC_ExeOutput>
-        <DCC_DcuOutput>C:\Executaveis\WPPConnectDemo\objeto_release</DCC_DcuOutput>
-        <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
+        <AppDPIAwarenessMode>PerMonitor</AppDPIAwarenessMode>
+        <BT_BuildType>Debug</BT_BuildType>
+        <UWP_DelphiLogo44>logo.jpg</UWP_DelphiLogo44>
+        <UWP_DelphiLogo150>logo.jpg</UWP_DelphiLogo150>
+        <DCC_ExeOutput>..\Instalador\</DCC_ExeOutput>
+        <DCC_DcuOutput>..\Instalador\dcu\</DCC_DcuOutput>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
+        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
         <DCC_Optimize>false</DCC_Optimize>
-        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <BT_BuildType>Debug</BT_BuildType>
+        <VerInfo_Keys>CompanyName=;FileVersion=1.0.0.9;InternalName=InstaladorTinject;LegalCopyright=Licença Pública Geral Menor do GNU;LegalTrademarks=Daniel Rodrigues ;OriginalFilename=;ProductVersion=1.0.0.0;Comments=Licença Pública.  Baseado no instalador FortesReport Community Edition;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=3.2.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=$(MSBuildProjectName);ProductVersion=3.2.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
-        <DCC_ExeOutput>C:\Executaveis\WPPConnectDemo\</DCC_ExeOutput>
-        <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
-        <DCC_DebugDCUs>true</DCC_DebugDCUs>
-        <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
+        <DCC_ExeOutput>C:\Componentes\WhatsApp\Repositorio\</DCC_ExeOutput>
+        <Icon_MainIcon>icon.ico</Icon_MainIcon>
+        <UWP_DelphiLogo44>..\logo.png</UWP_DelphiLogo44>
+        <UWP_DelphiLogo150>..\logo.png</UWP_DelphiLogo150>
+        <DCC_DcuOutput>DCU\</DCC_DcuOutput>
+        <VerInfo_Build>9</VerInfo_Build>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <AppDPIAwarenessMode>PerMonitor</AppDPIAwarenessMode>
-        <VerInfo_MajorVer>3</VerInfo_MajorVer>
-        <VerInfo_MinorVer>2</VerInfo_MinorVer>
-        <DCC_DcuOutput>C:\Executaveis\WPPConnectDemo\objeto</DCC_DcuOutput>
-        <DCC_MapFile>3</DCC_MapFile>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <DCC_ExeOutput>C:\Executaveis\WPPConnectDemo64bit\</DCC_ExeOutput>
-        <DCC_DcuOutput>C:\Executaveis\WPPConnectDemo64bit\objeto</DCC_DcuOutput>
-        <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
-        <DCC_MapFile>3</DCC_MapFile>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="u_principal.pas">
+        <DCCReference Include="SVN_Class.pas"/>
+        <DCCReference Include="uPrincipal.pas">
             <Form>frmPrincipal</Form>
-        </DCCReference>
-        <DCCReference Include="u_Messagem.pas"/>
-        <DCCReference Include="uFraLogin.pas">
-            <Form>frameLogin</Form>
-            <FormType>dfm</FormType>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
-        <DCCReference Include="uFraMensagens.pas">
-            <Form>frameMensagem</Form>
-            <FormType>dfm</FormType>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
-        <DCCReference Include="uFrDemo.pas">
-            <Form>frDemo</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="uFraGrupos.pas">
-            <Form>frameGrupos</Form>
-            <FormType>dfm</FormType>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
-        <DCCReference Include="uFraMEnsagensRecebidas.pas">
-            <Form>frameMensagensRecebidas</Form>
-            <FormType>dfm</FormType>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
-        <DCCReference Include="uFraMensagensEnviadas.pas">
-            <Form>frameMensagensEnviadas</Form>
-            <FormType>dfm</FormType>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
-        <DCCReference Include="u_Retorno_SendFileMensagem.pas"/>
-        <DCCReference Include="uFraCatalogo.pas">
-            <Form>frameCatalogo</Form>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
-        <DCCReference Include="uFraOutros.pas">
-            <Form>frameOutros</Form>
-            <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
@@ -205,33 +142,93 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">WPPConnectDemo.dpr</Source>
+                    <Source Name="MainSource">TWpp4DelphiSetup.dpr</Source>
                 </Source>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k270.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp270.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\20.0\Bpl\TInjectCollection.bpl">File C:\Users\Public\Documents\Embarcadero\Studio\20.0\Bpl\TInjectCollection.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp260.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Comum.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Comum.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_OpenSSL.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_OpenSSL.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Diversos.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Diversos.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Serial.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Serial.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Convenio115.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Convenio115.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_LFD.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_LFD.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_EDI.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_EDI.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_PAF.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_PAF.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_SEF2.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_SEF2.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Sintegra.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Sintegra.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_SPED.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_SPED.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_SPEDImportar.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_SPEDImportar.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_DeSTDA.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_DeSTDA.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Ponto.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Ponto.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_LCDPR.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_LCDPR.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_TCP.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_TCP.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_MTER.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_MTER.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Integrador.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Integrador.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Boleto.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Boleto.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_PagFor.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_PagFor.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NFe.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NFe.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NFCeECFVirtual.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NFCeECFVirtual.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NFeDanfeESCPOS.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NFeDanfeESCPOS.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_CTe.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_CTe.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NFSe.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NFSe.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NFSeX.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NFSeX.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_MDFe.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_MDFe.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_GNRE.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_GNRE.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBre_Social.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBre_Social.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Reinf.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Reinf.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_SAT.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_SAT.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_SATECFVirtual.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_SATECFVirtual.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_SATExtratoESCPOS.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_SATExtratoESCPOS.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_SATWS.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_SATWS.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_BlocoX.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_BlocoX.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_BPe.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_BPe.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_BPeDabpeESCPOS.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_BPeDabpeESCPOS.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_ANe.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_ANe.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_CIOT.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_CIOT.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_ONE.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_ONE.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NF3e.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NF3e.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NF3eDANF3eESCPOS.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NF3eDANF3eESCPOS.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_TEFD.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_TEFD.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NFeDanfeRL.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NFeDanfeRL.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NFSeDanfseRL.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NFSeDanfseRL.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NFSeXDanfseRL.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_NFSeXDanfseRL.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_CTeDacteRL.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_CTeDacteRL.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_BoletoRL.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_BoletoRL.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_MDFeDamdfeRL.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_MDFeDamdfeRL.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_SATExtratoRL.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_SATExtratoRL.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_GNREGuiaRL.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_GNREGuiaRL.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_ADRCST.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_ADRCST.bpl not found</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>
                 <Platform value="Win32">True</Platform>
-                <Platform value="Win64">True</Platform>
+                <Platform value="Win64">False</Platform>
             </Platforms>
             <Deployment Version="3">
-                <DeployFile LocalName="C:\Executaveis\WPPConnectDemo\WPPConnectDemo.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="..\Repositorio\TWpp4DelphiSetup.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
-                        <RemoteName>WPPConnectDemo.exe</RemoteName>
+                        <RemoteName>TWpp4DelphiSetup.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="C:\Executaveis\WPPConnectDemo\BIN\WPPConnectDemo.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="..\TWpp4DelphiSetup.exe" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win32">
-                        <RemoteName>WPPConnectDemo.exe</RemoteName>
+                        <RemoteName>TWpp4DelphiSetup.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="C:\Executaveis\WPPConnectDemo64bit\WPPConnectDemo.exe" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win64">
-                        <RemoteName>WPPConnectDemo.exe</RemoteName>
+                <DeployFile LocalName="..\logo.png" Configuration="Debug" Class="UWP_DelphiLogo150">
+                    <Platform Name="Win32">
+                        <RemoteDir>Assets\</RemoteDir>
+                        <RemoteName>Logo150x150.png</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="logo.jpg" Configuration="Release" Class="UWP_DelphiLogo44">
+                    <Platform Name="Win32">
+                        <RemoteDir>Assets\</RemoteDir>
+                        <RemoteName>Logo44x44.png</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -283,6 +280,7 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
+                <DeployClass Name="AndroidLibnativeX86File"/>
                 <DeployClass Name="AndroidServiceOutput">
                     <Platform Name="Android">
                         <RemoteDir>library\lib\armeabi-v7a</RemoteDir>
@@ -328,6 +326,16 @@
                 <DeployClass Name="Android_LauncherIcon144">
                     <Platform Name="Android">
                         <RemoteDir>res\drawable-xxhdpi</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="Android_LauncherIcon192">
+                    <Platform Name="Android">
+                        <RemoteDir>res\drawable-xxxhdpi</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Android64">
+                        <RemoteDir>res\drawable-xxxhdpi</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -1194,15 +1202,14 @@
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
-                <ProjectRoot Platform="Linux64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="Linux64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="OSX64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Android64" Name="$(PROJECTNAME)"/>
             </Deployment>
-            <ModelSupport>False</ModelSupport>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>
     </ProjectExtensions>
