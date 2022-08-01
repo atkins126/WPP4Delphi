@@ -433,6 +433,14 @@ type
    property valid : boolean  read Fvalid write Fvalid;
  end;
 
+ TReturngetLastSeen = class(TClassPadrao) //Marcelo 31/07/2022
+ private
+   Fid : String;
+   Fresult: Int64;
+ public
+   property id : String read Fid write Fid;
+   property result : Int64 read Fresult write Fresult;
+ end;
 
  TGetMeClass = class(TClassPadrao)
    private
@@ -691,6 +699,67 @@ type
     property title: String                              read FTitle             write FTitle;
   end;
 
+  //Marcelo 06/07/2022
+  TQuotedMsgObjClass = class
+  private
+    Ftype: String;
+    FAuthor: String;
+    FBody: String;
+    FCaption: String;
+    FChatId: String;
+    FFooter: String;
+    FFrom: String;
+    FFromMe: Boolean;
+    FHasReaction: Boolean;
+    FHydratedButtons: TArray<THydratedButtonsClass>;
+    FId: String;
+    FIsDynamicReplyButtonsMsg: Boolean;
+    FIsForwarded: Boolean;
+    FIsFromTemplate: Boolean;
+    FIsMdHistoryMsg: Boolean;
+    FIsVcardOverMmsDocument: Boolean;
+    FLabels: TArray<String>;
+    FLastPlaybackProgress: Extended;
+    FMentionedJidList: TArray<String>;
+    FPollOptions: TArray<String>;
+    FProductHeaderImageRejected: Boolean;
+    FPttForwardedFeaturesEnabled: Boolean;
+    FSelf: String;
+    FSender: TSenderClass;
+    FStar: Boolean;
+    FTo: String;
+  public
+    property &type: String read Ftype write Ftype;
+    property author: String read FAuthor write FAuthor;
+    property body: String read FBody write FBody;
+    property caption: String read FCaption write FCaption;
+    property chatId: String read FChatId write FChatId;
+    property footer: String read FFooter write FFooter;
+    property from: String read FFrom write FFrom;
+    property fromMe: Boolean read FFromMe write FFromMe;
+    property hasReaction: Boolean read FHasReaction write FHasReaction;
+    property hydratedButtons: TArray<THydratedButtonsClass> read FHydratedButtons write FHydratedButtons;
+    property id: String read FId write FId;
+    property isDynamicReplyButtonsMsg: Boolean read FIsDynamicReplyButtonsMsg write FIsDynamicReplyButtonsMsg;
+    property isForwarded: Boolean read FIsForwarded write FIsForwarded;
+    property isFromTemplate: Boolean read FIsFromTemplate write FIsFromTemplate;
+    property isMdHistoryMsg: Boolean read FIsMdHistoryMsg write FIsMdHistoryMsg;
+    property isVcardOverMmsDocument: Boolean read FIsVcardOverMmsDocument write FIsVcardOverMmsDocument;
+    property labels: TArray<String> read FLabels write FLabels;
+    property lastPlaybackProgress: Extended read FLastPlaybackProgress write FLastPlaybackProgress;
+    property mentionedJidList: TArray<String> read FMentionedJidList write FMentionedJidList;
+    property pollOptions: TArray<String> read FPollOptions write FPollOptions;
+    property productHeaderImageRejected: Boolean read FProductHeaderImageRejected write FProductHeaderImageRejected;
+    property pttForwardedFeaturesEnabled: Boolean read FPttForwardedFeaturesEnabled write FPttForwardedFeaturesEnabled;
+    property self: String read FSelf write FSelf;
+    property sender: TSenderClass read FSender write FSender;
+    property star: Boolean read FStar write FStar;
+    property &to: String read FTo write FTo;
+    {constructor Create;
+    destructor Destroy; override;
+    function ToJsonString: string;
+    class function FromJsonString(AJsonString: string): TQuotedMsgObjClass;}
+  end;
 
   TMessagesClass = class(TClassPadrao)
   private
@@ -746,7 +815,7 @@ type
     FIsPSA           : Boolean;
     FChat            : TChatClass;
     FChatId          : String;
-    FquotedMsgObj    : String; //CriarClasse
+    FquotedMsgObj    : TQuotedMsgObjClass; //CriarClasse
     FMediaData       : TMediaDataClass;
     FprofilePicThumb : string;
     //Marcelo 29/01/2022
@@ -838,7 +907,8 @@ type
     property mediaKey   : String              read FmediaKey           Write FmediaKey;
     property mediaKeyTimestamp  : Extended    read FmediaKeyTimestamp  Write FmediaKeyTimestamp;
     property pageCount     : Extended         read FpageCount          Write FpageCount;
-    property quotedMsgObj  : String           read FquotedMsgObj       Write FquotedMsgObj;
+    //property quotedMsgObj  : String           read FquotedMsgObj       Write FquotedMsgObj;
+    property quotedMsgObj :TQuotedMsgObjClass read FquotedMsgObj       Write FquotedMsgObj;
     property sender     : TSenderClass        read FSender             write FSender;
     property star       : Boolean             read FStar               write FStar;
     property t          : Extended            read FT                  write FT;
@@ -1062,6 +1132,7 @@ public
   property peerJid:      String     read FPeerJid     write FPeerJid;
   property sender:       String     read FSender      write FSender;
   constructor Create(pAJsonString: string);
+  destructor  Destroy;
   function ToJsonString: string;
   class function FromJsonString(AJsonString: string): TIncomingiCall;
 end;
@@ -1221,56 +1292,75 @@ end;
 
 
 
-TProductList = class(TClassPadrao)
-private
-  FAdditionalImageCdnUrl: TArray<String>;
-  FAdditionalImageHashes: TArray<String>;
-  FAvailability: String;
-  FCanAppeal: Boolean;
-  FCatalogWid: String;
-  FDescription: String;
-  FId: String;
-  FImageCdnUrl: String;
-  FImageCount: Extended;
-  FImageHash: String;
-  FIsHidden: Boolean;
-  FName: String;
-  FRetailerId: String;
-  FReviewStatus: String;
-  FT: Extended;
-  FUrl: String;
-public
-  property additionalImageCdnUrl: TArray<String> read FAdditionalImageCdnUrl write FAdditionalImageCdnUrl;
-  property additionalImageHashes: TArray<String> read FAdditionalImageHashes write FAdditionalImageHashes;
-  property availability: String read FAvailability write FAvailability;
-  property canAppeal: Boolean read FCanAppeal write FCanAppeal;
-  property catalogWid: String read FCatalogWid write FCatalogWid;
-  property description: String read FDescription write FDescription;
-  property id: String read FId write FId;
-  property imageCdnUrl: String read FImageCdnUrl write FImageCdnUrl;
-  property imageCount: Extended read FImageCount write FImageCount;
-  property imageHash: String read FImageHash write FImageHash;
-  property isHidden: Boolean read FIsHidden write FIsHidden;
-  property name: String read FName write FName;
-  property retailerId: String read FRetailerId write FRetailerId;
-  property reviewStatus: String read FReviewStatus write FReviewStatus;
-  property t: Extended read FT write FT;
-  property url: String read FUrl write FUrl;
-  constructor Create(pAJsonString: string);
-  class function FromJsonString(AJsonString: string): TProductList;
-  function ToJsonString: string;
-end;
+  TProductList = class(TClassPadrao)
+  private
+    FAdditionalImageCdnUrl: TArray<String>;
+    FAdditionalImageHashes: TArray<String>;
+    FAvailability: String;
+    FCanAppeal: Boolean;
+    FCatalogWid: String;
+    FDescription: String;
+    FId: String;
+    FImageCdnUrl: String;
+    FImageCount: Extended;
+    FImageHash: String;
+    FIsHidden: Boolean;
+    FName: String;
+    FRetailerId: String;
+    FReviewStatus: String;
+    FT: Extended;
+    FUrl: String;
+  public
+    property additionalImageCdnUrl: TArray<String> read FAdditionalImageCdnUrl write FAdditionalImageCdnUrl;
+    property additionalImageHashes: TArray<String> read FAdditionalImageHashes write FAdditionalImageHashes;
+    property availability: String read FAvailability write FAvailability;
+    property canAppeal: Boolean read FCanAppeal write FCanAppeal;
+    property catalogWid: String read FCatalogWid write FCatalogWid;
+    property description: String read FDescription write FDescription;
+    property id: String read FId write FId;
+    property imageCdnUrl: String read FImageCdnUrl write FImageCdnUrl;
+    property imageCount: Extended read FImageCount write FImageCount;
+    property imageHash: String read FImageHash write FImageHash;
+    property isHidden: Boolean read FIsHidden write FIsHidden;
+    property name: String read FName write FName;
+    property retailerId: String read FRetailerId write FRetailerId;
+    property reviewStatus: String read FReviewStatus write FReviewStatus;
+    property t: Extended read FT write FT;
+    property url: String read FUrl write FUrl;
+    constructor Create(pAJsonString: string);
+    class function FromJsonString(AJsonString: string): TProductList;
+    function ToJsonString: string;
+  end;
 
-TProductsList = class(TClassPadraoList<TProductList>)
+  TProductsList = class(TClassPadraoList<TProductList>)
+   private
+    FResult: TArray<TProductList>;
+  public
+    property result: TArray<TProductList> read FResult write FResult;
+    destructor Destroy; override;
+    constructor Create(pAJsonString: string);
+    function ToJsonString: string;
+    class function FromJsonString(AJsonString: string): TProductsList;
+  end;
+
+  TWppCrash = class(TClassPadrao) //Daniel 18/07/2022
+  private
+    FAuthenticated: Boolean;
+    FMainLoaded: Boolean;
+  public
+    property Authenticated: Boolean read FAuthenticated write FAuthenticated;
+    property MainLoaded: Boolean read FMainLoaded write FMainLoaded;
+  end;
+
+
+ TWppCrashClass = class(TClassPadrao)
  private
-  FResult: TArray<TProductList>;
-public
-  property result: TArray<TProductList> read FResult write FResult;
-  destructor Destroy; override;
+  FResult: TWppCrash;
+ public
   constructor Create(pAJsonString: string);
-  function ToJsonString: string;
-  class function FromJsonString(AJsonString: string): TProductsList;
-end;
+  destructor Destroy;override;
+  property result: TWppCrash read FResult write FResult;
+ end;
 
 Procedure LogAdd(Pvalor:WideString; PCab:String = '');
 Procedure SalvaLog(Pvalor:WideString; PCab:String = '');
@@ -1320,6 +1410,11 @@ begin
 end;
 
 //Marcelo 18/06/2022
+destructor TIncomingiCall.Destroy;
+begin
+  inherited;
+end;
+
 class function TIncomingiCall.FromJsonString(AJsonString: string): TIncomingiCall;
 begin
   result := TJson.JsonToObject<TIncomingiCall>(AJsonString)
@@ -2129,4 +2224,21 @@ begin
   result := TJson.ObjectToJsonString(self);
 end;
 
+
+
+{ TWppCrashClass }
+
+constructor TWppCrashClass.Create(pAJsonString: string);
+begin
+  inherited create(pAJsonString);
+end;
+
+destructor TWppCrashClass.Destroy;
+begin
+  FResult.Free;
+  inherited;
+end;
+
 end.
+
+

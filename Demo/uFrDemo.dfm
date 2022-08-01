@@ -1612,12 +1612,34 @@ object frDemo: TfrDemo
     inherited GroupBox1: TGroupBox
       Height = 501
       ExplicitHeight = 501
+      inherited PageControl1: TPageControl
+        Top = 278
+        ExplicitTop = 278
+        inherited tsImage: TTabSheet
+          ExplicitLeft = 4
+          ExplicitTop = 26
+          ExplicitWidth = 229
+          ExplicitHeight = 191
+          inherited lblCaminhoImagem: TLabel
+            Width = 229
+          end
+        end
+        inherited tsBase64: TTabSheet
+          ExplicitLeft = 4
+          ExplicitTop = 26
+          ExplicitWidth = 229
+          ExplicitHeight = 191
+        end
+      end
     end
     inherited gbAcoesBasicas: TGroupBox
       Height = 501
       ExplicitHeight = 501
       inherited btnImagem: TButton
         OnClick = frameMensagem1btnImagemClick
+      end
+      inherited btnBotaoSimples: TButton
+        ExplicitLeft = 5
       end
     end
     inherited GroupBox2: TGroupBox
@@ -5496,7 +5518,7 @@ object frDemo: TfrDemo
       'n/Source/JS/js.abr'
     Config.AutoStart = True
     Config.AutoDelay = 0
-    Config.SecondsMonitor = 7
+    Config.SecondsMonitor = 8
     AjustNumber.LengthPhone = 8
     AjustNumber.DDIDefault = 55
     FormQrCodeType = Ft_Http
@@ -5516,6 +5538,7 @@ object frDemo: TfrDemo
     OnGet_sendFileMessageEx = TWPPConnect1Get_sendFileMessageEx
     OnGet_sendListMessageEx = TWPPConnect1Get_sendListMessageEx
     OnGet_ProductCatalog = TWPPConnect1Get_ProductCatalog
+    OnWPPMonitorCrash = TWPPConnect1WPPMonitorCrash
     OnGetIncomingiCall = TWPPConnect1GetIncomingiCall
     OnGetCheckIsValidNumber = TWPPConnect1GetCheckIsValidNumber
     OnGetProfilePicThumb = TWPPConnect1GetProfilePicThumb
@@ -5529,8 +5552,9 @@ object frDemo: TfrDemo
     OnGetMe = TWPPConnect1GetMe
     OnNewGetNumber = TWPPConnect1NewGetNumber
     OnCheckNumberExists = TWPPConnect1CheckNumberExists
-    Left = 368
-    Top = 480
+    OngetLastSeen = TWPPConnect1getLastSeen
+    Left = 352
+    Top = 144
   end
   object timerStatus: TTimer
     Enabled = False

@@ -88,6 +88,8 @@ type
     procedure Button2Click(Sender: TObject);
     procedure Image2Click(Sender: TObject);
     procedure Img_BrasilClick(Sender: TObject);
+    procedure Chromium1LoadEnd(Sender: TObject; const browser: ICefBrowser;
+      const frame: ICefFrame; httpStatusCode: Integer);
   protected
     // You have to handle this two messages to call NotifyMoveOrResizeStarted or some page elements will be misaligned.
     procedure WMMove(var aMessage : TWMMove); message WM_MOVE;
@@ -121,6 +123,7 @@ type
     FHeaderAtual            : TTypeHeader;
     FMessagesList           : TMessagesList;
     FProductList            : TProductsList;
+    FWppCrashClass          : TWppCrashClass;
     FChatList               : TChatList;
     FChatList2              : TChatList;
     FMonitorLowBattry       : Boolean;
@@ -135,7 +138,6 @@ type
     Function  GetAutoBatteryLeveL: Boolean;
     Procedure ISLoggedin;
     procedure ExecuteJS(PScript: string; PDirect:  Boolean = false; Purl:String = 'about:blank'; pStartline: integer=0);
-    procedure ExecuteJSDir(PScript: string; Purl:String = 'about:blank'; pStartline: integer=0);
 
     procedure QRCodeForm_Start;
     procedure QRCodeWeb_Start;
@@ -149,6 +151,8 @@ type
 
      public
     { Public declarations }
+    procedure ExecuteJSDir(PScript: string; Purl:String = 'about:blank'; pStartline: integer=0);
+    procedure RebootChromium;
     Function  ConfigureNetWork:Boolean;
     Procedure SetZoom(Pvalue: Integer);
     Property  Conectado: Boolean    Read FConectado;
@@ -257,6 +261,7 @@ type
     procedure fGetMe;
     procedure NewCheckIsValidNumber(vNumber:String);
     procedure CheckNumberExists(vNumber:String);
+    procedure getLastSeen(vNumber:String); //Marcelo 31/07/2022
 
     procedure GetAllChats;
     procedure GetUnreadMessages;
@@ -274,6 +279,7 @@ type
     procedure ReadMessagesAndDelete(vID: string);
 
     procedure StartMonitor(Seconds: Integer);
+    procedure StartMonitorWPPCrash(Seconds: Integer);
     procedure StopMonitor;
   end;
 
@@ -431,6 +437,7 @@ begin
 
       //Auto monitorar mensagens não lidas
       StartMonitor(TWPPConnect(FOwner).Config.SecondsMonitor);
+      StartMonitorWPPCrash(TWPPConnect(FOwner).Config.SecondsMonitorWppCrash);
       SleepNoFreeze(40);
 
       lNovoStatus    := False;
@@ -754,6 +761,26 @@ begin
   ExecuteJSDir(FrmConsole_JS_AlterVar(LJS, '#TEMPO#' , Seconds.ToString));
 end;
 
+procedure TFrmConsole.StartMonitorWPPCrash(Seconds: Integer);
+var
+  LJS: String;
+begin
+  if Seconds = 0 then
+    exit;
+  LJS := FrmConsole_JS_VAR_StartMonitorWPPCrash;
+  ExecuteJSDir(FrmConsole_JS_AlterVar(LJS, '#TEMPO#' , Seconds.ToString));
+
+  if TWPPConnect(FOwner).Config.SecondsMonitorWppCrash > 0 then
+  begin
+    TWPPConnect(FOwner).FTimerCheckWPPCrash:= TTimer.Create(Self);
+    TWPPConnect(FOwner).FTimerCheckWPPCrash.Interval:= 40000;
+    TWPPConnect(FOwner).FTimerCheckWPPCrash.OnTimer:= TWPPConnect(FOwner).OnTimerWPPCrash;
+    TWPPConnect(FOwner).FTImerCheckWPPCrash.Enabled:= False;
+  end;
+
+  TWPPConnect(FOwner).FTimerCheckWPPCrash.enabled:= True;
+end;
+
 procedure TFrmConsole.StartQrCode(PQrCodeType: TFormQrCodeType; PViewForm: Boolean);
 begin
   FFormType := PQrCodeType;
@@ -908,6 +935,12 @@ procedure TFrmConsole.ReadMessagesAndDelete(vID: string);
 begin
   ReadMessages  (Trim(vID));
   DeleteMessages(Trim(vID));
+end;
+
+procedure TFrmConsole.RebootChromium;
+begin
+  TWppConnect(FOwner).SetNewStatus(Server_Rebooting);
+  FrmConsole.Chromium1.LoadURL(FrmConsole_JS_URL);
 end;
 
 procedure TFrmConsole.rejectCall(id: string);
@@ -1850,13 +1883,23 @@ begin
     Th_CheckNumberExists : begin
                               LResultStr := copy(LResultStr, 11, length(LResultStr)); //REMOVENDO RESULT
                               LResultStr := copy(LResultStr, 0, length(LResultStr)-1); // REMOVENDO }
-                             LOutClass := TReturnCheckNumberExists.Create(LResultStr);
+                              LOutClass := TReturnCheckNumberExists.Create(LResultStr);
                               try
                                 SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass);
                               finally
                                 FreeAndNil(LOutClass);
                               end;
                             end;
+    Th_getLastSeen : begin
+                             //LResultStr := copy(LResultStr, 11, length(LResultStr)); //REMOVENDO RESULT
+                             //LResultStr := copy(LResultStr, 0, length(LResultStr)-1); // REMOVENDO }
+                             LOutClass := TReturngetLastSeen.Create(LResultStr);
+                             try
+                               SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass);
+                             finally
+                               FreeAndNil(LOutClass);
+                             end;
+                     end;
 
     Th_ProductCatalog       : begin
                                 if Assigned(FProductList) then
@@ -1865,6 +1908,13 @@ begin
                                 FProductList := TProductsList.Create(LResultStr);
                                 SendNotificationCenterDirect(PResponse.TypeHeader, FProductList);
                               end;
+    Th_WPPCrashMonitor     : begin
+                               if Assigned(FWppCrashClass) then
+                                   FWppCrashClass.Free;
+
+                                FWppCrashClass := TWppCrashClass.Create(LResultStr);
+                                SendNotificationCenterDirect(PResponse.TypeHeader, FWppCrashClass);
+                             end;
    end;
 end;
 
@@ -1933,6 +1983,22 @@ begin
         LogAdd(e.Message, 'ERROR DOWNLOAD ' + downloadItem.FullPath);
   end;
   }
+end;
+
+procedure TFrmConsole.Chromium1LoadEnd(Sender: TObject;
+  const browser: ICefBrowser; const frame: ICefFrame; httpStatusCode: Integer);
+begin
+  if TWPPConnect(FOwner).Status = Server_Rebooting then
+  begin
+    ExecuteJSDir('WPPConfig = {poweredBy: "WPP4Delphi"}; ' + TWPPConnect(FOwner).InjectJS.JSScript.Text);
+    SleepNoFreeze(40);
+
+      //Auto monitorar mensagens não lidas
+    StartMonitor(TWPPConnect(FOwner).Config.SecondsMonitor);
+    StartMonitorWPPCrash(TWPPConnect(FOwner).Config.SecondsMonitorWppCrash);
+    SleepNoFreeze(40);
+    SendNotificationCenterDirect(Th_Initialized);
+  end;
 end;
 
 procedure TFrmConsole.Chromium1OpenUrlFromTab(Sender: TObject;
@@ -2203,7 +2269,7 @@ procedure TFrmConsole.FormShow(Sender: TObject);
 begin
   Lbl_Caption.Caption      := 'WPPConnect '; //Text_FrmConsole_Caption;
   Lbl_Caption.Caption       := Lbl_Caption.Caption + ' CEF lib ' + uTWPPConnect.ConfigCEF.GlobalCEFApp.LibCefVersion + ' Chrome ' + uTWPPConnect.ConfigCEF.GlobalCEFApp.ChromeVersion; //+ ' TWPPConnect V. ' + TWPPConnectVersion;
-  Lbl_Versao.Caption       := 'V. 2.6.0' + ''; //TWPPConnectVersion;
+  Lbl_Versao.Caption       := 'V. 2.8.2' + ''; //TWPPConnectVersion;
 end;
 
 procedure TFrmConsole.Form_Normal;
@@ -2321,6 +2387,19 @@ begin
   LJS   := FrmConsole_JS_VAR_getGroupInviteLink;
   FrmConsole_JS_AlterVar(LJS, '#GROUP_ID#', Trim(vIDGroup));
   ExecuteJS(LJS, true);
+end;
+
+procedure TFrmConsole.getLastSeen(vNumber: String);
+var
+  Ljs: string;
+begin
+  //Marcelo 31/07/2022
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS   :=  FrmConsole_JS_VAR_getLastSeen;
+  FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#', Trim(vNumber));
+  ExecuteJS(LJS, False);
 end;
 
 procedure TFrmConsole.getMessageById(UniqueIDs, etapa: string);

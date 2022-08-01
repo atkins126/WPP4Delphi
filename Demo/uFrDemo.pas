@@ -107,7 +107,10 @@ type
     procedure TWPPConnect1GetIncomingiCall(const IncomingiCall: TIncomingiCall);
     procedure frameCatalogo1Button1Click(Sender: TObject);
     procedure ctbtnCategories0Items6Click(Sender: TObject);
+    procedure TWPPConnect1WPPMonitorCrash(Sender: TObject;
+      const WPPCrash: TWppCrash; AMonitorJSCrash: Boolean);
     procedure TWPPConnect1CheckNumberExists(const vCheckNumberExists: TReturnCheckNumberExists);
+    procedure TWPPConnect1getLastSeen(const vgetLastSeen: TReturngetLastSeen);
 
   private
     { Private declarations }
@@ -295,8 +298,8 @@ end;
 
 procedure TfrDemo.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  if TWPPConnect1.IsConnected then
-    TWPPConnect1.ShutDown;
+  //if TWPPConnect1.IsConnected then
+  TWPPConnect1.ShutDown;
 
   Sleep(500);
   killtask('WPPConnectDemo.exe')
@@ -390,6 +393,8 @@ begin
       Label3.Caption := TWPPConnect(Sender).StatusToStr;
     Inject_Destroy:
       Label3.Caption := TWPPConnect(Sender).StatusToStr;
+    Server_Rebooting:
+      Label3.Caption := TWppConnect(Sender).StatusToStr;
   end;
 end;
 
@@ -506,7 +511,6 @@ end;
 
 procedure TfrDemo.TWPPConnect1GetIncomingiCall(const IncomingiCall: TIncomingiCall);
 begin
-  ShowMessage('Recebendo Ligação: ' + IncomingiCall.sender);
   Caption := 'WPP4Delphi - Powered by WPPConnect Team' + ' - Recebendo Ligação: ' + IncomingiCall.sender;
   Application.ProcessMessages;
   frameMensagensRecebidas1.memo_unReadMessage.Lines.Add('');
@@ -514,6 +518,7 @@ begin
   frameMensagensRecebidas1.memo_unReadMessage.Lines.Add('');
   SleepNoFreeze(2000);
   TWPPConnect1.rejectCall(IncomingiCall.id);
+  ShowMessage('Recebendo Ligação: ' + IncomingiCall.sender);
   TWPPConnect1.SendTextMessageEx(IncomingiCall.sender,'Este Número Não Recebe Ligações!','','Ligação');
   Caption := 'WPP4Delphi - Powered by WPPConnect Team';
   Application.ProcessMessages;
@@ -523,6 +528,11 @@ procedure TfrDemo.TWPPConnect1GetInviteGroup(const Invite: string);
 begin
   Clipboard.AsText := Invite;
   ShowMessage('Link do grupo copiado: ' + Invite);
+end;
+
+procedure TfrDemo.TWPPConnect1getLastSeen(const vgetLastSeen: TReturngetLastSeen);
+begin
+  ShowMessage('Visto por Último: '+ DateTimeToStr(UnixToDateTime(vgetLastSeen.result)));
 end;
 
 procedure TfrDemo.TWPPConnect1GetMe(const vMe: TGetMeClass);
@@ -766,7 +776,7 @@ procedure TfrDemo.TWPPConnect1GetUnReadMessages(const Chats: TChatList);
 var
   AChat: TChatClass;
   AMessage: TMessagesClass;
-  contato, telefone, selectedButtonId, quotedMsg_caption, selectedRowId: string;
+  contato, telefone, selectedButtonId, quotedMsg_caption, selectedRowId, IdMensagemOrigem: string;
   WPPConnectDecrypt: TWPPConnectDecryptFile;
 begin
   for AChat in Chats.Result do
@@ -846,6 +856,15 @@ begin
           except
             on E: Exception do
               quotedMsg_caption := '';
+          end;
+
+          //Marcelo 25/07/2022 Unique ID Mensagem Origem
+          try
+            if Assigned(AMessage.quotedMsgObj) then
+              IdMensagemOrigem := AMessage.quotedMsgObj.id ;
+          except
+            on E: Exception do
+              IdMensagemOrigem := '';
           end;
 
           if selectedButtonId = '' then
@@ -1156,6 +1175,22 @@ begin
 
   else
     ShowMessage(vCheckNumber.id + ' é um numero INVÁLIDO');
+
+end;
+
+procedure TfrDemo.TWPPConnect1WPPMonitorCrash(Sender: TObject;
+  const WPPCrash: TWppCrash; AMonitorJSCrash: Boolean);
+begin
+  //se essa const vier true, quer dizer que parou de funcionar o Chromium e foi disparado pelo timer
+  //do wppconnect que verifica se o js.abr continua funcionando.
+  if AMonitorJSCrash then
+  begin
+    TWppConnect1.RebootWPP;
+    exit;
+  end;
+  //se caiu aqui é pq quem tá atualizando é o js.abr e a pagina do whatsapp continua funcionando.
+  if (not(WPPCrash.MainLoaded)) or (not(WPPCrash.Authenticated)) then
+    TWppConnect1.RebootWPP;
 
 end;
 

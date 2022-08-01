@@ -44,7 +44,7 @@ uses
 
   System.SysUtils, System.Classes, Vcl.Forms, Vcl.Dialogs, System.MaskUtils,
   System.UiTypes,  Generics.Collections, System.TypInfo, Data.DB, Vcl.ExtCtrls,
-  uTWPPConnect.Diversos, Vcl.Imaging.jpeg;
+  uTWPPConnect.Diversos, Vcl.Imaging.jpeg, DateUtils;
 
 
 type
@@ -73,6 +73,8 @@ type
   TOnNewCheckNumber         = procedure(Const vCheckNumber : TReturnCheckNumber) of object;
   TOnCheckNumberExists      = procedure(Const vCheckNumberExists : TReturnCheckNumberExists) of object;
 
+  TOngetLastSeen      = procedure(Const vgetLastSeen : TReturngetLastSeen) of object; //Marcelo 31/07/2022
+
   //Adicionado Por Marcelo 06/05/2022
   //TGetMessageById           = procedure(Const Mensagem: TMessagesClass) of object;
   TGetMessageById           = procedure(Const Mensagem: TMessagesList) of object;
@@ -86,7 +88,7 @@ type
   TGet_sendFileMessageEx   = procedure(Const RespMensagem: TResponsesendTextMessage) of object;
   TGet_sendListMessageEx   = procedure(Const RespMensagem: TResponsesendTextMessage) of object;
   TGet_ProductCatalog      = procedure(Sender : TObject; Const ProductCatalog: TProductsList) of object;
-
+  TWPPMonitorCrash         = procedure(Sender : TObject; Const WPPCrash: TWppCrash; AMonitorJSCrash: Boolean=false) of object;
   //Adicionado por Marcelo 17/06/2022
   TGetIncomingiCall        = procedure(Const IncomingiCall: TIncomingiCall) of object;
 
@@ -110,6 +112,8 @@ type
 
     FLanguageInject         : TLanguageInject;
     FOnDisconnectedBrute    : TNotifyEvent;
+    FCrashMonitorLastUpdate : TDateTime;
+    FOnWPPMonitorCrash: TWPPMonitorCrash;
 
     { Private  declarations }
     Function  ConsolePronto:Boolean;
@@ -129,6 +133,7 @@ type
 
     procedure OnDestroyConsole(Sender : TObject);
 
+    procedure CheckWppCrash(AWppCrash: TWppCrashClass);
   protected
     { Protected declarations }
     FOnGetUnReadMessages        : TGetUnReadMessages;
@@ -160,11 +165,13 @@ type
     FOnGetMe                    : TOnGetMe;
     FOnNewCheckNumber           : TOnNewCheckNumber;
 
-    //Marcelo 18/07/2022
-    FOnCheckNumberExists        : TOnCheckNumberExists;
 
-    //Adicionado Por Marcelo 06/05/2022
-    FOnGetMessageById           : TGetMessageById;
+    FOnCheckNumberExists        : TOnCheckNumberExists; //Marcelo 18/07/2022
+
+    FOngetLastSeen              : TOngetLastSeen; //Marcelo 31/07/2022
+
+
+    FOnGetMessageById           : TGetMessageById; //Adicionado Por Marcelo 06/05/2022
 
     //Adicionado Por Marcelo 31/05/2022
     FOnGet_sendFileMessage      : TGet_sendFileMessage;
@@ -186,9 +193,10 @@ type
     procedure Loaded; override;
 
   public
-
+    FTimerCheckWPPCrash      : TTimer;
     constructor Create(AOwner: TComponent); override;
     destructor  Destroy; override;
+    procedure SetNewStatus(AStatus: TStatusType);
     Procedure   ShutDown(PWarning:Boolean = True);
     Procedure   Disconnect;
     //funcao experimental para configuracao de proxy de rede(Ainda nao foi testada)
@@ -250,6 +258,7 @@ type
     procedure CheckIsValidNumber(PNumberPhone: string);
     procedure NewCheckIsValidNumber(PNumberPhone : string);
     procedure CheckNumberExists(PNumberPhone : string);
+    procedure getLastSeen(vNumber:String); //Marcelo 31/07/2022
 
     //Adicionado Por Marcelo 01/03/2022
     procedure isBeta;
@@ -286,6 +295,8 @@ type
     procedure CleanALLChat(PNumber: String);
     procedure GetMe;
 
+
+
     Function  GetContact(Pindex: Integer): TContactClass;  deprecated;  //Versao 1.0.2.0 disponivel ate Versao 1.0.6.0
     procedure GetAllChats;
     Function  GetChat(Pindex: Integer):TChatClass;
@@ -309,6 +320,9 @@ type
     Procedure FormQrCodeStop;
     Procedure FormQrCodeReloader;
     Function  Auth(PRaise: Boolean = true): Boolean;
+
+    procedure RebootWPP;
+    procedure OnTimerWPPCrash(Sender: TObject);
   published
     { Published declarations }
     Property Version                     : String                     read Fversion;
@@ -346,7 +360,7 @@ type
 
     //Daniel - 13/06/2022
     property OnGet_ProductCatalog        : TGet_ProductCatalog        read FOnGet_ProductCatalog           write FOnGet_ProductCatalog;
-
+    property OnWPPMonitorCrash           : TWPPMonitorCrash           read FOnWPPMonitorCrash              write FOnWPPMonitorCrash;
     //Adicionado Por Marcelo 17/06/2022
     property OnGetIncomingiCall          : TGetIncomingiCall          read FOnGetIncomingiCall             write FOnGetIncomingiCall;
 
@@ -372,6 +386,7 @@ type
     property OnGetMe                     : TOnGetMe                   read FOnGetMe                        write FOnGetMe;
     property OnNewGetNumber              : TOnNewCheckNumber          read FOnNewCheckNumber               write FOnNewCheckNumber;
     property OnCheckNumberExists         : TOnCheckNumberExists       read FOnCheckNumberExists            write FOnCheckNumberExists;
+    property OngetLastSeen               : TOngetLastSeen             read FOngetLastSeen                  write FOngetLastSeen;
   end;
 
 procedure Register;
@@ -382,7 +397,7 @@ implementation
 uses
   uCEFTypes, uTWPPConnect.ConfigCEF, Winapi.Windows, Winapi.Messages,
   uCEFConstants, Datasnap.DBClient, Vcl.WinXCtrls, Vcl.Controls, Vcl.StdCtrls,
-  uTWPPConnect.FrmQRCode, System.NetEncoding;
+  uTWPPConnect.FrmQRCode, System.NetEncoding, System.StrUtils;
 
 
 procedure Register;
@@ -581,7 +596,27 @@ begin
 
   lThread.FreeOnTerminate := true;
   lThread.Start;
+end;
 
+procedure TWPPConnect.CheckWppCrash(AWppCrash: TWppCrashClass);
+var
+  LAuthenticaded: String;
+  LMainLoaded: String;
+begin
+  //Marcelo 18/07/2022
+    if (AWppCrash.result.MainLoaded) and (AWppCrash.result.Authenticated) then
+    begin
+      FCrashMonitorLastUpdate:= now;
+      Exit;
+    end;
+    LAuthenticaded:= ifthen(AWppCrash.result.Authenticated,'SIM','NAO');
+    LMainLoaded:= ifThen(AWppCrash.result.MainLoaded, 'SIM', 'NAO');
+    LogAdd('Whatsapp parou, Autenticado: '+LAuthenticaded+' Framework: '+LMainLoaded,'WPPCrash');
+    if Assigned(OnWPPMonitorCrash) then
+    begin
+      LogAdd('Chamando evento OnWPPMonitorCrash','WPPCrash');
+      OnWPPMonitorCrash(Self, AWppCrash.Result);
+    end;
 end;
 
 procedure TWPPConnect.CheckNumberExists(PNumberPhone: string);
@@ -615,7 +650,6 @@ begin
 
   lThread.FreeOnTerminate := true;
   lThread.Start;
-
 end;
 
 procedure TWPPConnect.NewCheckIsValidNumber(PNumberPhone: string);
@@ -942,7 +976,8 @@ begin
   FreeAndNil(FInjectConfig);
   FreeAndNil(FAdjustNumber);
   FreeAndNil(FInjectJS);
-
+  if Assigned(FTimerCheckWPPCrash) then
+    FreeAndNil(FTimerCheckWPPCrash);
   inherited;
 end;
 
@@ -1507,6 +1542,39 @@ begin
   FrmConsole.getGroupInviteLink(PIDGroup);
 end;
 
+procedure TWPPConnect.getLastSeen(vNumber: String);
+var
+  lThread : TThread;
+begin
+  //Marcelo 31/07/2022
+  If Application.Terminated Then
+     Exit;
+  if not Assigned(FrmConsole) then
+     Exit;
+
+  vNumber := AjustNumber.FormatIn(vNumber);
+  if pos('@', vNumber) = 0 then
+  Begin
+    Int_OnErroInterno(Self, MSG_ExceptPhoneNumberError, vNumber);
+    Exit;
+  end;
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.getLastSeen(vNumber);
+          end;
+        end);
+
+      end);
+
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+end;
+
 procedure TWPPConnect.GroupRemoveInviteLink(PIDGroup: string);
 var
   lThread : TThread;
@@ -1982,6 +2050,12 @@ begin
        FOnCheckNumberExists(TReturnCheckNumberExists(PReturnClass));
   end;
 
+  if PTypeHeader = Th_getLastSeen  then
+  begin
+    if Assigned(FOngetLastSeen) then
+       FOngetLastSeen(TReturngetLastSeen(PReturnClass));
+  end;
+
 
   if PTypeHeader = Th_GetBatteryLevel then
   Begin
@@ -2056,6 +2130,11 @@ begin
 
   end;
 
+  if PTypeHeader = Th_WPPCrashMonitor then
+  begin
+    CheckWppCrash(TWppCrashClass(PReturnClass));
+  end;
+
   if PTypeHeader in [Th_Connecting, Th_Disconnecting, Th_ConnectingNoPhone, Th_getQrCodeForm, Th_getQrCodeForm, TH_Destroy, Th_Destroying]  then
   begin
     case PTypeHeader of
@@ -2089,6 +2168,11 @@ begin
     if assigned(FrmConsole) then
        FrmConsole.ReadMessages(vID);
   end;
+end;
+
+procedure TWPPConnect.RebootWPP;
+begin
+  frmConsole.RebootChromium;
 end;
 
 procedure TWPPConnect.rejectCall(id: string);
@@ -3337,6 +3421,11 @@ begin
   FTranslatorInject.SetTranslator(Value);
 end;
 
+procedure TWPPConnect.SetNewStatus(AStatus: TStatusType);
+begin
+  FStatus:= AStatus;
+end;
+
 procedure TWPPConnect.SetOnLowBattery(const Value: TNotifyEvent);
 begin
   FOnLowBattery := Value;
@@ -3420,6 +3509,25 @@ begin
     end;
   except
     Result := False;
+  end;
+end;
+
+procedure TWPPConnect.OnTimerWPPCrash(Sender: TObject);
+begin
+  try
+    FTimerCheckWPPCrash.Enabled:= False;
+    if SecondsBetween(Now, Self.FCrashMonitorLastUpdate) > 40 then
+    begin
+      LogAdd('frmConsole parou de funcionar','WPPCrash');
+      if Assigned(FOnWPPMonitorCrash) then
+      begin
+        LogAdd('Acionado evento OnWPPMonitorCrash','WPPCrash');
+        Self.SetNewStatus(Server_Disconnected);
+        FOnWPPMonitorCrash(Sender, Nil, True);
+      end;
+    end;
+  finally
+    FTimerCheckWPPCrash.Enabled:= True;
   end;
 end;
 
@@ -3675,6 +3783,7 @@ begin
     Server_TimeOut             : Result := Text_Status_Serv_TimeOut;
     Inject_Destroying          : Result := Text_Status_Serv_Destroying;
     Inject_Destroy             : Result := Text_Status_Serv_Destroy;
+    Server_Rebooting           : Result := Text_Status_Serv_Rebooting;
   end;
 end;
 
