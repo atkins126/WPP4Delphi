@@ -262,6 +262,7 @@ type
     procedure NewCheckIsValidNumber(vNumber:String);
     procedure CheckNumberExists(vNumber:String);
     procedure getLastSeen(vNumber:String); //Marcelo 31/07/2022
+    procedure getMessage(vNumber, vOptions :String); //Marcelo 14/08/2022
 
     procedure GetAllChats;
     procedure GetUnreadMessages;
@@ -838,6 +839,9 @@ procedure TFrmConsole.ReadMessages(vID: string);
 var
   LJS: String;
 begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
   LJS := FrmConsole_JS_VAR_ReadMessages;
   ExecuteJS(FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#' , Trim(vID)), False);
 end;
@@ -1041,8 +1045,9 @@ begin
     raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
 
   titleText := CaractersWeb(titleText);
+  buttons := CaractersQuebraLinha(buttons);
 
-  LJS   := FrmConsole_JS_VAR_SendTyping + FrmConsole_JS_VAR_SendButtons;
+  LJS   := FrmConsole_JS_VAR_SendButtons;
   FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',       Trim(phoneNumber));
   FrmConsole_JS_AlterVar(LJS, '#MSG_TITLE#',       Trim(titleText));
   FrmConsole_JS_AlterVar(LJS, '#MSG_BUTTONS#',     Trim(buttons));
@@ -1122,6 +1127,8 @@ begin
     content := LLine;
 
     //SalvaLog(content, 'CONSOLE');
+
+    options := CaractersQuebraLinha(options);
 
     //LJS   := FrmConsole_JS_VAR_markIsComposing + FrmConsole_JS_VAR_sendFileMessage;
     //LJS   := FrmConsole_JS_VAR_SendTyping + FrmConsole_JS_VAR_sendFileMessage;
@@ -1242,6 +1249,8 @@ begin
 
   description := CaractersWeb(description);
   buttonText := CaractersWeb(buttonText);
+
+  sections := CaractersQuebraLinha(sections);
 
   LJS   := FrmConsole_JS_VAR_sendListMessageEx;
   FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',       Trim(phoneNumber));
@@ -1395,8 +1404,9 @@ begin
     raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
 
   content := CaractersWeb(content);
+  options := CaractersQuebraLinha(options);
 
-  LJS   := FrmConsole_JS_VAR_SendTyping + FrmConsole_JS_VAR_SendTextMessage;
+  LJS   := FrmConsole_JS_VAR_SendTextMessage;
   //LJS   := FrmConsole_JS_VAR_SendTextMessage;
   FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',    Trim(phoneNumber));
   FrmConsole_JS_AlterVar(LJS, '#MSG_CONTENT#',  Trim(content));
@@ -1413,6 +1423,8 @@ begin
     raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
 
   content := CaractersWeb(content);
+  options := CaractersQuebraLinha(options);
+
   LJS   := FrmConsole_JS_VAR_SendTextMessageEx;
   FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',    Trim(phoneNumber));
   FrmConsole_JS_AlterVar(LJS, '#MSG_CONTENT#',  Trim(content));
@@ -1587,8 +1599,8 @@ begin
   LResultStr := PResponse.Result;
   if (LResultStr = FrmConsole_JS_RetornoVazio) Then
   Begin
-     LogAdd(PResponse.JsonString, 'CONSOLE');
-     Exit;
+    LogAdd(PResponse.JsonString, 'CONSOLE');
+    Exit;
   End;
 
 
@@ -1718,6 +1730,18 @@ begin
                               FreeAndNil(LOutClass2);
                             end;
                           end;
+
+    Th_getMessages: begin
+                      LOutClass2 := TChatList3.Create(LResultStr);
+                      try
+                        SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass2);
+                      finally
+                        FreeAndNil(LOutClass2);
+                      end;
+
+                      FgettingChats := False;
+                    end;
+
 
     Th_getUnreadMessages: begin
                             {LOutClass := TChatList.Create(LResultStr);
@@ -2400,6 +2424,22 @@ begin
   LJS   :=  FrmConsole_JS_VAR_getLastSeen;
   FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#', Trim(vNumber));
   ExecuteJS(LJS, False);
+end;
+
+procedure TFrmConsole.getMessage(vNumber, vOptions: String);
+var
+  Ljs: string;
+begin
+  //Marcelo 14/08/2022
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  //vOptions := CaractersWeb(vOptions);
+  LJS := FrmConsole_JS_VAR_getMessage;
+  FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',  Trim(vNumber));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_OPTIONS#',  Trim(vOptions));
+
+  ExecuteJS(LJS, true);
 end;
 
 procedure TFrmConsole.getMessageById(UniqueIDs, etapa: string);

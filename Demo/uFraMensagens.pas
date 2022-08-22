@@ -9,7 +9,6 @@
   Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
   an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
   specific language governing permissions and limitations under the License.
-
                               WPPCONNECT - Componente de comunicação (Não Oficial)
                                            https://wppconnect-team.github.io/
                                             Maio de 2022
@@ -22,7 +21,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
-  Vcl.Buttons, System.ImageList, Vcl.ImgList, Vcl.ComCtrls,
+  Vcl.Buttons, System.ImageList, Vcl.ImgList, Vcl.ComCtrls, uTWPPConnect.Constant ,
   EncdDecd, System.NetEncoding, Vcl.Imaging.jpeg, System.TypInfo;
 
 type
@@ -83,6 +82,8 @@ type
     Memo1: TMemo;
     lblCaminhoImagem: TLabel;
     Button1: TButton;
+    btnValidarListarNumeros: TButton;
+    btnGetMessage: TButton;
     procedure edtURLDblClick(Sender: TObject);
     procedure btnTextoSimplesClick(Sender: TObject);
     procedure btnBotaoSimplesClick(Sender: TObject);
@@ -122,6 +123,7 @@ type
     procedure btnVideoStatusClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure btnValidarListarNumerosClick(Sender: TObject);
+    procedure btnGetMessageClick(Sender: TObject);
   private
     { Private declarations }
      FStatus: Boolean;
@@ -219,6 +221,7 @@ procedure TframeMensagem.btnArquivarTodosChatsClick(Sender: TObject);
 begin
   if not frDemo.TWPPConnect1.Auth then
       Exit;
+
    frDemo.TWPPConnect1.ArquivarTodosOsChats;
 end;
 
@@ -315,7 +318,7 @@ begin
 
 
     options :=
-      'useTemplateButtons: true,' +
+      'useTemplateButtons: undefined,' +
       'createChat: true,' +
       'buttons:' +
       '['+
@@ -323,13 +326,11 @@ begin
         //'{phoneNumber: "551734265560", text: "☎️ Qualquer Dúvida Ligue"},' +
         '{id: "idVISITASIM", text: "Sim"},' +
         '{id: "idVISITANAO", text: "Não"}' +
-      ']' +
-      ',footer: "Escolha uma Opção"';
+      ']' ;
+      //',footer: "Escolha uma Opção"';
 
     S_RETORNO := TWPPConnectEmoticons.robot + ' *Confirma Visita do Nosso Técnico?* ' + '\n';
 
-    //frDemo.TWPPConnect1.SendButtons(ed_num.Text, S_RETORNO, options, '');
-    //frDemo.TWPPConnect1.SendTextMessage(ed_num.Text, S_RETORNO, options, '');
     frDemo.TWPPConnect1.SendTextMessageEx(ed_num.Text, S_RETORNO, options, '123');
 
   finally
@@ -439,6 +440,29 @@ begin
   frDemo.TWPPConnect1.FixarChat(ed_num.text);
 end;
 
+procedure TframeMensagem.btnGetMessageClick(Sender: TObject);
+var
+  options : string;
+begin
+  if ed_Num.Text = '' then
+  begin
+    if Trim(ed_num.Text) = '' then
+    begin
+      messageDlg('Informe o Contato para Continuar', mtWarning, [mbOk], 0);
+      ed_num.SetFocus;
+      Exit;
+    end;
+  end;
+
+   if not frDemo.TWPPConnect1.Auth then
+      Exit;
+
+  options := '';
+
+  frDemo.TWPPConnect1.getMessage(ed_num.text, options);
+
+end;
+
 procedure TframeMensagem.btnImagemBotaoClick(Sender: TObject);
 var
   content, options, options_Figurinha, options_Imagem, options_Audio,
@@ -482,7 +506,7 @@ begin
 
       options :=
         'createChat: true, ' +
-        'useTemplateButtons: true, ' +
+        'useTemplateButtons: undefined, ' + //Crash iOS True
         'title: "Novidades",  ' +
         'footer: "Imagem com Botão",  ' +
         'buttons: [ ' +
@@ -491,6 +515,7 @@ begin
         '    text: "Acesse Nosso Site" ' +
         '  }, ' +  *)
         //'{phoneNumber: "551734265560", text: "☎️ Qualquer Dúvida Ligue"},' +
+
         '  { ' +
         '    id: "001",  ' +
         '    text: "Show de Bola"  ' +
@@ -728,7 +753,7 @@ begin
       'name: "Cristo Rendentor", ' +
       'address: "Parque Nacional da Tijuca - Alto da Boa Vista, Rio de Janeiro - RJ", ' +
       'url: "https://santuariocristoredentor.com.br/", ' +
-      'useTemplateButtons: true, ' +
+      'useTemplateButtons: undefined, ' +
       'createChat: true, ' +
       'title: "Cristo Rendentor",  ' +
       'footer: "Pacote de Viagem",  ' +
@@ -933,7 +958,7 @@ begin
 
       options :=
         'createChat: true, ' +
-        'useTemplateButtons: true, ' +
+        'useTemplateButtons: undefined, ' +
         'title: "Novidades",  ' +
         'footer: "Imagem com Botão",  ' +
         'buttons: [ ' +
@@ -1020,25 +1045,12 @@ begin
   end;
 end;
 
-procedure TframeMensagem.btnVerificarNumeroClick(Sender: TObject);
-begin
- if not frDemo.TWPPConnect1.Auth then
-   Exit;
-
-  //frDemo.TWPPConnect1.NewCheckIsValidNumber('5517981388414@c.us');
-  //frDemo.TWPPConnect1.NewCheckIsValidNumber(ed_num.Text);
-  //Marcelo 18/07/2022
-  frDemo.TWPPConnect1.CheckNumberExists(ed_num.Text);
-
-end;
-
 procedure TframeMensagem.btnValidarListarNumerosClick(Sender: TObject);
 var
 OpenFileTXT : TOpenDialog;
 memocontact : Tmemo;
 memoCoctacValid : tmemo;
 a : integer;
-b : integer;
 begin
   OpenFileTXT := TOpenDialog.Create(self);
   memocontact := TMemo.Create(self);
@@ -1081,6 +1093,18 @@ begin
    memocontact.free;
    memoCoctacValid.free;
   end;
+end;
+
+procedure TframeMensagem.btnVerificarNumeroClick(Sender: TObject);
+begin
+ if not frDemo.TWPPConnect1.Auth then
+   Exit;
+
+  //frDemo.TWPPConnect1.NewCheckIsValidNumber('5517981388414@c.us');
+  //frDemo.TWPPConnect1.NewCheckIsValidNumber(ed_num.Text);
+  //Marcelo 18/07/2022
+  frDemo.TWPPConnect1.CheckNumberExists(ed_num.Text);
+
 end;
 
 procedure TframeMensagem.btnVideoBotaoClick(Sender: TObject);
@@ -1126,15 +1150,19 @@ begin
 
       options :=
         'createChat: true, ' +
-        'useTemplateButtons: true, ' +
+        'useTemplateButtons: undefined, ' +
         'title: "Novidades",  ' +
         'footer: "Video com Botão",  ' +
         'buttons: [ ' +
+
+        (*
         '  { ' +
         '    url: "https://wppconnect-team.github.io/", ' +
         '    text: "Acesse Nosso Site" ' +
         '  }, ' +
         '{phoneNumber: "5517981388414", text: "☎️ Qualquer Dúvida Ligue"},' +
+        *)
+
         '  { ' +
         '    id: "001",  ' +
         '    text: "Show de Bola"  ' +
