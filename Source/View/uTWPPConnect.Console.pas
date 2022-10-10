@@ -191,6 +191,10 @@ type
     procedure SendFileMessageEx(phoneNumber, content, options: string; xSeuID: string = '');
     procedure SendListMessageEx(phoneNumber, buttonText, description, sections: string; xSeuID: string = '');
 
+    //Adicionado Por Marcelo 17/09/2022
+    procedure SendLocationMessageEx(phoneNumber, options: string; xSeuID: string = '');
+
+
     //Adicionado Por Marcelo 18/05/2022
     procedure sendRawMessage(phoneNumber, rawMessage, options: string; etapa: string = '');
     procedure markIsComposing(phoneNumber, duration: string; etapa: string = '');
@@ -215,6 +219,8 @@ type
 
     //Adicionado Por Marcelo 10/05/2022
     procedure getMessageById(UniqueIDs: string; etapa: string = '');
+
+    procedure getPlatformFromMessage(UniqueIDs, PNumberPhone: string);  //Add Marcelo 20/09/2022
 
     //Adicionado Por Marcelo 01/03/2022
     procedure isBeta();
@@ -280,6 +286,8 @@ type
     procedure ReadMessages(vID: string);
     procedure DeleteMessages(vID: string);
     procedure ReadMessagesAndDelete(vID: string);
+
+    procedure DeleteChat(vID: string);
 
     procedure StartMonitor(Seconds: Integer);
     procedure StartMonitorWPPCrash(Seconds: Integer);
@@ -432,6 +440,10 @@ begin
   try
     If TWPPConnect(FOwner).Status = Server_Connected then
     Begin
+      //Marcelo 12/08/2022
+      //Aguardar "X" Segundos Injetar JavaScript
+      if TWPPConnect(FOwner).InjectJS.SecondsWaitInject > 0 then
+        SleepNoFreeze(TWPPConnect(FOwner).InjectJS.SecondsWaitInject * 1000);
       ExecuteJSDir('WPPConfig = {poweredBy: "WPP4Delphi"}; ' + TWPPConnect(FOwner).InjectJS.JSScript.Text);
       SleepNoFreeze(40);
 
@@ -598,6 +610,19 @@ end;
 procedure TFrmConsole.GetMyNumber;
 begin
   ExecuteJS(FrmConsole_JS_GetMyNumber, False);
+end;
+
+procedure TFrmConsole.getPlatformFromMessage(UniqueIDs, PNumberPhone: string);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS   := FrmConsole_JS_VAR_getPlatformFromMessage;
+  FrmConsole_JS_AlterVar(LJS, '#MSG_UNIQUE_ID#', Trim(UniqueIDs));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',     Trim(PNumberPhone));
+  ExecuteJS(LJS, false);
 end;
 
 procedure TFrmConsole.GetProductCatalog;
@@ -793,15 +818,19 @@ begin
     SendNotificationCenterDirect(Th_ConnectingFt_HTTP);
     QRCodeWeb_Start;
     if PViewForm then
-       Show;
-  end Else
-  Begin
+    begin
+      Show;
+      BringToFront;
+    end;
+  end
+  else
+  begin
     SleepNoFreeze(30);
     if PQrCodeType = Ft_None then
     Begin
       If not Assigned(TWPPConnect(FOwner).OnGetQrCode) then
         raise Exception.Create(MSG_ExceptNotAssignedOnGetQrCode);
-    End;
+    end;
 
     SendNotificationCenterDirect(Th_ConnectingFt_Desktop);
     if not FrmQRCode.Showing then
@@ -859,10 +888,24 @@ begin
   ExecuteJS(LJS, true);
 end;
 
+procedure TFrmConsole.DeleteChat(vID: string);
+var
+  LJS: String;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS := FrmConsole_JS_VAR_DeleteChat;
+  ExecuteJS(FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#', Trim(vID)), False);
+end;
+
 procedure TFrmConsole.DeleteMessages(vID: string);
 var
   LJS: String;
 begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
   LJS := FrmConsole_JS_VAR_DeleteMessages;
   ExecuteJS(FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#', Trim(vID)), False);
 end;
@@ -1249,16 +1292,18 @@ begin
   if not FConectado then
     raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
 
-  description := CaractersWeb(description);
-  buttonText := CaractersWeb(buttonText);
-
+  //description := CaractersWeb(description);
+  //buttonText := CaractersWeb(buttonText);
+  //sections := CaractersWeb(sections);
   sections := CaractersQuebraLinha(sections);
 
   LJS   := FrmConsole_JS_VAR_sendListMessageEx;
   FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',       Trim(phoneNumber));
-  FrmConsole_JS_AlterVar(LJS, '#MSG_BUTTONTEXT#',  Trim(buttonText));
-  FrmConsole_JS_AlterVar(LJS, '#MSG_DESCRIPTION#', Trim(description));
-  FrmConsole_JS_AlterVar(LJS, '#MSG_MENU#',        Trim(sections));
+  //FrmConsole_JS_AlterVar(LJS, '#MSG_BUTTONTEXT#',  Trim(buttonText));
+  //FrmConsole_JS_AlterVar(LJS, '#MSG_DESCRIPTION#', Trim(description));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_MENU#',        sections);
+  FrmConsole_JS_AlterVar(LJS, '#MSG_SEUID#',       Trim(xSeuID));
+
   ExecuteJS(LJS, true);
 end;
 
@@ -1290,6 +1335,23 @@ begin
   LJS   := FrmConsole_JS_VAR_sendLocationMessage;
   FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',    Trim(phoneNumber));
   FrmConsole_JS_AlterVar(LJS, '#MSG_OPTIONS#',  Trim(options));
+  ExecuteJS(LJS, true);
+end;
+
+procedure TFrmConsole.SendLocationMessageEx(phoneNumber, options, xSeuID: string);
+var
+  Ljs: string;
+begin
+  //Adicionado Por Marcelo 17/09/2022
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  options := CaractersQuebraLinha(options);
+
+  LJS   := FrmConsole_JS_VAR_sendLocationMessageEx;
+  FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',   Trim(phoneNumber));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_OPTIONS#', Trim(options));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_SEUID#',   Trim(xSeuID));
   ExecuteJS(LJS, true);
 end;
 
@@ -1722,8 +1784,21 @@ begin
                             end;
                           end;
 
+    //Marcelo 17/08/2022
+    Th_SendLocationMessageEx :
+                          begin
+                            LOutClass2 := TResponsesendTextMessage.Create(LResultStr);
+                            try
+                              SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass2);
+                            finally
+                              FreeAndNil(LOutClass2);
+                            end;
+                          end;
+
+
     //Marcelo 16/06/2022
-    Th_IncomingiCall : begin
+    Th_IncomingiCall :
+                       begin
                             //LOutClass2 := TResponsesendTextMessage.Create(LResultStr);
                             //LOutClass2 := TIncomingiCall.Create(LResultStr);
                             LOutClass2 := TIncomingiCall.Create(PResponse.JsonString);
@@ -1732,10 +1807,47 @@ begin
                             finally
                               FreeAndNil(LOutClass2);
                             end;
-                          end;
+                       end;
+
+    //Marcelo 17/09/2022
+    Th_IsReady :
+                       begin
+                         //LOutClass2 := TIsReady.Create(LResultStr);
+                         LOutClass2 := TIsReady.Create(PResponse.JsonString);
+                         try
+                           SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass2);
+                         finally
+                           FreeAndNil(LOutClass2);
+                         end;
+                       end;
+
+    //Marcelo 17/09/2022
+    Th_IsLoaded :
+                       begin
+                         //LOutClass2 := TIsLoaded.Create(LResultStr);
+                         LOutClass2 := TIsLoaded.Create(PResponse.JsonString);
+                         try
+                           SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass2);
+                         finally
+                           FreeAndNil(LOutClass2);
+                         end;
+                       end;
+
+    //Marcelo 18/09/2022
+    Th_IsAuthenticated :
+                       begin
+                         //LOutClass2 := TIsAuthenticated.Create(LResultStr);
+                         LOutClass2 := TIsAuthenticated.Create(PResponse.JsonString);
+                         try
+                           SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass2);
+                         finally
+                           FreeAndNil(LOutClass2);
+                         end;
+                       end;
 
     Th_getMessages: begin
-                      LOutClass2 := TChatList3.Create(LResultStr);
+                      //LOutClass2 := TRootClass.Create(LResultStr); //03/09/2022
+                      LOutClass2 := TRootClass.Create(PResponse.JsonString); //03/09/2022
                       try
                         SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass2);
                       finally
@@ -1917,10 +2029,23 @@ begin
                                 FreeAndNil(LOutClass);
                               end;
                             end;
-    Th_getLastSeen : begin
+    Th_getLastSeen :
+                     begin
                              //LResultStr := copy(LResultStr, 11, length(LResultStr)); //REMOVENDO RESULT
                              //LResultStr := copy(LResultStr, 0, length(LResultStr)-1); // REMOVENDO }
                              LOutClass := TReturngetLastSeen.Create(LResultStr);
+                             try
+                               SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass);
+                             finally
+                               FreeAndNil(LOutClass);
+                             end;
+                     end;
+
+    Th_getPlatformFromMessage :
+                     begin
+                             LResultStr := copy(LResultStr, 11, length(LResultStr)); //REMOVENDO RESULT
+                             LResultStr := copy(LResultStr, 0, length(LResultStr)-1); // REMOVENDO }
+                             LOutClass := TPlatformFromMessage.Create(LResultStr);
                              try
                                SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass);
                              finally
@@ -2017,8 +2142,15 @@ procedure TFrmConsole.Chromium1LoadEnd(Sender: TObject;
 begin
   if TWPPConnect(FOwner).Status = Server_Rebooting then
   begin
+    //Marcelo 12/08/2022
+    //Aguardar "X" Segundos Injetar JavaScript
+    if TWPPConnect(FOwner).InjectJS.SecondsWaitInject > 0 then
+      SleepNoFreeze(TWPPConnect(FOwner).InjectJS.SecondsWaitInject * 1000);
     ExecuteJSDir('WPPConfig = {poweredBy: "WPP4Delphi"}; ' + TWPPConnect(FOwner).InjectJS.JSScript.Text);
-    SleepNoFreeze(40);
+    SleepNoFreeze(500);
+
+    If Assigned(TWPPConnect(FOwner).OnAfterInjectJs) Then
+       TWPPConnect(FOwner).OnAfterInjectJs(FOwner);
 
       //Auto monitorar mensagens não lidas
     StartMonitor(TWPPConnect(FOwner).Config.SecondsMonitor);

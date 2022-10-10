@@ -167,7 +167,7 @@ Const
 
   FrmConsole_JS_VAR_getMessage          = 'window.WAPI.getMessages("<#MSG_PHONE#>",{<#MSG_OPTIONS#>} ); ';
 
-  FrmConsole_JS_VAR_getPlatformFromMessage = 'WPP.chat.getPlatformFromMessage("<#MSG_UNIQUE_ID#>");';
+  FrmConsole_JS_VAR_getPlatformFromMessage = 'window.WAPI.getPlatformFromMessage2("<#MSG_UNIQUE_ID#>","<#MSG_PHONE#>");';
 
   FrmConsole_JS_VAR_SendReactionMessage = 'WPP.chat.sendReactionToMessage("<#MSG_UNIQUE_ID#>", <#MSG_REACTION#>);';
 
@@ -205,6 +205,10 @@ Const
   FrmConsole_JS_VAR_UnPinChat           = 'WPP.chat.unpin("<#CTT_NAME#>");';
   FrmConsole_JS_VAR_CreatePoolMessage   = 'WPP.chat.sendCreatePollMessage("<#GROUP_ID#>","<#MSG_CONTENT#>",<#POOL_OPTIONS#>);';
 
+  //Marcelo 14/09/2022
+  FrmConsole_JS_VAR_DeleteChat          = 'WPP.chat.delete("<#MSG_PHONE#>");';
+
+
   //Marcelo 18/05/2022
   FrmConsole_JS_VAR_sendRawMessage      = 'WPP.chat.sendRawMessage("<#MSG_PHONE#>","<#MSG_RAW#>",{<#MSG_OPTIONS#>} );';
 
@@ -212,7 +216,11 @@ Const
   //TEMIS 03-06-2022 Obtendo Retorno do Envio com SeuID
   FrmConsole_JS_VAR_SendTextMessageEx   = 'window.WAPI.sendTextMessage2Ex("<#MSG_PHONE#>","<#MSG_CONTENT#>",{<#MSG_OPTIONS#>},"<#MSG_SEUID#>");';
   FrmConsole_JS_VAR_sendFileMessageEx   = 'window.WAPI.sendFileMessage2Ex("<#MSG_PHONE#>","<#MSG_CONTENT#>",{<#MSG_OPTIONS#>},"<#MSG_SEUID#>" );';
-  FrmConsole_JS_VAR_sendListMessageEx   = 'window.WAPI.sendListMessage2Ex("<#MSG_PHONE#>",{<#MSG_MENU#>} );';
+  FrmConsole_JS_VAR_sendListMessageEx   = 'window.WAPI.sendListMessage2Ex("<#MSG_PHONE#>",{<#MSG_MENU#>},"<#MSG_SEUID#>" );';
+
+  //Marcelo 17/09/2022
+  FrmConsole_JS_VAR_sendLocationMessageEx   = 'window.WAPI.sendLocationMessage2Ex("<#MSG_PHONE#>",{<#MSG_OPTIONS#>},"<#MSG_SEUID#>" );';
+
 
   //Marcelo 18/07/2022
   FrmConsole_JS_VAR_CheckNumberExists   = 'window.WAPI.CheckNumberExists("<#MSG_PHONE#>");';
@@ -270,7 +278,7 @@ resourcestring
   Text_FrmConsole_Caption              = 'WPP Connect';
   Text_FrmConsole_LblMsg               = '';
   MSG_WarningClassUnknown              = '';
-  MSG_Exceptlibeay32dll                = '';
+  MSG_Exceptlibeay32dll                = 'Erro HTTP GET (js.abr) Atualize as dlls "libeay32.dll" e "ssleay32.dll"';
   Text_Vcard_Comments1                 = '';
   Text_Vcard_Comments2                 = '';
   Text_Vcard_Comments3                 = '';
@@ -379,6 +387,11 @@ type
                    , Th_CheckNumberExists=53 //Marcelo 18/07/2022
                    , Th_getLastSeen=54 //Marcelo 31/07/2022
                    , Th_getMessages=55 //Marcelo 14/08/2022
+                   , Th_SendLocationMessageEx=56 //Marcelo 17/09/2022
+                   , Th_IsReady=57 //Marcelo 17/09/2022
+                   , Th_IsLoaded=58 //Marcelo 17/09/2022
+                   , Th_IsAuthenticated=59 //Marcelo 18/09/2022
+                   , Th_getPlatformFromMessage=60 //Marcelo 20/09/2022
                    );
 
     Function   VerificaCompatibilidadeVersao(PVersaoExterna:String; PversaoInterna:String):Boolean;
@@ -516,7 +529,7 @@ Begin
 End;
 
 function   StrToTypeHeader(PText: string): TTypeHeader;
-const LmaxCount = 55; //Marcelo 14/08/2022
+const LmaxCount = 60; //Marcelo 20/09/2022
 var
   I: Integer;
   LNome: String;

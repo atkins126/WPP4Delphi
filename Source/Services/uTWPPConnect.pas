@@ -74,24 +74,34 @@ type
   TOnNewCheckNumber         = procedure(Const vCheckNumber : TReturnCheckNumber) of object;
   TOnCheckNumberExists      = procedure(Const vCheckNumberExists : TReturnCheckNumberExists) of object;
 
-  TOngetLastSeen      = procedure(Const vgetLastSeen : TReturngetLastSeen) of object; //Marcelo 31/07/2022
+  TOnGetLastSeen            = procedure(Const vGetLastSeen : TReturngetLastSeen) of object; //Marcelo 31/07/2022
+
+  TOnGetPlatformFromMessage = procedure(Const PlatformFromMessage: TPlatformFromMessage) of object; //Marcelo 20/08/2022
 
   //Adicionado Por Marcelo 06/05/2022
-  TGetMessageById           = procedure(Const Mensagem: TMessagesClass) of object;
+  TGetMessageById            = procedure(Const Mensagem: TMessagesClass) of object;
   //TGetMessageById           = procedure(Const Mensagem: TMessagesList) of object;
 
   //Adicionado Por Marcelo 31/05/2022
-  TGet_sendFileMessage      = procedure(Const Mensagem: TMessagesClass) of object;
-  TGet_sendTextMessage      = procedure(Const Mensagem: TMessagesClass) of object;
-  TGet_sendListMessage      = procedure(Const Mensagem: TMessagesClass) of object;
+  TGet_sendFileMessage       = procedure(Const Mensagem: TMessagesClass) of object;
+  TGet_sendTextMessage       = procedure(Const Mensagem: TMessagesClass) of object;
+  TGet_sendListMessage       = procedure(Const Mensagem: TMessagesClass) of object;
+
   //temis 03-06-2022
-  TGet_sendTextMessageEx   = procedure(Const RespMensagem: TResponsesendTextMessage) of object;
-  TGet_sendFileMessageEx   = procedure(Const RespMensagem: TResponsesendTextMessage) of object;
-  TGet_sendListMessageEx   = procedure(Const RespMensagem: TResponsesendTextMessage) of object;
-  TGet_ProductCatalog      = procedure(Sender : TObject; Const ProductCatalog: TProductsList) of object;
-  TWPPMonitorCrash         = procedure(Sender : TObject; Const WPPCrash: TWppCrash; AMonitorJSCrash: Boolean=false) of object;
+  TGet_sendTextMessageEx     = procedure(Const RespMensagem: TResponsesendTextMessage) of object;
+  TGet_sendFileMessageEx     = procedure(Const RespMensagem: TResponsesendTextMessage) of object;
+  TGet_sendListMessageEx     = procedure(Const RespMensagem: TResponsesendTextMessage) of object;
+
+  //Marcelo 17/09/2022
+  TGet_sendLocationMessageEx = procedure(Const RespMensagem: TResponsesendTextMessage) of object;
+
+  TGet_ProductCatalog        = procedure(Sender : TObject; Const ProductCatalog: TProductsList) of object;
+  TWPPMonitorCrash           = procedure(Sender : TObject; Const WPPCrash: TWppCrash; AMonitorJSCrash: Boolean=false) of object;
   //Adicionado por Marcelo 17/06/2022
-  TGetIncomingiCall        = procedure(Const IncomingiCall: TIncomingiCall) of object;
+  TGetIncomingiCall          = procedure(Const IncomingiCall: TIncomingiCall) of object;
+  TGetIsReady                = Procedure(Sender : TObject; IsReady: Boolean) of object; //Marcelo 17/08/2022
+  TGetIsLoaded               = Procedure(Sender : TObject; IsLoaded: Boolean) of object; //Marcelo 17/08/2022
+  TGetIsAuthenticated        = Procedure(Sender : TObject; IsAuthenticated: Boolean) of object; //Marcelo 18/08/2022
 
   TWPPConnect = class(TComponent)
   private
@@ -171,6 +181,7 @@ type
     FOnCheckNumberExists        : TOnCheckNumberExists; //Marcelo 18/07/2022
 
     FOngetLastSeen              : TOngetLastSeen; //Marcelo 31/07/2022
+    FOnGetPlatformFromMessage   : TOnGetPlatformFromMessage; //Marcelo 20/08/2022
 
 
     FOnGetMessageById           : TGetMessageById; //Adicionado Por Marcelo 06/05/2022
@@ -184,12 +195,18 @@ type
     FOnGet_sendTextMessageEx    : TGet_sendTextMessageEx;
     FOnGet_sendFileMessageEx    : TGet_sendFileMessageEx;
     FOnGet_sendListMessageEx    : TGet_sendListMessageEx;
+    FOnGet_sendLocationMessageEx : TGet_sendLocationMessageEx;  //Add Marcelo 17/09/2022
 
     //Daniel 13/06/2022
     FOnGet_ProductCatalog       : TGet_ProductCatalog;
 
     //Adicionado Por Marcelo 17/06/2022
     FOnGetIncomingiCall    : TGetIncomingiCall;
+
+    FOnGetIsReady: TGetIsReady; //Marcelo 17/09/2022
+    FOnGetIsLoaded: TGetIsLoaded; //Marcelo 17/09/2022
+    FOnGetIsAuthenticated: TGetIsAuthenticated; //Marcelo 17/09/2022
+
     procedure Int_OnNotificationCenter(PTypeHeader: TTypeHeader; PValue: String; Const PReturnClass : TObject= nil);
 
     procedure Loaded; override;
@@ -223,6 +240,7 @@ type
     procedure SendFileMessageEx(phoneNumber, pBase64, Options: string;  xSeuID: string = '');overload;
     procedure SendTextMessageEx(phoneNumber, content, options: string; xSeuID: string = '');
     procedure SendListMessageEx(phoneNumber, buttonText, description, sections: string; xSeuID: string = '');
+    procedure SendLocationMessageEx(phoneNumber, options: string; xSeuID: string = '');
 
     //Daniel - 13/06/2022
     procedure GetProductCatalog;
@@ -250,6 +268,11 @@ type
 
     //Adicionado Por Marcelo 03/05/2022
     procedure getMessageById(UniqueIDs: string; etapa: string = '');
+
+    procedure getPlatformFromMessage(UniqueIDs, PNumberPhone: string); //Add Marcelo 20/09/2022
+
+
+    procedure DeleteChat(PNumberPhone: string);
 
     procedure deleteConversation(PNumberPhone: string);
     procedure SendContact(PNumberPhone, PNumber: string; PNameContact: string = '');
@@ -364,11 +387,21 @@ type
     property OnGet_sendFileMessageEx     : TGet_sendFileMessageEx     read FOnGet_sendFileMessageEx        write FOnGet_sendFileMessageEx;
     property OnGet_sendListMessageEx     : TGet_sendListMessageEx     read FOnGet_sendListMessageEx        write FOnGet_sendListMessageEx;
 
+    //Marcelo 17/09/2022
+    property OnGet_SendLocationMessageEx : TGet_sendLocationMessageEx read FOnGet_sendLocationMessageEx    write FOnGet_sendLocationMessageEx;
+
     //Daniel - 13/06/2022
     property OnGet_ProductCatalog        : TGet_ProductCatalog        read FOnGet_ProductCatalog           write FOnGet_ProductCatalog;
     property OnWPPMonitorCrash           : TWPPMonitorCrash           read FOnWPPMonitorCrash              write FOnWPPMonitorCrash;
     //Adicionado Por Marcelo 17/06/2022
     property OnGetIncomingiCall          : TGetIncomingiCall          read FOnGetIncomingiCall             write FOnGetIncomingiCall;
+
+    //Marcelo 17/09/2022
+    property OnGetIsReady                : TGetIsReady                read FOnGetIsReady                   write FOnGetIsReady;
+    property OnGetIsLoaded               : TGetIsLoaded               read FOnGetIsLoaded                  write FOnGetIsLoaded;
+
+    //Marcelo 18/09/2022
+    property OnGetIsAuthenticated        : TGetIsAuthenticated        read FOnGetIsAuthenticated           write FOnGetIsAuthenticated;
 
     //Adicionado Por Marcelo 01/03/2022
     property OnIsBeta                    : TOnGetCheckIsBeta          read FOnGetCheckIsBeta               write FOnGetCheckIsBeta;
@@ -392,7 +425,8 @@ type
     property OnGetMe                     : TOnGetMe                   read FOnGetMe                        write FOnGetMe;
     property OnNewGetNumber              : TOnNewCheckNumber          read FOnNewCheckNumber               write FOnNewCheckNumber;
     property OnCheckNumberExists         : TOnCheckNumberExists       read FOnCheckNumberExists            write FOnCheckNumberExists;
-    property OngetLastSeen               : TOngetLastSeen             read FOngetLastSeen                  write FOngetLastSeen;
+    property OnGetLastSeen               : TOnGetLastSeen             read FOnGetLastSeen                  write FOnGetLastSeen;
+    property OnGetPlatformFromMessage    : TOnGetPlatformFromMessage  read FOnGetPlatformFromMessage       write FOnGetPlatformFromMessage;
   end;
 
 procedure Register;
@@ -836,6 +870,31 @@ begin
   lThread.Start;
 end;
 
+procedure TWPPConnect.DeleteChat(PNumberPhone: string);
+var
+  lThread : TThread;
+begin
+  if Application.Terminated Then
+    Exit;
+
+  if not Assigned(FrmConsole) then
+    Exit;
+
+  //Msrcelo 16/08/2022
+  PNumberPhone := AjustNumber.FormatIn(PNumberPhone);
+  if (pos('@', PNumberPhone) = 0) then
+  Begin
+    Int_OnErroInterno(Self, MSG_ExceptPhoneNumberError, PNumberPhone);
+    Exit;
+  end;
+
+  if Assigned(FrmConsole) then
+  begin
+    FrmConsole.DeleteChat(PNumberPhone);//Deleta o Chat da conversa
+  end;
+
+end;
+
 procedure TWPPConnect.deleteConversation(PNumberPhone: string);
 var
   lThread : TThread;
@@ -1083,6 +1142,44 @@ begin
             begin
               //FrmConsole.ReadMessagesAndDelete(phoneNumber);//Deleta a conversa
             end;
+          end;
+        end);
+
+      end);
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+
+end;
+
+procedure TWPPConnect.getPlatformFromMessage(UniqueIDs, PNumberPhone: string);
+var
+  lThread : TThread;
+begin
+  //Adicionado Por Marcelo 01/03/2022
+  if Application.Terminated Then
+    Exit;
+  if not Assigned(FrmConsole) then
+    Exit;
+
+  PNumberPhone := AjustNumber.FormatIn(PNumberPhone);
+  if (pos('@', PNumberPhone) = 0) then
+  Begin
+    Int_OnErroInterno(Self, MSG_ExceptPhoneNumberError, PNumberPhone);
+    Exit;
+  end;
+
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        if Config.AutoDelay > 0 then
+           sleep(random(Config.AutoDelay));
+
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            //FrmConsole.ReadMessages(phoneNumber); //Marca como lida a mensagem
+            FrmConsole.getPlatformFromMessage(UniqueIDs, PNumberPhone);
           end;
         end);
 
@@ -1955,10 +2052,29 @@ begin
       OnGetMessages(TChatList3(PReturnClass));
   end;
 
+  //Marcelo 17/09/2022
+  if PTypeHeader = Th_IsReady then
+  Begin
+    if Assigned(OnGetIsReady) then
+      OnGetIsReady( TIsReady(PReturnClass), True);
+  end;
+
+  if PTypeHeader = Th_IsLoaded then
+  Begin
+    if Assigned(OnGetIsLoaded) then
+      OnGetIsLoaded( TIsLoaded(PReturnClass), True);
+  end;
+
+  if PTypeHeader = Th_IsAuthenticated then
+  Begin
+    if Assigned(OnGetIsAuthenticated) then
+      OnGetIsAuthenticated( TIsAuthenticated(PReturnClass), True);
+  end;
 
   if (PTypeHeader In [Th_GetAllChats, Th_getUnreadMessages,
   Th_GetMessageById, Th_sendFileMessage, Th_sendTextMessage, Th_sendListMessage, //Adicionado por Marcelo 31/05/2022
   Th_sendTextMessageEx,Th_sendFileMessageEx, Th_sendListMessageEx, //temis 03-06-2022
+  Th_sendLocationMessageEx, //Add Marcelo 17/09/2022
   Th_IncomingiCall]) then //Adicionado por Marcelo 17/06/2022
   Begin
     if not Assigned(PReturnClass) then
@@ -2030,6 +2146,13 @@ begin
         OnGet_sendListMessageEx(TResponsesendTextMessage(PReturnClass));
     end;
 
+    //Marcelo 17/09/2022
+    if PTypeHeader = Th_SendLocationMessageEx then
+    Begin
+      if Assigned(OnGet_SendLocationMessageEx) then
+        OnGet_sendLocationMessageEx(TResponsesendTextMessage(PReturnClass));
+    end;
+
     //Marcelo 17/06/2022
     If PTypeHeader = Th_IncomingiCall Then
     Begin
@@ -2044,7 +2167,7 @@ begin
   Begin
     FStatus := Server_ConnectedDown;
     if Assigned(fOnGetStatus ) then
-       fOnGetStatus(Self);
+      fOnGetStatus(Self);
     Disconnect;
     exit;
   end;
@@ -2053,7 +2176,7 @@ begin
   if PTypeHeader in [Th_ForceDisconnect] then
   Begin
     if Assigned(FOnDisconnectedBrute) then
-       FOnDisconnectedBrute(Self);
+      FOnDisconnectedBrute(Self);
     Disconnect;
     exit;
   end;
@@ -2063,17 +2186,19 @@ begin
   Begin
     FStatus := Inject_Initialized;
     if Assigned(FOnAfterInitialize) then
-       FOnAfterInitialize(Self);
+      FOnAfterInitialize(Self);
 
     if Assigned(fOnGetStatus ) then
-       fOnGetStatus(Self);
+      fOnGetStatus(Self);
+
+    FrmConsole.GetMyNumber;
   end;
 
 
   if PTypeHeader = Th_Initializing then
   begin
     if not Assigned(FrmConsole) then
-       Exit;
+      Exit;
 
     FrmConsole.GetMyNumber;
     SleepNoFreeze(40);
@@ -2081,7 +2206,7 @@ begin
 
     FrmConsole.GetAllContacts(true);
     if Assigned(fOnGetStatus ) then
-       fOnGetStatus(Self);
+      fOnGetStatus(Self);
     Exit;
   end;
 
@@ -2101,7 +2226,7 @@ begin
   If PTypeHeader = Th_getAllGroupContacts Then
   Begin
     if Assigned(OnGetAllGroupContacts) then
-       OnGetAllGroupContacts(TClassAllGroupContacts(PReturnClass));
+      OnGetAllGroupContacts(TClassAllGroupContacts(PReturnClass));
   end;
 
 
@@ -2109,7 +2234,7 @@ begin
   Begin
     FMyNumber := FAdjustNumber.FormatOut(PValue);
     if Assigned(FOnGetMyNumber) then
-       FOnGetMyNumber(Self);
+      FOnGetMyNumber(Self);
   end;
 
 
@@ -2118,41 +2243,49 @@ begin
   Begin
     FIsDelivered := FAdjustNumber.FormatOut(PValue);
     if Assigned(FOnGetIsDelivered) then
-       FOnGetIsDelivered(Self);
+      FOnGetIsDelivered(Self);
   end;
 
 
   if PTypeHeader = Th_GetStatusMessage then
   Begin
    if Assigned(FOnGetStatusMessage) then
-       FOnGetStatusMessage(TResponseStatusMessage(PReturnClass));
+     FOnGetStatusMessage(TResponseStatusMessage(PReturnClass));
   end;
 
   if PTypeHeader = Th_GetMe  then
   begin
     if Assigned(FOnGetMe) then
-       FOnGetMe(TGetMeClass(PReturnClass));
+      FOnGetMe(TGetMeClass(PReturnClass));
   end;
 
   if PTypeHeader = Th_NewCheckIsValidNumber  then
   begin
     if Assigned(FOnNewCheckNumber) then
-       FOnNewCheckNumber(TReturnCheckNumber(PReturnClass));
+      FOnNewCheckNumber(TReturnCheckNumber(PReturnClass));
   end;
 
   if PTypeHeader = Th_CheckNumberExists  then
   begin
     if Assigned(FOnCheckNumberExists) then
-       FOnCheckNumberExists(TReturnCheckNumberExists(PReturnClass));
+      FOnCheckNumberExists(TReturnCheckNumberExists(PReturnClass));
   end;
 
   if PTypeHeader = Th_getLastSeen  then
   begin
     if Assigned(FOngetLastSeen) then
-       FOngetLastSeen(TReturngetLastSeen(PReturnClass));
+      FOngetLastSeen(TReturngetLastSeen(PReturnClass));
+  end;
+
+  //Marcelo 20/09/2022
+  if PTypeHeader = Th_GetPlatformFromMessage  then
+  begin
+    if Assigned(FOnGetPlatformFromMessage) then
+      FOnGetPlatformFromMessage(TPlatformFromMessage(PReturnClass));
   end;
 
 
+  //deprecated
   if PTypeHeader = Th_GetBatteryLevel then
   Begin
     FGetBatteryLevel :=  StrToIntDef(PValue, -1);
@@ -2855,9 +2988,9 @@ begin
     Exit;
   end;
 
-  if Trim(buttonText) = '' then
+  if Trim(sections) = '' then
   begin
-    Int_OnErroInterno(Self, MSG_WarningNothingtoSend, phoneNumber);
+    Int_OnErroInterno(Self, MSG_WarningNothingtoSend, sections);
     Exit;
   end;
 
@@ -2974,6 +3107,47 @@ begin
             end;
           end;
         end);
+
+      end);
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+
+end;
+
+procedure TWPPConnect.SendLocationMessageEx(phoneNumber, options, xSeuID: string);
+var
+  lThread : TThread;
+begin
+  //Marcelo 17/09/2022
+  if Application.Terminated Then
+    Exit;
+
+  if not Assigned(FrmConsole) then
+    Exit;
+
+  phoneNumber := AjustNumber.FormatIn(phoneNumber);
+  if pos('@', phoneNumber) = 0 then
+  begin
+    Int_OnErroInterno(Self, MSG_ExceptPhoneNumberError, phoneNumber);
+    Exit;
+  end;
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        if Config.AutoDelay > 0 then
+           sleep(random(Config.AutoDelay));
+
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.ReadMessages(phoneNumber); //Marca como lida a mensagem
+            FrmConsole.SendLocationMessageEx(phoneNumber, options, xSeuID);
+
+            //FrmConsole.ReadMessagesAndDelete(phoneNumber);//Deleta a conversa
+
+          end;
+       end);
 
       end);
   lThread.FreeOnTerminate := true;
@@ -3759,8 +3933,10 @@ begin
     LForm.Visible                     := True;
     SleepNoFreeze(2000);               //alteração em 17/07/2022
 
-    //temis 03-06-2022 Application.MainForm.Visible    := False;
-    Application.MainForm.Visible    := False;
+    //Marcelo 15/09/2022 Compatibilidade FMX
+    if Assigned(Application.MainForm) then
+      Application.MainForm.Visible    := False;
+
     LForm.Show;
 
     Disconnect;
@@ -3848,11 +4024,19 @@ begin
 
   if Status in [Server_Disconnected, Inject_Destroy] then
   begin
+    //SleepNoFreeze(1000);
+    if  ConsolePronto then
+    begin
+
+    end
+    else
     if not ConsolePronto then
     begin
       Application.MessageBox(PWideChar(MSG_ConfigCEF_ExceptConsoleNaoPronto), PWideChar(Application.Title), MB_ICONERROR + mb_ok);
       Exit;
     end;
+
+
     //Reseta o FORMULARIO
     if LState Then
        FormQrCodeReloader;

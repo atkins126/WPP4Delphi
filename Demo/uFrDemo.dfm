@@ -1923,6 +1923,15 @@ object frDemo: TfrDemo
       end
     end
   end
+  object BitBtn1: TBitBtn
+    Left = 287
+    Top = 82
+    Width = 141
+    Height = 25
+    Caption = 'Reiniciar Whatsap Web'
+    TabOrder = 10
+    OnClick = BitBtn1Click
+  end
   object ImageList1: TImageList
     ColorDepth = cd32Bit
     DrawingStyle = dsTransparent
@@ -5503,13 +5512,14 @@ object frDemo: TfrDemo
       000000000000}
   end
   object TWPPConnect1: TWPPConnect
-    InjectJS.AutoUpdateTimeOut = 10
+    InjectJS.AutoUpdateTimeOut = 6
     InjectJS.JSURL = 
       'https://raw.githubusercontent.com/wppconnect-team/WPP4Delphi/mai' +
       'n/Source/JS/js.abr'
+    InjectJS.SecondsWaitInject = 0
     Config.AutoStart = True
-    Config.AutoDelay = 0
-    Config.SecondsMonitor = 8
+    Config.AutoDelay = 1000
+    Config.SecondsMonitor = 5
     AjustNumber.LengthPhone = 8
     AjustNumber.DDIDefault = 55
     FormQrCodeType = Ft_Http
@@ -5519,7 +5529,6 @@ object frDemo: TfrDemo
     OnGetQrCode = TWPPConnect1GetQrCode
     OnGetChatList = TWPPConnect1GetChatList
     OnGetUnReadMessages = TWPPConnect1GetUnReadMessages
-    OnGetMessages = TWPPConnect1GetMessages
     OnGetAllGroupContacts = TWPPConnect1GetAllGroupContacts
     OnGetStatus = TWPPConnect1GetStatus
     OnGetMessageById = TWPPConnect1GetMessageById
@@ -5529,9 +5538,13 @@ object frDemo: TfrDemo
     OnGet_sendTextMessageEx = TWPPConnect1Get_sendTextMessageEx
     OnGet_sendFileMessageEx = TWPPConnect1Get_sendFileMessageEx
     OnGet_sendListMessageEx = TWPPConnect1Get_sendListMessageEx
+    OnGet_SendLocationMessageEx = TWPPConnect1Get_SendLocationMessageEx
     OnGet_ProductCatalog = TWPPConnect1Get_ProductCatalog
     OnWPPMonitorCrash = TWPPConnect1WPPMonitorCrash
     OnGetIncomingiCall = TWPPConnect1GetIncomingiCall
+    OnGetIsReady = TWPPConnect1GetIsReady
+    OnGetIsLoaded = TWPPConnect1GetIsLoaded
+    OnGetIsAuthenticated = TWPPConnect1GetIsAuthenticated
     OnGetCheckIsValidNumber = TWPPConnect1GetCheckIsValidNumber
     OnGetProfilePicThumb = TWPPConnect1GetProfilePicThumb
     OnGetMyNumber = TWPPConnect1GetMyNumber
@@ -5544,6 +5557,8 @@ object frDemo: TfrDemo
     OnGetMe = TWPPConnect1GetMe
     OnNewGetNumber = TWPPConnect1NewGetNumber
     OnCheckNumberExists = TWPPConnect1CheckNumberExists
+    OnGetLastSeen = TWPPConnect1GetLastSeen
+    OnGetPlatformFromMessage = TWPPConnect1GetPlatformFromMessage
     Left = 304
     Top = 376
   end

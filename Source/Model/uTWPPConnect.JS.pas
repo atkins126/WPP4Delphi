@@ -62,7 +62,6 @@ type
       property   Version_CEF4Min    : String   read FVersion_CEF4Min;
     end;
 
-
   TWPPConnectJS  = class(TPersistent)
   private
     FAutoUpdate     : Boolean;
@@ -74,6 +73,7 @@ type
     FInjectJSDefine : TWPPConnectJSDefine;
     FAutoUpdateTimeOut   : Integer;
     FOnErrorInternal     : TOnErroInternal;
+    FSecondsWaitInject: Integer;
     Owner: TComponent;
   {$REGION 'uCSV.Import'}
     FStringList: TStringList;
@@ -86,6 +86,7 @@ type
     function   PegarLocalJS_Web: String;
     Function   AtualizarInternamente(PForma: TFormaUpdate):Boolean;
     Function   ValidaJs(Const TValor: Tstrings): Boolean;
+    procedure SetSecondsWaitInject(const Value: integer);
 
 
   protected
@@ -95,7 +96,7 @@ type
     property    InjectJSDefine  : TWPPConnectJSDefine Read FInjectJSDefine;
     property    OnErrorInternal : TOnErroInternal Read FOnErrorInternal  Write FOnErrorInternal;
     destructor  Destroy; override;
-    Function    UpdateNow:Boolean;
+    Function    UpdateNow: Boolean;
     Procedure   DelFileTemp;
 
 
@@ -113,12 +114,13 @@ type
   {$ENDREGION}
 
  published
-    property   AutoUpdate         : Boolean   read FAutoUpdate           write FAutoUpdate          default True;
-    property   AutoUpdateTimeOut  : Integer   Read FAutoUpdateTimeOut    Write FAutoUpdateTimeOut   Default 4;
-    property   OnUpdateJS    : TNotifyEvent   Read FOnUpdateJS           Write FOnUpdateJS;
-    property   Ready         : Boolean        read FReady;
-    property   JSURL         : String         read FJSURL                write FJSURL;
-    property   JSScript      : TstringList    read FJSScript             Write SeTWPPConnectScript;
+    property   AutoUpdate         : Boolean        read FAutoUpdate           write FAutoUpdate          default True;
+    property   AutoUpdateTimeOut  : Integer        Read FAutoUpdateTimeOut    Write FAutoUpdateTimeOut   Default 4;
+    property   OnUpdateJS         : TNotifyEvent   Read FOnUpdateJS           Write FOnUpdateJS;
+    property   Ready              : Boolean        read FReady;
+    property   JSURL              : String         read FJSURL                write FJSURL;
+    property   JSScript           : TstringList    read FJSScript             Write SeTWPPConnectScript;
+    property   SecondsWaitInject  : Integer        read FSecondsWaitInject    Write FSecondsWaitInject   Default 6;
   end;
 
 
@@ -150,6 +152,7 @@ begin
   FJSURL                     := TWPPConnectJS_JSUrlPadrao;
   FInjectJSDefine            := TWPPConnectJSDefine.Create;
   FReady                     := False;
+  FSecondsWaitInject         := 6;
   UpdateNow;   //UpdateNow; Temis 03-06-2022
 end;
 function TWPPConnectJS.AtualizarInternamente(PForma: TFormaUpdate): Boolean;
@@ -207,6 +210,14 @@ end;
 procedure TWPPConnectJS.DelFileTemp;
 begin
   DeleteFile(PwideChar(IncludeTrailingPathDelimiter(GetEnvironmentVariable('Temp'))+'GetTWPPConnect.tmp'));
+end;
+
+procedure TWPPConnectJS.SetSecondsWaitInject(const Value: integer);
+begin
+  FSecondsWaitInject := Value;
+  //Não permitir que fique negativo.
+  if Value < 0 then
+     FSecondsWaitInject := 0;
 end;
 
 procedure TWPPConnectJS.SeTWPPConnectScript(const Value: TstringList);

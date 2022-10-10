@@ -57,6 +57,7 @@ type
     frameCatalogo1: TframeCatalogo;
     frameOutros1: TframeOutros;
     frameGrupos1: TframeGrupos;
+    BitBtn1: TBitBtn;
     procedure FormShow(Sender: TObject);
     procedure frameLogin1SpeedButton1Click(Sender: TObject);
     procedure TWPPConnect1GetQrCode(const Sender: TObject;
@@ -78,7 +79,6 @@ type
       const PError, PInfoAdc: string);
     procedure TWPPConnect1GetCheckIsValidNumber(Sender: TObject; Number: string;
       IsValid: Boolean);
-    procedure TWPPConnect1GetMessageById(const Mensagem: TMessagesList);
     procedure ctbtnCategories0Items2Click(Sender: TObject);
     procedure TWPPConnect1GetAllGroupList(const AllGroups: TRetornoAllGroups);
     procedure TWPPConnect1GetAllGroupContacts(const Contacts
@@ -88,8 +88,7 @@ type
     procedure TWPPConnect1GetInviteGroup(const Invite: string);
     procedure TWPPConnect1NewGetNumber(const vCheckNumber: TReturnCheckNumber);
     procedure TWPPConnect1GetUnReadMessages(const Chats: TChatList);
-    procedure TWPPConnect1GetStatusMessage(const Result
-      : TResponseStatusMessage);
+    procedure TWPPConnect1GetStatusMessage(const Result: TResponseStatusMessage);
     procedure btnAbrirZapClick(Sender: TObject);
     procedure ctbtnCategories0Items3Click(Sender: TObject);
     procedure ctbtnCategories0Items4Click(Sender: TObject);
@@ -101,6 +100,7 @@ type
     procedure TWPPConnect1Get_sendTextMessageEx(const RespMensagem: TResponsesendTextMessage);
     procedure TWPPConnect1Get_sendFileMessageEx(const RespMensagem: TResponsesendTextMessage);
     procedure TWPPConnect1Get_sendListMessageEx(const RespMensagem: TResponsesendTextMessage);
+    procedure TWPPConnect1Get_SendLocationMessageEx(const RespMensagem: TResponsesendTextMessage);
     procedure ctbtnCategories0Items5Click(Sender: TObject);
     procedure TWPPConnect1Get_ProductCatalog(Sender: TObject;
       const ProductCatalog: TProductsList);
@@ -111,7 +111,13 @@ type
       const WPPCrash: TWppCrash; AMonitorJSCrash: Boolean);
     procedure TWPPConnect1CheckNumberExists(const vCheckNumberExists: TReturnCheckNumberExists);
     procedure TWPPConnect1getLastSeen(const vgetLastSeen: TReturngetLastSeen);
-    procedure TWPPConnect1GetMessages(const Chats: TChatList3);
+    procedure TWPPConnect1GetMessageById(const Mensagem: TMessagesClass);
+    procedure TWPPConnect1GetMessages(const Chats: TRootClass);
+    procedure TWPPConnect1GetIsReady(Sender: TObject; IsReady: Boolean);
+    procedure TWPPConnect1GetIsLoaded(Sender: TObject; IsLoaded: Boolean);
+    procedure TWPPConnect1GetIsAuthenticated(Sender: TObject; IsAuthenticated: Boolean);
+    procedure BitBtn1Click(Sender: TObject);
+    procedure TWPPConnect1GetPlatformFromMessage(const PlatformFromMessage: TPlatformFromMessage);
     //procedure frameGrupos1btnMudarImagemGrupoClick(Sender: TObject);
 
   private
@@ -210,6 +216,14 @@ begin
   Item.SubItems.Add(Item.Caption + 'SubItem 1');
   Item.SubItems.Add(Item.Caption + 'SubItem 2');
   Item.ImageIndex := 0;
+end;
+
+procedure TfrDemo.BitBtn1Click(Sender: TObject);
+begin
+  try
+    FrmConsole.RebootChromium;
+  except on E: Exception do
+  end;
 end;
 
 procedure TfrDemo.btnAbrirZapClick(Sender: TObject);
@@ -520,11 +534,26 @@ end;
 procedure TfrDemo.TWPPConnect1GetChatList(const Chats: TChatList);
 var
   AChat: TChatClass;
+  NomeContato : string;
 begin
   frameMensagem1.listaChats.Clear;
   for AChat in Chats.Result do
-    AddChatList('(' + AChat.unreadCount.ToString + ') ' + AChat.name + ' - ' +
+  begin
+    if AChat.contact.pushname <> '' then
+      NomeContato := AChat.contact.pushname
+    else
+    if AChat.contact.Name <> '' then
+      NomeContato := AChat.contact.Name
+    else
+    if AChat.contact.formattedName <> '' then
+      NomeContato := AChat.contact.formattedName
+    else
+    if AChat.Name <> '' then
+      NomeContato := AChat.Name;
+
+    AddChatList('(' + AChat.unreadCount.ToString + ') ' + NomeContato + ' - ' +
       AChat.id);
+  end;
 end;
 
 procedure TfrDemo.TWPPConnect1GetCheckIsValidNumber(Sender: TObject;
@@ -555,6 +584,42 @@ procedure TfrDemo.TWPPConnect1GetInviteGroup(const Invite: string);
 begin
   Clipboard.AsText := Invite;
   ShowMessage('Link do grupo copiado: ' + Invite);
+end;
+
+procedure TfrDemo.TWPPConnect1GetIsAuthenticated(Sender: TObject; IsAuthenticated: Boolean);
+begin
+  frameLogin1.lblStatus.Caption := 'Auntenticado';
+  Label3.Caption := 'Auntenticado QrCode Aguarde Sincronizando Conversas...';
+  //Application.ProcessMessages;
+end;
+
+procedure TfrDemo.TWPPConnect1GetIsLoaded(Sender: TObject; IsLoaded: Boolean);
+begin
+  frameLogin1.lblStatus.Caption := 'Carregando...';
+  Label3.Caption := 'Carregando Conversas Aguarde...';
+end;
+
+procedure TfrDemo.TWPPConnect1GetIsReady(Sender: TObject; IsReady: Boolean);
+begin
+  Label3.Caption := 'Online Pronto para Uso';
+  frameLogin1.lblStatus.Caption := 'Online';
+  frameLogin1.lblStatus.Font.Color := $0000AE11;
+  frameLogin1.SpeedButton3.Enabled := True;
+  frameLogin1.whatsOn.Visible := True;
+  ctbtn.Enabled := True;
+
+  //frameLogin1.lblStatus.Caption := 'Online Pronto Para Uso';
+  StatusBar1.Panels[1].Text := frameLogin1.lblStatus.Caption;
+  // whatsOn.Visible            := SpeedButton3.enabled;
+  // lblNumeroConectado.Visible := whatsOn.Visible;
+  frameLogin1.whatsOff.Visible := Not frameLogin1.whatsOn.Visible;
+
+  if frameLogin1.whatsOn.Visible then
+  begin
+    ctbtn.Categories.Items[0].Items[0].ImageIndex := 0;
+    lblMeuNumero.Caption := 'Meu número: ' + TWPPConnect1.MyNumber;
+  end;
+
 end;
 
 procedure TfrDemo.TWPPConnect1getLastSeen(const vgetLastSeen: TReturngetLastSeen);
@@ -600,7 +665,7 @@ begin
   end;
 end;
 
-procedure TfrDemo.TWPPConnect1GetMessageById(const Mensagem: TMessagesList);
+procedure TfrDemo.TWPPConnect1GetMessageById(const Mensagem: TMessagesClass);
 var
   StatusMensagem, wlo_Json: string;
   AMensagem: TMessagesClass;
@@ -636,169 +701,52 @@ begin
   end;
 end;
 
-procedure TfrDemo.TWPPConnect1GetMessages(const Chats: TChatList3);
+procedure TfrDemo.TWPPConnect1GetMessages(const Chats: TRootClass);
 var
-  AChat: TChat3Class;
-  AMessage: TMessagesClass;
-  contato, telefone, selectedButtonId, quotedMsg_caption, selectedRowId, IdMensagemOrigem: string;
-  WPPConnectDecrypt: TWPPConnectDecryptFile;
+  AChat: uTWPPConnect.Classes.TResultClass;
 begin
   for AChat in Chats.Result do
   begin
-    for AMessage in AChat.Messages do
-    begin
-      if not AChat.isGroup then // Não exibe mensages de grupos
-      begin
-
-        if not AMessage.Sender.isMe then // Não exibe mensages enviadas por mim
-        begin
-          // memo_unReadMessage.Clear;
-          //FChatID := AChat.id.id;
-          //telefone := Copy(AChat.id, 3, Pos('@', AChat.id) - 3);
-          contato := AMessage.Sender.pushname;
-          telefone := AMessage.Sender.id;
-
-          // Tratando o tipo do arquivo recebido e faz o download para pasta \temp
-          {case AnsiIndexStr(UpperCase(AMessage.&type),
-            ['PTT', 'IMAGE', 'VIDEO', 'AUDIO', 'DOCUMENT']) of
-            0:
-              begin
-                WPPConnectDecrypt.download(AMessage.deprecatedMms3Url,
-                  AMessage.mediaKey, 'mp3', AChat.id);
-              end;
-            1:
-              begin
-                WPPConnectDecrypt.download(AMessage.deprecatedMms3Url,
-                  AMessage.mediaKey, 'jpg', AChat.id);
-              end;
-            2:
-              begin
-                WPPConnectDecrypt.download(AMessage.deprecatedMms3Url,
-                  AMessage.mediaKey, 'mp4', AChat.id);
-              end;
-            3:
-              begin
-                WPPConnectDecrypt.download(AMessage.deprecatedMms3Url,
-                  AMessage.mediaKey, 'mp3', AChat.id);
-              end;
-            4:
-              begin
-                WPPConnectDecrypt.download(AMessage.deprecatedMms3Url,
-                  AMessage.mediaKey, 'pdf', AChat.id);
-              end;
-          end;}
-
-          SleepNoFreeze(100);
-          frameMensagensRecebidas1.memo_unReadMessage.Lines.Add
-            (PChar('Nome Contato: ' + Trim(AMessage.Sender.pushname)));
-          frameMensagensRecebidas1.memo_unReadMessage.Lines.Add
-            (PChar('UniqueID: ' + AMessage.id));
-          frameMensagensRecebidas1.memo_unReadMessage.Lines.Add
-            (PChar('Tipo mensagem: ' + AMessage.&type));
-          //frameMensagensRecebidas1.memo_unReadMessage.Lines.Add
-           // (PChar('Chat Id: ' + AChat.id));
-          frameMensagensRecebidas1.memo_unReadMessage.Lines.Add
-            (StringReplace(AMessage.body, #$A, #13#10,
-            [rfReplaceAll, rfIgnoreCase]));
-          frameMensagensRecebidas1.memo_unReadMessage.Lines.Add
-            (PChar('ACK: ' + FloatToStr(AMessage.ack)));
-          selectedButtonId := AMessage.selectedButtonId;
-
-          try
-            if Assigned(AMessage.ListResponse) then
-              if Assigned(AMessage.ListResponse.singleSelectReply) then
-              begin
-                selectedRowId := AMessage.ListResponse.singleSelectReply.selectedRowId;
-                if selectedRowId <> '' then
-                  frameMensagensRecebidas1.memo_unReadMessage.Lines.Add(PChar('selectedRowId: ' + selectedRowId));
-              end;
-          except on E: Exception do
-          end;
-
-          try
-            if Assigned(AMessage.quotedMsg) then
-            begin
-              quotedMsg_caption := AMessage.quotedMsg.Caption;
-              if Trim(quotedMsg_caption) = '' then
-                if Assigned(AMessage.quotedMsg.list) then
-                  quotedMsg_caption := AMessage.quotedMsg.list.description;
-
-              frameMensagensRecebidas1.memo_unReadMessage.Lines.Add('quotedMsg.caption: ' + quotedMsg_caption);
-            end;
-            // Mensagem Original do Click do Botão
-          except
-            on E: Exception do
-              quotedMsg_caption := '';
-          end;
-
-          //Marcelo 25/07/2022 Unique ID Mensagem Origem
-          try
-            if Assigned(AMessage.quotedMsgObj) then
-            begin
-              IdMensagemOrigem := AMessage.quotedMsgObj.id ;
-              frameMensagensRecebidas1.memo_unReadMessage.Lines.Add('Unique ID IdMensagemOrigem: ' + IdMensagemOrigem);
-            end;
-          except
-            on E: Exception do
-              IdMensagemOrigem := '';
-          end;
-
-          if selectedButtonId = '' then
-            selectedButtonId := AMessage.selectedId;
-
-          if selectedButtonId <> '' then
-            frameMensagensRecebidas1.memo_unReadMessage.Lines.Add(PChar('selectedId: ' + selectedButtonId));
-          frameMensagensRecebidas1.memo_unReadMessage.Lines.Add(PChar(''));
-
-          frameMensagensRecebidas1.ed_profilePicThumbURL.Text :=
-            AChat.contact.profilePicThumb;
-
-         // if frameMensagensRecebidas1.ed_profilePicThumbURL.Text <> '' then
-           // TWPPConnect1.getProfilePicThumb(AChat.id);
-            //GetImagemProfile(AChat.contact.profilePicThumb, AChat.id);
-
-          //TWPPConnect1.ReadMessages(AChat.id);
-
-          // if frameMensagensRecebidas1.chk_AutoResposta.Checked then
-          // VerificaPalavraChave(AMessage.body, '', telefone, contato);
-        end
-        else
-        begin
-          {frameMensagensEnviadas1.memo_unReadMessageEnv.Lines.Add
-            (PChar('Nome Contato: ' + Trim(AMessage.Sender.pushname)));
-          frameMensagensEnviadas1.memo_unReadMessageEnv.Lines.Add
-            (PChar('UniqueID: ' + AMessage.id));
-          frameMensagensEnviadas1.memo_unReadMessageEnv.Lines.Add
-            (PChar('Tipo mensagem: ' + AMessage.&type));
-          frameMensagensEnviadas1.memo_unReadMessageEnv.Lines.Add
-            (PChar('Chat Id: ' + AChat.id));
-          frameMensagensEnviadas1.memo_unReadMessageEnv.Lines.Add
-            (StringReplace(AMessage.body, #$A, #13#10,
-            [rfReplaceAll, rfIgnoreCase]));
-          frameMensagensEnviadas1.memo_unReadMessageEnv.Lines.Add
-            (PChar('ACK: ' + FloatToStr(AMessage.ack)));
-          selectedButtonId := AMessage.selectedButtonId;
-
-          try
-            quotedMsg_caption := AMessage.quotedMsg.Caption;
-            // Mensagem Original do Click do Botão
-          except
-            on E: Exception do
-              quotedMsg_caption := '';
-          end;
-
-          if selectedButtonId = '' then
-            selectedButtonId := AMessage.selectedId;}
-
-        end;
-      end;
-    end;
+    frameMensagensRecebidas1.memo_unReadMessage.Lines.Add(PChar('Body: ' + Trim(AChat.body)));
   end;
+
+
 end;
 
 procedure TfrDemo.TWPPConnect1GetMyNumber(Sender: TObject);
 begin
   lblMeuNumero.Caption := 'Meu número: ' + TWPPConnect(Sender).MyNumber;
+
+  frameLogin1.lblStatus.Caption := 'Online';
+  frameLogin1.lblStatus.Font.Color := $0000AE11;
+  frameLogin1.SpeedButton3.Enabled := True;
+  frameLogin1.whatsOn.Visible := True;
+  ctbtn.Enabled := True;
+
+  //frameLogin1.lblStatus.Caption := 'Online Pronto Para Uso';
+  StatusBar1.Panels[1].Text := frameLogin1.lblStatus.Caption;
+  // whatsOn.Visible            := SpeedButton3.enabled;
+  // lblNumeroConectado.Visible := whatsOn.Visible;
+  frameLogin1.whatsOff.Visible := Not frameLogin1.whatsOn.Visible;
+
+  if frameLogin1.whatsOn.Visible then
+  begin
+    ctbtn.Categories.Items[0].Items[0].ImageIndex := 0;
+    lblMeuNumero.Caption := 'Meu número: ' + TWPPConnect1.MyNumber;
+  end;
+
+end;
+
+procedure TfrDemo.TWPPConnect1GetPlatformFromMessage(const PlatformFromMessage: TPlatformFromMessage);
+var
+  wlo_Celular : string;
+begin
+  wlo_Celular := Copy(PlatformFromMessage.id,1,  pos('@', PlatformFromMessage.id) -1); // nr telefone
+  ShowMessage('Plataforma: ' + AnsiUpperCase(PlatformFromMessage.platform) + ' Número WhatsApp: ' + wlo_Celular);
+
+  frameMensagensRecebidas1.memo_unReadMessage.Lines.add('Número WhatsApp: ' + wlo_Celular);
+  frameMensagensRecebidas1.memo_unReadMessage.Lines.add('Plataforma: ' + AnsiUpperCase(PlatformFromMessage.platform));
+  frameMensagensRecebidas1.memo_unReadMessage.Lines.add('Unique id: ' + PlatformFromMessage.IdMensagem);
 end;
 
 procedure TfrDemo.TWPPConnect1GetProfilePicThumb(Sender: TObject; ProfilePicThumb: TResponseGetProfilePicThumb);
@@ -830,9 +778,11 @@ begin
       TNetEncoding.Base64.Decode( LInput, LOutput );
       LOutput.Position := 0;
       {$IFDEF VER330}
-        frameMensagensRecebidas1.Image2.Picture.LoadFromStream(LOutput);
+        if loutput.size > 0 then
+          frameMensagensRecebidas1.Image2.Picture.LoadFromStream(LOutput);
       {$ELSE}
-        frameMensagensRecebidas1.Image2.Picture.Bitmap.LoadFromStream(LOutput);
+        if loutput.size > 0 then
+          frameMensagensRecebidas1.Image2.Picture.Bitmap.LoadFromStream(LOutput);
       {$ENDIF}
     finally
       LInput.Free;
@@ -858,7 +808,7 @@ begin
   if not Assigned(Sender) Then
     Exit;
 
-  if (TWPPConnect(Sender).status = Inject_Initialized) then
+  {if (TWPPConnect(Sender).status = Inject_Initialized) then
   begin
     frameLogin1.lblStatus.Caption := 'Online';
     frameLogin1.lblStatus.Font.Color := $0000AE11;
@@ -872,7 +822,7 @@ begin
     frameLogin1.lblStatus.Caption := 'Offline';
     frameLogin1.lblStatus.Font.Color := $002894FF;
     frameLogin1.lblStatus.Font.Color := clGrayText;
-  end;
+  end;}
 
   StatusBar1.Panels[1].Text := frameLogin1.lblStatus.Caption;
   // whatsOn.Visible            := SpeedButton3.enabled;
@@ -1299,6 +1249,31 @@ begin
     StatusMensagem := 'Visualizada';
 
   frameMensagensEnviadas1.memo_unReadMessageEnv.Lines.Add('');
+  frameMensagensEnviadas1.memo_unReadMessageEnv.Lines.Add('SeuID: ' + RespMensagem.SeuID);
+  frameMensagensEnviadas1.memo_unReadMessageEnv.Lines.Add('Telefone: ' + RespMensagem.Telefone);
+  frameMensagensEnviadas1.memo_unReadMessageEnv.Lines.Add('ACK: ' + FloatToStr(RespMensagem.Ack) + ' - ' + StatusMensagem);
+  frameMensagensEnviadas1.memo_unReadMessageEnv.Lines.Add('Unique ID: ' + RespMensagem.ID);
+  frameMensagensEnviadas1.memo_unReadMessageEnv.Lines.Add('');
+
+end;
+
+procedure TfrDemo.TWPPConnect1Get_SendLocationMessageEx(const RespMensagem: TResponsesendTextMessage);
+var
+  StatusMensagem : string;
+begin
+  //Marcelo 17/09/2022
+  //Adicionado Novo Retorno pegando o SEUID que foi passado no Envio
+  if RespMensagem.Ack = 1 then
+    StatusMensagem := 'Enviada'
+  else
+  if RespMensagem.Ack = 2 then
+    StatusMensagem := 'Recebida'
+  else
+  if RespMensagem.Ack = 3 then
+    StatusMensagem := 'Visualizada';
+
+  frameMensagensEnviadas1.memo_unReadMessageEnv.Lines.Add('');
+  frameMensagensEnviadas1.memo_unReadMessageEnv.Lines.Add('SendLocationMessageEx');
   frameMensagensEnviadas1.memo_unReadMessageEnv.Lines.Add('SeuID: ' + RespMensagem.SeuID);
   frameMensagensEnviadas1.memo_unReadMessageEnv.Lines.Add('Telefone: ' + RespMensagem.Telefone);
   frameMensagensEnviadas1.memo_unReadMessageEnv.Lines.Add('ACK: ' + FloatToStr(RespMensagem.Ack) + ' - ' + StatusMensagem);
