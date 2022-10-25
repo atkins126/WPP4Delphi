@@ -84,6 +84,7 @@ type
     Button1: TButton;
     btnValidarListarNumeros: TButton;
     btnGetMessage: TButton;
+    Button2: TButton;
     procedure edtURLDblClick(Sender: TObject);
     procedure btnTextoSimplesClick(Sender: TObject);
     procedure btnBotaoSimplesClick(Sender: TObject);
@@ -124,6 +125,7 @@ type
     procedure Button1Click(Sender: TObject);
     procedure btnValidarListarNumerosClick(Sender: TObject);
     procedure btnGetMessageClick(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
   private
     { Private declarations }
      FStatus: Boolean;
@@ -1042,7 +1044,7 @@ begin
     if not frDemo.TWPPConnect1.Auth then
        Exit;
 
-    options := '';
+    options := 'createChat: true';
 
     //Opicional Não Utilizar para primeira mensagem, somente para contatos que já houve alguma interação
     frDemo.TWPPConnect1.setKeepAlive('true'); //Marca como Online
@@ -1317,6 +1319,35 @@ begin
   end;
 
   frDemo.TWPPConnect1.getLastSeen(ed_num.Text);
+end;
+
+procedure TframeMensagem.Button2Click(Sender: TObject);
+var
+  IdMensagem : string;
+begin
+
+  try
+    if not frDemo.TWPPConnect1.Auth then
+      Exit;
+
+    if Trim(ed_num.Text) = '' then
+    begin
+      MessageDlg('Informe o Celular para Continuar', mtWarning, [mbOK],0);
+      ed_num.SetFocus;
+      Exit;
+    end;
+
+
+    if InputQuery('Informe a ID da Mensagem.', 'Unique ID: ', IdMensagem) then
+    begin
+
+      frDemo.TWPPConnect1.deleteMessageById(ed_num.Text, IdMensagem);
+    end;
+
+
+  finally
+  end;
+
 end;
 
 procedure TframeMensagem.btnArquivoClick(Sender: TObject);

@@ -165,6 +165,9 @@ Const
   //FrmConsole_JS_VAR_getMessageById      = 'WPP.chat.getMessageById(["<#MSGKEY#>"]);';
   FrmConsole_JS_VAR_getMessageById      = 'window.WAPI.getMessageById2("<#MSGKEY#>");';
 
+  //Marcelo 24/10/2022
+  FrmConsole_JS_VAR_deleteMessageById   = 'WPP.chat.deleteMessage("<#MSG_PHONE#>","<#MSG_UNIQUE_ID#>",true,true);';
+
   FrmConsole_JS_VAR_getMessage          = 'window.WAPI.getMessages("<#MSG_PHONE#>",{<#MSG_OPTIONS#>} ); ';
 
   FrmConsole_JS_VAR_getPlatformFromMessage = 'window.WAPI.getPlatformFromMessage2("<#MSG_UNIQUE_ID#>","<#MSG_PHONE#>");';
@@ -203,7 +206,7 @@ Const
   FrmConsole_JS_VAR_DeleteAllChats      = 'deleteAllChats()';
   FrmConsole_JS_VAR_PinChat             = 'WPP.chat.pin("<#CTT_NAME#>");';
   FrmConsole_JS_VAR_UnPinChat           = 'WPP.chat.unpin("<#CTT_NAME#>");';
-  FrmConsole_JS_VAR_CreatePoolMessage   = 'WPP.chat.sendCreatePollMessage("<#GROUP_ID#>","<#MSG_CONTENT#>",<#POOL_OPTIONS#>);';
+  FrmConsole_JS_VAR_CreatePoolMessage   = 'WPP.chat.sendCreatePollMessage("<#GROUP_ID#>","<#MSG_CONTENT#>",<#POOL_OPTIONS#>, {createchat:true, selectableCount:1} ); ';
 
   //Marcelo 14/09/2022
   FrmConsole_JS_VAR_DeleteChat          = 'WPP.chat.delete("<#MSG_PHONE#>");';
