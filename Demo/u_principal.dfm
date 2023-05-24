@@ -2936,6 +2936,10 @@ object frmPrincipal: TfrmPrincipal
     object TabSheet3: TTabSheet
       Caption = 'A'#231#245'es Manuais / Actions'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object groupEnvioMsg: TGroupBox
         Left = 0
         Top = 0
@@ -4777,7 +4781,6 @@ object frmPrincipal: TfrmPrincipal
     OnGetAllGroupContacts = TWPPConnect1GetAllGroupContacts
     OnGetStatus = TWPPConnect1GetStatus
     OnGetBatteryLevel = TWPPConnect1GetBatteryLevel
-    OnGetMessageById = TWPPConnect1GetMessageById
     OnIsConnected = TWPPConnect1IsConnected
     OnLowBattery = TWPPConnect1LowBattery
     OnGetCheckIsValidNumber = TWPPConnect1GetCheckIsValidNumber

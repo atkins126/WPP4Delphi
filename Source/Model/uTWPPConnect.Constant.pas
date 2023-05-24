@@ -65,21 +65,39 @@ Const
   FrmConsole_Browser_Direto             = WM_APP + $101;
   //MARCELO JS.ABR CUSTOMIZADO Marcelo 09/05/2022
   TWPPConnectJS_JSUrlPadrao             = 'https://raw.githubusercontent.com/wppconnect-team/WPP4Delphi/main/Source/JS/js.abr';
-  TWPPConnectJS_JSLinhasMInimas         = 1400;
+
+  // Added by Aurino 21/01/2023 11:10:46
+  TPPConnectJS_libeay32                 = 'https://github.com/wppconnect-team/WPP4Delphi/blob/main/Demo/BIN/libeay32.dll?raw=true';
+  TPPConnectJS_ssleay32                 = 'https://github.com/wppconnect-team/WPP4Delphi/blob/main/Demo/BIN/ssleay32.dll?raw=true';
+  TPPConnectJS_decryptFile              = 'https://github.com/wppconnect-team/WPP4Delphi/blob/main/Demo/BIN/decryptFile.dll?raw=true';
+
+  //TWPPConnectJS_JSUrlPadrao             = '';
+  TWPPConnectJS_JSLinhasMInimas         = 16242; //1400;
   FrmConsole_JS_RetornoVazio            = '{"result":[]}';
   FrmConsole_JS_Ignorar                 = '{"name":"getUnreadMessages","result":"{\"result\":[]}"}';
+
+  //FrmConsole_JS_URL                     = 'https://web.whatsapp.com/?v=2.2320.7';
   FrmConsole_JS_URL                     = 'https://web.whatsapp.com/';
 
   FrmConsole_JS_GetAllContacts          = 'window.WAPI.getAllContacts();';
-  FrmConsole_JS_GetBatteryLevel         = 'window.WAPI.getBatteryLevel();';
+  FrmConsole_JS_GetBatteryLevel         = ''; //'window.WAPI.getBatteryLevel();'; //Não Habilitar Função deprecated GetBatteryLevel
   FrmConsole_JS_GetMyNumber             = 'getMyNumber();';
   FrmConsole_JS_GetUnreadMessages       = 'window.WAPI.getUnreadMessages(includeMe="True", includeNotifications="True", use_unread_count="True");';
   FrmConsole_JS_GetAllChats             = 'window.WAPI.getAllChats();';
   FrmConsole_JS_checkDelivered          = 'window.WAPI.getDelivered();';
-  FrmConsole_JS_WEBmonitorQRCode        = 'var AQrCode = document.getElementsByTagName("canvas")[0].toDataURL("image/png");console.log(JSON.stringify({"name":"getQrCodeWEB","result":{AQrCode}}));';
+  //FrmConsole_JS_WEBmonitorQRCode        = 'var AQrCode = document.getElementsByTagName("canvas")[0].toDataURL("image/png");console.log(JSON.stringify({"name":"getQrCodeWEB","result":{AQrCode}}));';
+
+  //Marcelo 05/05/2023
+  FrmConsole_JS_WEBmonitorQRCode        = 'var canvas = document.getElementsByTagName("canvas")[0]; if (canvas) { var AQrCode = canvas.toDataURL("image/png"); var result = { AQrCode: AQrCode }; ' + 'console.log(JSON.stringify({ name: "getQrCodeWEB", result: result }));} else {console.log("Canvas element not found.");}';
   //FrmConsole_JS_refreshOnlyQRCode       = 'interval = window.setInterval(async function(){new Promise((resolve, reject)=>{let all = []; all = document.querySelectorAll("button"); if(all[0]){ all[0].click() }})},60000)';
-  FrmConsole_JS_refreshOnlyQRCode       = 'interval = window.setInterval(async function() {new Promise((resolve, reject) =>{let all = []; all = document.querySelectorAll("button"); if (all[0]) { if (all.includes("recarregar")) { all[0].click() } } })}, 60000);';
-  FrmConsole_JS_monitorQRCode           = 'var AQrCode = document.getElementsByTagName("canvas")[0].toDataURL("image/png");console.log(JSON.stringify({"name":"getQrCode","result":{AQrCode}}));';
+  //FrmConsole_JS_refreshOnlyQRCode       = ' interval = window.setInterval(async function() {new Promise((resolve, reject) =>{let all = []; all = document.querySelector("button"); if (all) { if (all.text.includes("recarregar")) { all.click() } } })}, 60000);';
+
+  //Marcelo 05/05/2023
+  FrmConsole_JS_refreshOnlyQRCode       = 'interval = window.setInterval(async function() { await new Promise((resolve, reject) => {let all = Array.from(document.querySelectorAll("button")); if (all[0]) {if (all.some(btn => btn.textContent.includes("recarregar")))' + ' {all[0].click();}}resolve();});}, 60000);';
+  //FrmConsole_JS_monitorQRCode           = ''; //'var AQrCode = document.getElementsByTagName("canvas")[0].toDataURL("image/png");console.log(JSON.stringify({"name":"getQrCode","result":{AQrCode}}));';
+
+  //Marcelo 05/05/2023
+  FrmConsole_JS_monitorQRCode           = 'var canvas = document.getElementsByTagName("canvas")[0]; if (canvas) { var AQrCode = canvas.toDataURL("image/png"); var result = { AQrCode: AQrCode }; ' + 'console.log(JSON.stringify({ name: "getQrCodeWEB", result: result }));} else {console.log("Canvas element not found.");}';
   FrmConsole_JS_StopMonitor             = 'stopMonitor();';
   FrmConsole_JS_IsLoggedIn              = 'WAPI.isLoggedIn();';
   FrmConsole_JS_VAR_StartMonitor         = 'startMonitor(intervalSeconds=<#TEMPO#>)';
@@ -126,6 +144,12 @@ Const
   FrmConsole_JS_VAR_getProfilePicThumb      = 'window.WAPI.teste("<#PROFILE_PICTHUMB_URL#>");';
   //MARCELO 02/05/2022
   FrmConsole_JS_VAR_getProfilePicture       = 'WPP.contact.getProfilePicture("<#PHONE#>");';
+
+  //Add Marcelo 11/02/2023
+  FrmConsole_JS_GetAllCommunitys            = 'window.WAPI.getAllCommunitys();';
+  FrmConsole_JS_VAR_CreateCommunity         = 'WPP.community.create("<#COMMUNITY_NAME#>", "<#DESCRIPTION#>", <#GROUP_NUMBERS#>);setTimeout(function(){ window.WAPI.getAllCommunitys(); }, 3000);';
+  FrmConsole_JS_VAR_addSubgroups            = 'WPP.community.addSubgroups("<#COMMUNITY#>", <#GROUP_NUMBERS#>);setTimeout(function(){ window.WAPI.getAllCommunitys(); }, 3000);';
+
   FrmConsole_JS_VAR_CreateGroup             = 'WPP.group.create("<#GROUP_NAME#>", "<#PARTICIPANT_NUMBER#>");setTimeout(function(){ window.WAPI.getAllGroups(); }, 3000);';
   FrmConsole_JS_VAR_GroupMsgAdminOnly       = 'WPP.group.setProperty("<#GROUP_ID#>", ''announcement'', true);';
   FrmConsole_JS_VAR_GroupMsgAll             = 'WPP.group.setProperty("<#GROUP_ID#>", ''announcement'', false);';
@@ -146,9 +170,19 @@ Const
   FrmConsole_JS_VAR_getStatus               = 'window.WAPI.getStatus("<#PHONE#>");';
   FrmConsole_JS_VAR_ClearChat               = 'WPP.chat.clear("<#PHONE#>");';
   FrmConsole_JS_VAR_getMe                   = 'window.WAPI.getMe();';
-  FrmConsole_JS_VAR_getGroupInviteLink      = 'window.WAPI.getGroupInviteLink("<#GROUP_ID#>");';
-  FrmConsole_JS_VAR_removeGroupInviteLink   = 'window.WAPI.revokeGroupInviteLink("<#GROUP_ID#>");';
+
+  //FrmConsole_JS_VAR_getGroupInviteLink      = 'window.WAPI.getGroupInviteLink("<#GROUP_ID#>");'; deprecated
+  FrmConsole_JS_VAR_getGroupInviteLink      = 'window.WAPI.getInviteCode2("<#GROUP_ID#>");';
+
+  //FrmConsole_JS_VAR_removeGroupInviteLink   = 'window.WAPI.revokeGroupInviteLink("<#GROUP_ID#>");'; deprecated
+  FrmConsole_JS_VAR_removeGroupInviteLink   = 'WPP.group.revokeInviteCode("<#GROUP_ID#>");';
+
+  FrmConsole_JS_VAR_SetGroupDescription     = 'WPP.group.setDescription("<#GROUP_ID#>","<#Description#>");';
+
   FrmConsole_JS_VAR_SetGroupPicture         = 'WPP.group.setIcon("<#GROUP_ID#>","<#BASE_64#>");';
+
+
+
   FrmConsole_JS_VAR_checkNumberStatus       = 'window.WAPI.checkNumberStatus("<#PHONE#>");';
   //Adicionado Por Marcelo 01/03/2022 deprecated
   FrmConsole_JS_VAR_SendListMenu        = 'window.WAPI.sendListMenu("<#MSG_PHONE#>","<#MSG_TITLE#>","<#MSG_SUBTITLE#>","<#MSG_DESCRIPTION#>","<#MSG_BUTTONTEXT#>",<#MSG_MENU#>);';
@@ -165,8 +199,14 @@ Const
   FrmConsole_JS_VAR_markIsRecording     = 'WPP.chat.markIsRecording("<#MSG_PHONE#>", <#MSG_DURATION#>);';
   FrmConsole_JS_VAR_markIsUnread        = 'WPP.chat.markIsUnread("<#MSG_PHONE#>");';
 
+  //Adicionado Por Marcelo 14/03/2023
+  FrmConsole_JS_VAR_markPlayed          = 'WPP.chat.markPlayed("<#MSG_PHONE#>");';
+
   //FrmConsole_JS_VAR_getMessageById      = 'WPP.chat.getMessageById(["<#MSGKEY#>"]);';
   FrmConsole_JS_VAR_getMessageById      = 'window.WAPI.getMessageById2("<#MSGKEY#>");';
+
+  //Adicionado Por Marcelo 14/03/2023
+  FrmConsole_JS_VAR_getMessageACK       = 'window.WAPI.getMessageACK2("<#MSGKEY#>");';
 
   //Marcelo 24/10/2022
   FrmConsole_JS_VAR_deleteMessageById   = 'WPP.chat.deleteMessage("<#MSG_PHONE#>","<#MSG_UNIQUE_ID#>",true,true);';
@@ -194,11 +234,17 @@ Const
   FrmConsole_JS_VAR_sendLocationMessage = 'WPP.chat.sendLocationMessage("<#MSG_PHONE#>",{<#MSG_OPTIONS#>} );';
 
   //Adicionado Por Marcelo 09/05/2022     //Alterado Por Marcelo 31/05/2022
-  FrmConsole_JS_VAR_SendLinkPreview     = 'window.WAPI.sendTextMessage2("<#MSG_PHONE#>", "<#MSG_LINK#>", {<#MSG_CORPO#>} );';
+  FrmConsole_JS_VAR_SendLinkPreview     = 'window.WAPI.sendTextMessage2("<#MSG_PHONE#>","<#MSG_LINK#>", {<#MSG_CORPO#>} );';
   //FrmConsole_JS_VAR_SendLinkPreview     = 'window.WAPI.sendLinkWithAutoPreview("<#MSG_PHONE#>", "<#MSG_LINK#>", "<#MSG_CORPO#>")';
 
   //MARCELO 02/05/2022
-  FrmConsole_JS_VAR_SendContact         = 'WPP.chat.sendVCardContactMessage("<#MSG_PHONE_DEST#>", "<#MSG_PHONE#>", {} )';
+  FrmConsole_JS_VAR_SendContact         = 'WPP.chat.sendVCardContactMessage("<#MSG_PHONE_DEST#>","<#MSG_PHONE#>", {} )';
+
+  //MARCELO 16/01/2023
+  FrmConsole_JS_VAR_sendVCardContactMessageEx  = 'window.WAPI.sendVCardContactMessage2Ex("<#MSG_PHONE_DEST#>","<#MSG_PHONE#>", {} ,"<#MSG_SEUID#>" )';
+
+  //MARCELO 17/01/2023
+  FrmConsole_JS_VAR_getHistorySyncProgress  = 'window.WAPI.getHistorySyncProgress2();';
 
   //DANIEL 25/05/2022
   FrmConsole_JS_VAR_BlockContact        = 'WPP.blocklist.blockContact("<#CTT_NAME#>");';
@@ -209,7 +255,7 @@ Const
   FrmConsole_JS_VAR_DeleteAllChats      = 'deleteAllChats()';
   FrmConsole_JS_VAR_PinChat             = 'WPP.chat.pin("<#CTT_NAME#>");';
   FrmConsole_JS_VAR_UnPinChat           = 'WPP.chat.unpin("<#CTT_NAME#>");';
-  FrmConsole_JS_VAR_CreatePoolMessage   = 'WPP.chat.sendCreatePollMessage("<#GROUP_ID#>","<#MSG_CONTENT#>",<#POOL_OPTIONS#>, {createchat:true, selectableCount:1} ); ';
+  FrmConsole_JS_VAR_CreatePoolMessage   = 'WPP.chat.sendCreatePollMessage("<#GROUP_ID#>","<#MSG_CONTENT#>",<#POOL_OPTIONS#>, {createchat:true, selectableCount:0} ); ';
 
   //Marcelo 14/09/2022
   FrmConsole_JS_VAR_DeleteChat          = 'WPP.chat.delete("<#MSG_PHONE#>");';
@@ -221,14 +267,14 @@ Const
 
   //TEMIS 03-06-2022 Obtendo Retorno do Envio com SeuID
   FrmConsole_JS_VAR_SendTextMessageEx   = 'window.WAPI.sendTextMessage2Ex("<#MSG_PHONE#>","<#MSG_CONTENT#>",{<#MSG_OPTIONS#>},"<#MSG_SEUID#>");';
-  FrmConsole_JS_VAR_sendFileMessageEx   = 'window.WAPI.sendFileMessage2Ex("<#MSG_PHONE#>","<#MSG_CONTENT#>",{<#MSG_OPTIONS#>},"<#MSG_SEUID#>" );';
-  FrmConsole_JS_VAR_sendListMessageEx   = 'window.WAPI.sendListMessage2Ex("<#MSG_PHONE#>",{<#MSG_MENU#>},"<#MSG_SEUID#>" );';
+  FrmConsole_JS_VAR_sendFileMessageEx   = 'window.WAPI.sendFileMessage2Ex("<#MSG_PHONE#>","<#MSG_CONTENT#>",{<#MSG_OPTIONS#>},"<#MSG_SEUID#>");';
+  FrmConsole_JS_VAR_sendListMessageEx   = 'window.WAPI.sendListMessage2Ex("<#MSG_PHONE#>",{<#MSG_MENU#>},"<#MSG_SEUID#>");';
 
   //Marcelo 17/09/2022
   FrmConsole_JS_VAR_sendLocationMessageEx   = 'window.WAPI.sendLocationMessage2Ex("<#MSG_PHONE#>",{<#MSG_OPTIONS#>},"<#MSG_SEUID#>" );';
 
   //Marcelo 25/10/2022
-  FrmConsole_JS_VAR_getList   = 'window.WAPI.list({<#OPTIONS#>} );';
+  FrmConsole_JS_VAR_getList   = 'window.WAPI.list();';
 
 
   //Marcelo 18/07/2022
@@ -249,8 +295,19 @@ Const
   //Marcelo 15/06/2022
   FrmConsole_JS_VAR_rejectCall       = 'WPP.call.rejectCall("<#MSG_ID#>");';
 
+  //MARCELO 02/04/2023
+  FrmConsole_JS_VAR_SendCall         = 'WPP.call.offer("<#MSG_ID#>", {<#MSG_OPTIONS#>} ); ';
+  FrmConsole_JS_VAR_EndCall          = 'WPP.call.end("<#MSG_ID#>"); ';
+  FrmConsole_JS_VAR_EndCallALL       = 'WPP.call.end(); ';
+  FrmConsole_JS_VAR_AcceptCall       = 'WPP.call.accept("<#MSG_ID#>"); ';
+  FrmConsole_JS_VAR_AcceptCallALL    = 'WPP.call.accept(); ';
+
+
   //Marcelo 31/07/2022
   FrmConsole_JS_VAR_getLastSeen       = 'window.WAPI.getLastSeen("<#MSG_PHONE#>");';
+
+  //Marcelo 03/05/2023
+  FrmConsole_JS_VAR_GetIsOnline       = 'window.WAPI.GetisOnline2();';
 
 resourcestring
   MSG_ConfigCEF_ExceptNotFoundJS       = '';
@@ -359,7 +416,7 @@ type
     TConnectionDBType     = (TCon_None=0, TCon_Memory=1,  TCon_FireDAC=2, TCon_DBExpress=3, TCon_ADO=4);
 
     TFormQrCodeType       = (Ft_Desktop=0,       Ft_Http=1,    Ft_None=2);  //Form ou RestDataWare
-    TSendFile_Image       = (Tsf_Jpg=0, Tsf_Jpeg=1, Tsf_Tif=2, Tsf_Ico=3, Tsf_Bmp=4, Tsf_Png=5, Tsf_Raw=6);
+    TSendFile_Image       = (Tsf_Jpg=0, Tsf_Jpeg=1, Tsf_Tif=2, Tsf_Ico=3, Tsf_Bmp=4, Tsf_Png=5, Tsf_Raw=6, Tsf_webP=7);
 
     TStatusType           = (Inject_Initialized,            Inject_Initializing,       Inject_Destroying,      Inject_Destroy,
                              Server_Disconnected,           Server_Disconnecting,
@@ -402,6 +459,13 @@ type
                    , Th_IsAuthenticated=59 //Marcelo 18/09/2022
                    , Th_getPlatformFromMessage=60 //Marcelo 20/09/2022
                    , Th_getList=61 //Marcelo 25/10/2022
+                   , Th_sendVCardContactMessageEx=62 //Marcelo 16/01/2023
+                   , Th_getHistorySyncProgress=63 //Marcelo 17/01/2023
+                   , Th_QrCodeDesconectouErroCache=64 //Marcelo 06/02/2023
+                   , Th_getAllcommunitys=65 //Marcelo 11/02/2023
+                   , Th_getMessageACK=66 //Marcelo 14/03/2023
+                   , Th_getIsOnline=67 //Marcelo 03/05/2023
+                   , Th_getEnvIsOnline=68 //Marcelo 03/05/2023
                    );
 
     Function   VerificaCompatibilidadeVersao(PVersaoExterna:String; PversaoInterna:String):Boolean;
@@ -539,7 +603,7 @@ Begin
 End;
 
 function   StrToTypeHeader(PText: string): TTypeHeader;
-const LmaxCount = 61; //Marcelo 25/10/2022
+const LmaxCount = 68; //Marcelo 03/05/2023
 var
   I: Integer;
   LNome: String;

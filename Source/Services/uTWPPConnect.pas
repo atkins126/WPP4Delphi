@@ -32,7 +32,7 @@
 }
 
 unit uTWPPConnect;
-
+{$I TWPPConnectDiretiva.inc}
 interface
 
 uses
@@ -44,7 +44,7 @@ uses
 
   System.SysUtils, System.Classes, Vcl.Forms, Vcl.Dialogs, System.MaskUtils,
   System.UiTypes,  Generics.Collections, System.TypInfo, Data.DB, Vcl.ExtCtrls,
-  uTWPPConnect.Diversos, Vcl.Imaging.jpeg, DateUtils;
+  uTWPPConnect.Diversos, Vcl.Imaging.jpeg, DateUtils, uTWPPConnect.ChatList;
 
 
 type
@@ -65,6 +65,7 @@ type
   TGetMessages              = procedure(Const Chats: TChatList3) of object; //14/08/2022
   TOnGetQrCode              = procedure(Const Sender: Tobject; Const QrCode: TResultQRCodeClass) of object;
   TOnAllContacts            = procedure(Const AllContacts: TRetornoAllContacts) of object;
+  TOnAllCommunitys          = procedure(Const AllCommunitys: TRetornoAllCommunitys) of object;
   TOnAllGroups              = procedure(Const AllGroups: TRetornoAllGroups) of object;
   TOnAllGroupContacts       = procedure(Const Contacts: TClassAllGroupContacts) of object;
   TOnAllGroupAdmins         = procedure(Const AllGroups: TRetornoAllGroupAdmins) of object;
@@ -78,7 +79,12 @@ type
 
   TOnGetPlatformFromMessage = procedure(Const PlatformFromMessage: TPlatformFromMessage) of object; //Marcelo 20/08/2022
 
-  TOnGetListChat = procedure(Const getList: TgetListClass) of object; //Marcelo 20/08/2022
+  TOnGetHistorySyncProgress = procedure(Const GetHistorySyncProgress: TResponsegetHistorySyncProgress) of object; //Marcelo 17/01/2023
+  TOnGetQrCodeDesconectouErroCache = procedure(Const QrCodeDesconectouErroCache: TQrCodeDesconectouErroCache) of object; //Marcelo 06/02/2023
+
+  TOnGetListChat            = procedure(Const getList: TgetListClass) of object; //Marcelo 20/08/2022
+
+  TOnGetMessageACK          = procedure(Const GetMessageACK: TResponsegetMessageACK) of object; //Marcelo 19/03/2023
 
 
   //Adicionado Por Marcelo 06/05/2022
@@ -98,6 +104,9 @@ type
   //Marcelo 17/09/2022
   TGet_sendLocationMessageEx = procedure(Const RespMensagem: TResponsesendTextMessage) of object;
 
+  //Marcelo 16/01/2023
+  TGet_sendVCardContactMessageEx = procedure(Const RespMensagem: TResponsesendTextMessage) of object;
+
   TGet_ProductCatalog        = procedure(Sender : TObject; Const ProductCatalog: TProductsList) of object;
   TWPPMonitorCrash           = procedure(Sender : TObject; Const WPPCrash: TWppCrash; AMonitorJSCrash: Boolean=false) of object;
   //Adicionado por Marcelo 17/06/2022
@@ -105,7 +114,9 @@ type
   TGetIsReady                = Procedure(Sender : TObject; IsReady: Boolean) of object; //Marcelo 17/08/2022
   TGetIsLoaded               = Procedure(Sender : TObject; IsLoaded: Boolean) of object; //Marcelo 17/08/2022
   TGetIsAuthenticated        = Procedure(Sender : TObject; IsAuthenticated: Boolean) of object; //Marcelo 18/08/2022
-
+  TGetIsOnline               = Procedure(Response : TIsOnline) of object; //Marcelo 03/05/2023
+  TGetEnvIsOnline            = Procedure(Response : TEnvIsOnline) of object; //Marcelo 03/05/2023
+  TGetList                   = Procedure(Sender : TObject; ChatsList: TGetChatList) of object;  //Daniel 26/10/2022
   TWPPConnect = class(TComponent)
   private
     FInjectConfig           : TWPPConnectConfig;
@@ -128,6 +139,7 @@ type
     FOnDisconnectedBrute    : TNotifyEvent;
     FCrashMonitorLastUpdate : TDateTime;
     FOnWPPMonitorCrash: TWPPMonitorCrash;
+
 
     { Private  declarations }
     Function  ConsolePronto:Boolean;
@@ -155,6 +167,7 @@ type
     FOnGetAllGroupContacts      : TOnAllGroupContacts;
     FOnGetAllContactList        : TOnAllContacts;
     FOnGetAllGroupList          : TOnAllGroups;
+    FOnGetAllCommunitys          : TOnAllCommunitys;
     FOnGetAllGroupAdmins        : TOnAllGroupAdmins;
     FOnLowBattery               : TNotifyEvent;
     FOnGetBatteryLevel          : TNotifyEvent;
@@ -185,7 +198,11 @@ type
 
     FOngetLastSeen              : TOngetLastSeen; //Marcelo 31/07/2022
     FOnGetPlatformFromMessage   : TOnGetPlatformFromMessage; //Marcelo 20/08/2022
-    FOnGetListChat              : TOnGetListChat;
+    FOnGetHistorySyncProgress   : TOnGetHistorySyncProgress; //Marcelo 17/01/2023
+    FOnGetQrCodeDesconectouErroCache   : TOnGetQrCodeDesconectouErroCache; //Marcelo 06/02/2023
+
+    FOnGetListChat              : TGetList;
+    FOnGetMessageACK            : TOnGetMessageACK;
 
     FOnGetMessageById           : TGetMessageById; //Adicionado Por Marcelo 06/05/2022
 
@@ -200,6 +217,9 @@ type
     FOnGet_sendListMessageEx    : TGet_sendListMessageEx;
     FOnGet_sendLocationMessageEx : TGet_sendLocationMessageEx;  //Add Marcelo 17/09/2022
 
+    //Marcelo 16/01/2023
+    FOnGet_sendVCardContactMessageEx: TGet_sendVCardContactMessageEx;
+
     //Daniel 13/06/2022
     FOnGet_ProductCatalog       : TGet_ProductCatalog;
 
@@ -209,6 +229,9 @@ type
     FOnGetIsReady: TGetIsReady; //Marcelo 17/09/2022
     FOnGetIsLoaded: TGetIsLoaded; //Marcelo 17/09/2022
     FOnGetIsAuthenticated: TGetIsAuthenticated; //Marcelo 17/09/2022
+
+    FOnGetIsOnline: TGetIsOnline; //Marcelo 03/05/2023
+    FOnGetEnvIsOnline: TGetEnvIsOnline; //Marcelo 03/05/2023
 
     procedure Int_OnNotificationCenter(PTypeHeader: TTypeHeader; PValue: String; Const PReturnClass : TObject= nil);
 
@@ -267,15 +290,24 @@ type
 
     procedure markIsUnread(phoneNumber: string);
 
+    procedure markPlayed(phoneNumber: string);
+
     //MARCELO 28/06/2022
     procedure sendImageStatus(Content, Options: string);
     procedure sendVideoStatus(Content, Options: string);
     procedure sendRawStatus(Content, Options: string);
 
     procedure rejectCall(id: string);
+    procedure SendCall(id, Options: string); //Adicionado Marcelo 02/04/2023
+    procedure EndCall(id: string); //Adicionado Marcelo 02/04/2023
+    procedure EndCallALL; //Adicionado Marcelo 02/04/2023
+    procedure AcceptCall(id: string); //Adicionado Marcelo 02/04/2023
+    procedure AcceptCallALL; //Adicionado Marcelo 02/04/2023
 
     //Adicionado Por Marcelo 03/05/2022
     procedure getMessageById(UniqueIDs: string; etapa: string = '');
+
+    procedure getMessageACK(UniqueIDs: string);
 
     procedure getPlatformFromMessage(UniqueIDs, PNumberPhone: string); //Add Marcelo 20/09/2022
     procedure deleteMessageById(PNumberPhone, UniqueIDs : string);  //Add Marcelo 20/09/2022
@@ -285,11 +317,14 @@ type
 
     procedure deleteConversation(PNumberPhone: string);
     procedure SendContact(PNumberPhone, PNumber: string; PNameContact: string = '');
+    procedure sendVCardContactMessageEx(vNumDest, vNum, vNameContact, vOptions, vSeuID: string); //Marcelo 16/01/2023
+
 
     procedure SendLinkPreview(PNumberPhone, PVideoLink, PMessage: string);
     procedure SendLocation(PNumberPhone, PLat, PLng, PMessage: string);
+    procedure getHistorySyncProgress;
     procedure Logout();
-    procedure GetBatteryStatus;
+    procedure GetBatteryStatus; deprecated;
     procedure CheckIsValidNumber(PNumberPhone: string);
     procedure NewCheckIsValidNumber(PNumberPhone : string);
     procedure CheckNumberExists(PNumberPhone : string);
@@ -298,9 +333,11 @@ type
 
     //Adicionado Por Marcelo 01/03/2022
     procedure isBeta;
+    procedure IsOnline;
     procedure CheckIsConnected;
     procedure GetAllContacts;
     procedure GetAllGroups;
+    procedure GetAllCommunitys;
     procedure GroupAddParticipant(PIDGroup, PNumber: string);
     procedure GroupRemoveParticipant(PIDGroup, PNumber: string);
     procedure GroupPromoteParticipant(PIDGroup, PNumber: string);
@@ -321,6 +358,7 @@ type
     procedure FixarChat(PIDContato:String);
     procedure DesfixarChat(PIDContato:String);
 
+    procedure SetGroupDescription(vIDGroup, vDescription: string); //Marcelo 11/01/2023
     procedure GroupJoinViaLink(PLinkGroup: string);
     procedure GroupRemoveInviteLink(PIDGroup: string);
     procedure SetProfileName(vName : String);
@@ -340,6 +378,8 @@ type
     function  CheckDelivered: String;
     procedure getProfilePicThumb(AProfilePicThumbURL: string);
     procedure createGroup(PGroupName, PParticipantNumber: string);
+    procedure createcommunity(PcommunityName, Pdescription, PGroupNumbers: string);
+    procedure addSubgroups(PCommunity, PGroupNumbers: string);
     procedure listGroupContacts(PIDGroup: string);
     Property  BatteryLevel      : Integer              Read FGetBatteryLevel;
     Property  IsConnected       : Boolean              Read FGetIsConnected;
@@ -370,6 +410,7 @@ type
     property LanguageInject              : TLanguageInject            read FLanguageInject                 Write SetLanguageInject                   Default TL_Portugues_BR;
     property OnGetAllContactList         : TOnAllContacts             read FOnGetAllContactList            write FOnGetAllContactList;
     property OnGetAllGroupList           : TOnAllGroups               read FOnGetAllGroupList              write FOnGetAllGroupList;
+    property OnGetAllCommunitys          : TOnAllCommunitys           read FOnGetAllCommunitys             write FOnGetAllCommunitys;
     property OnGetAllGroupAdmins         : TOnAllGroupAdmins          read FOnGetAllGroupAdmins            write FOnGetAllGroupAdmins;
     property OnAfterInjectJS             : TNotifyEvent               read FOnAfterInjectJs                write FOnAfterInjectJs;
     property OnAfterInitialize           : TNotifyEvent               read FOnAfterInitialize              write FOnAfterInitialize;
@@ -398,6 +439,9 @@ type
     //Marcelo 17/09/2022
     property OnGet_SendLocationMessageEx : TGet_sendLocationMessageEx read FOnGet_sendLocationMessageEx    write FOnGet_sendLocationMessageEx;
 
+    //Marcelo 16/01/2023
+    property OnGet_sendVCardContactMessageEx : TGet_sendVCardContactMessageEx read FOnGet_sendVCardContactMessageEx    write FOnGet_sendVCardContactMessageEx;
+
     //Daniel - 13/06/2022
     property OnGet_ProductCatalog        : TGet_ProductCatalog        read FOnGet_ProductCatalog           write FOnGet_ProductCatalog;
     property OnWPPMonitorCrash           : TWPPMonitorCrash           read FOnWPPMonitorCrash              write FOnWPPMonitorCrash;
@@ -410,6 +454,13 @@ type
 
     //Marcelo 18/09/2022
     property OnGetIsAuthenticated        : TGetIsAuthenticated        read FOnGetIsAuthenticated           write FOnGetIsAuthenticated;
+
+    //Marcelo 03/05/2023
+    property OnGetIsOnline               : TGetIsOnline               read FOnGetIsOnline                  write FOnGetIsOnline;
+    property OnGetEnvIsOnline            : TGetEnvIsOnline            read FOnGetEnvIsOnline               write FOnGetEnvIsOnline;
+
+    property OnGetListChat               : TGetList                   read FOnGetListChat                  write FOnGetListChat;
+    property OnGetMessageACK             : TOnGetMessageACK           read FOnGetMessageACK                write FOnGetMessageACK; //Marcelo 19/03/2023
 
     //Adicionado Por Marcelo 01/03/2022
     property OnIsBeta                    : TOnGetCheckIsBeta          read FOnGetCheckIsBeta               write FOnGetCheckIsBeta;
@@ -435,7 +486,8 @@ type
     property OnCheckNumberExists         : TOnCheckNumberExists       read FOnCheckNumberExists            write FOnCheckNumberExists;
     property OnGetLastSeen               : TOnGetLastSeen             read FOnGetLastSeen                  write FOnGetLastSeen;
     property OnGetPlatformFromMessage    : TOnGetPlatformFromMessage  read FOnGetPlatformFromMessage       write FOnGetPlatformFromMessage;
-    property OnGetListChat               : TOnGetListChat             read FOnGetListChat                  write FOnGetListChat;
+    property OnGetHistorySyncProgress    : TOnGetHistorySyncProgress  read FOnGetHistorySyncProgress       write FOnGetHistorySyncProgress;
+    property OnGetQrCodeDesconectouErroCache  : TOnGetQrCodeDesconectouErroCache  read FOnGetQrCodeDesconectouErroCache       write FOnGetQrCodeDesconectouErroCache;
 
   end;
 
@@ -459,8 +511,122 @@ end;
 
 procedure TWPPConnect.GetBatteryStatus();
 begin
-  if Assigned(FrmConsole) then
-     FrmConsole.GetBatteryLevel;
+  //Não Habilitar Função deprecated GetBatteryLevel
+  //if Assigned(FrmConsole) then
+     //FrmConsole.GetBatteryLevel;
+end;
+
+procedure TWPPConnect.AcceptCall(id: string);
+var
+  lThread : TThread;
+begin
+  //Adicionado Por Marcelo 18/05/2022
+  if Application.Terminated Then
+    Exit;
+  if not Assigned(FrmConsole) then
+    Exit;
+
+  //callid diferente do phonenumber
+  {id := AjustNumber.FormatIn(id);
+  if pos('@', id) = 0 then
+  Begin
+    //Int_OnErroInterno(Self, MSG_ExceptPhoneNumberError, phoneNumber);
+    Exit;
+  end;}
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        if Config.AutoDelay > 0 then
+           sleep(random(Config.AutoDelay));
+
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.AcceptCall(id);
+          end;
+        end);
+
+      end);
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+
+end;
+
+procedure TWPPConnect.AcceptCallALL;
+var
+  lThread : TThread;
+begin
+  //Adicionado Por Marcelo 18/05/2022
+  if Application.Terminated Then
+    Exit;
+  if not Assigned(FrmConsole) then
+    Exit;
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        if Config.AutoDelay > 0 then
+           sleep(random(Config.AutoDelay));
+
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.AcceptCallALL;
+          end;
+        end);
+
+      end);
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+
+end;
+
+procedure TWPPConnect.addSubgroups(PCommunity, PGroupNumbers: string);
+var
+  lThread : TThread;
+begin
+  If Application.Terminated Then
+     Exit;
+  if not Assigned(FrmConsole) then
+     Exit;
+
+  {PGroupNumbers := AjustNumber.FormatIn(PGroupNumbers);
+  if pos('@', PGroupNumbers) = 0 then
+  Begin
+    Int_OnErroInterno(Self, MSG_ExceptPhoneNumberError, PParticipantNumber);
+    Exit;
+  end;}
+
+  if Trim(PCommunity) = '' then
+  begin
+    Int_OnErroInterno(Self, MSG_WarningNothingtoSend, PCommunity);
+    Exit;
+  end;
+
+  if Trim(PGroupNumbers) = '' then
+  begin
+    Int_OnErroInterno(Self, MSG_WarningNothingtoSend, PGroupNumbers);
+    Exit;
+  end;
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        if Config.AutoDelay > 0 then
+           sleep(random(Config.AutoDelay));
+
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.addSubgroups(PCommunity, PGroupNumbers);
+          end;
+        end);
+
+      end);
+
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
 end;
 
 procedure TWPPConnect.ArquivarChat(PIDContato: String);
@@ -811,6 +977,59 @@ begin
 
 end;
 
+procedure TWPPConnect.createcommunity(PcommunityName, Pdescription, PGroupNumbers: string);
+var
+  lThread : TThread;
+begin
+  If Application.Terminated Then
+     Exit;
+  if not Assigned(FrmConsole) then
+     Exit;
+
+  {PGroupNumbers := AjustNumber.FormatIn(PGroupNumbers);
+  if pos('@', PGroupNumbers) = 0 then
+  Begin
+    Int_OnErroInterno(Self, MSG_ExceptPhoneNumberError, PParticipantNumber);
+    Exit;
+  end;}
+
+  if Trim(PcommunityName) = '' then
+  begin
+    Int_OnErroInterno(Self, MSG_WarningNothingtoSend, PcommunityName);
+    Exit;
+  end;
+
+  if Trim(Pdescription) = '' then
+  begin
+    Int_OnErroInterno(Self, MSG_WarningNothingtoSend, Pdescription);
+    Exit;
+  end;
+
+  if Trim(PGroupNumbers) = '' then
+  begin
+    Int_OnErroInterno(Self, MSG_WarningNothingtoSend, PGroupNumbers);
+    Exit;
+  end;
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        if Config.AutoDelay > 0 then
+           sleep(random(Config.AutoDelay));
+
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.createcommunity(PcommunityName, Pdescription, PGroupNumbers);
+          end;
+        end);
+
+      end);
+
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+end;
+
 procedure TWPPConnect.createGroup(PGroupName, PParticipantNumber: string);
 var
   lThread : TThread;
@@ -1104,6 +1323,12 @@ begin
   inherited;
 end;
 
+procedure TWPPConnect.GetAllCommunitys;
+begin
+  if Assigned(FrmConsole) then
+     FrmConsole.GetAllCommunitys;
+end;
+
 procedure TWPPConnect.GetAllContacts;
 begin
   if Assigned(FrmConsole) then
@@ -1162,6 +1387,36 @@ begin
 
   lThread.FreeOnTerminate := true;
   lThread.Start;
+end;
+
+procedure TWPPConnect.getMessageACK(UniqueIDs: string);
+var
+  lThread : TThread;
+begin
+  //Adicionado Por Marcelo 14/03/2023
+  if Application.Terminated Then
+    Exit;
+  if not Assigned(FrmConsole) then
+    Exit;
+
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        if Config.AutoDelay > 0 then
+           sleep(random(Config.AutoDelay));
+
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.getMessageACK(UniqueIDs);
+          end;
+        end);
+
+      end);
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+
 end;
 
 procedure TWPPConnect.getMessageById(UniqueIDs, etapa: string);
@@ -1738,6 +1993,32 @@ begin
   FrmConsole.getGroupInviteLink(PIDGroup);
 end;
 
+procedure TWPPConnect.getHistorySyncProgress;
+var
+  lThread : TThread;
+begin
+  If Application.Terminated Then
+     Exit;
+
+  if not Assigned(FrmConsole) then
+     Exit;
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.getHistorySyncProgress();
+          end;
+        end);
+
+      end);
+
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+end;
+
 procedure TWPPConnect.getLastSeen(vNumber: String);
 var
   lThread : TThread;
@@ -1867,6 +2148,13 @@ begin
   //Adicionado Por Marcelo 01/03/2022
   if Assigned(FrmConsole) then
     FrmConsole.isBeta;
+end;
+
+procedure TWPPConnect.IsOnline;
+begin
+  //Adicionado Por Marcelo 03/05/2023
+  if Assigned(FrmConsole) then
+    FrmConsole.IsOnline;
 end;
 
 procedure TWPPConnect.LimparQrCodeInterno;
@@ -2073,6 +2361,43 @@ begin
 
 end;
 
+procedure TWPPConnect.markPlayed(phoneNumber: string);
+var
+  lThread : TThread;
+begin
+  //Adicionado Por Marcelo 14/03/2023
+  if Application.Terminated Then
+    Exit;
+
+  if not Assigned(FrmConsole) then
+    Exit;
+
+  {phoneNumber := AjustNumber.FormatIn(phoneNumber);
+  if pos('@', phoneNumber) = 0 then
+  Begin
+    //Int_OnErroInterno(Self, MSG_ExceptPhoneNumberError, phoneNumber);
+    Exit;
+  end;}
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        if Config.AutoDelay > 0 then
+          sleep(random(Config.AutoDelay));
+
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.markPlayed(phoneNumber);
+          end;
+        end);
+
+      end);
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+
+end;
+
 procedure TWPPConnect.Int_OnNotificationCenter(PTypeHeader: TTypeHeader; PValue: String; Const PReturnClass : TObject);
 begin
   {###########################  ###########################}
@@ -2146,10 +2471,30 @@ begin
       OnGetIsAuthenticated( TIsAuthenticated(PReturnClass), True);
   end;
 
+  if PTypeHeader = Th_getIsOnline then
+  Begin
+    if Assigned(OnGetIsOnline) then
+      OnGetIsOnline( TIsOnline(PReturnClass));
+  end;
+
+  if PTypeHeader = Th_getEnvIsOnline then
+  Begin
+    if Assigned(OnGetEnvIsOnline) then
+      OnGetEnvIsOnline( TEnvIsOnline(PReturnClass));
+  end;
+
+
+  if PTypeHeader = Th_getMessageACK then
+  begin
+    if Assigned(OnGetMessageACK) then
+      OnGetMessageACK(TResponsegetMessageACK(PReturnClass));
+  end;
+
   if (PTypeHeader In [Th_GetAllChats, Th_getUnreadMessages,
   Th_GetMessageById, Th_sendFileMessage, Th_sendTextMessage, Th_sendListMessage, //Adicionado por Marcelo 31/05/2022
   Th_sendTextMessageEx,Th_sendFileMessageEx, Th_sendListMessageEx, //temis 03-06-2022
   Th_sendLocationMessageEx, //Add Marcelo 17/09/2022
+  Th_sendVCardContactMessageEx, //Add Marcelo 16/01/2023
   Th_IncomingiCall]) then //Adicionado por Marcelo 17/06/2022
   Begin
     if not Assigned(PReturnClass) then
@@ -2228,6 +2573,13 @@ begin
         OnGet_sendLocationMessageEx(TResponsesendTextMessage(PReturnClass));
     end;
 
+    //Marcelo 17/09/2022
+    if PTypeHeader = Th_sendVCardContactMessageEx then
+    Begin
+      if Assigned(OnGet_sendVCardContactMessageEx) then
+        OnGet_sendVCardContactMessageEx(TResponsesendTextMessage(PReturnClass));
+    end;
+
     //Marcelo 17/06/2022
     If PTypeHeader = Th_IncomingiCall Then
     Begin
@@ -2286,9 +2638,15 @@ begin
   end;
 
   if PTypeHeader = Th_getAllGroups then
-  Begin
+  begin
     if Assigned(FOnGetAllGroupList) then
       FOnGetAllGroupList(TRetornoAllGroups(PReturnClass))
+  end;
+
+  if PTypeHeader = Th_getAllCommunitys then
+  begin
+    if Assigned(FOnGetAllCommunitys) then
+      FOnGetAllCommunitys(TRetornoAllCommunitys(PReturnClass))
   end;
 
   if PTypeHeader = Th_getAllGroupAdmins then
@@ -2359,10 +2717,24 @@ begin
       FOnGetPlatformFromMessage(TPlatformFromMessage(PReturnClass));
   end;
 
+  //Marcelo 17/01/2023
+  if PTypeHeader = Th_GetHistorySyncProgress  then
+  begin
+    if Assigned(FOnGetHistorySyncProgress) then
+      FOnGetHistorySyncProgress(TResponsegetHistorySyncProgress(PReturnClass));
+  end;
+
+  //Marcelo 06/02/2023
+  if PTypeHeader = Th_QrCodeDesconectouErroCache  then
+  begin
+    if Assigned(FOnGetQrCodeDesconectouErroCache) then
+      FOnGetQrCodeDesconectouErroCache(TQrCodeDesconectouErroCache(PReturnClass));
+  end;
+
   if PTypeHeader = Th_getList  then //Add Marcelo 26/10/2022
   begin
     if Assigned(FOngetListChat) then
-      FOngetListChat(TGetListClass(PReturnClass));
+      FOngetListChat(Self, TGetChatList(PReturnClass));
   end;
 
 
@@ -2492,7 +2864,8 @@ end;
 
 procedure TWPPConnect.RebootWPP;
 begin
-  frmConsole.RebootChromium;
+  //frmConsole.RebootChromium;
+  frmConsole.RebootChromiumNew;
 end;
 
 procedure TWPPConnect.rejectCall(id: string);
@@ -2695,11 +3068,19 @@ var
   LExtension  : String;
   LBase64     : String;
   options     : String;
+
   function IsImage : Boolean;
   var
     I : integer;
     LTmp : String;
   begin
+    //Temis 11/10/22
+    if pIsSticker then
+      begin
+        result := true;
+        exit;
+      end;
+
     result := false;
     for I := 0 to 10 do
     begin
@@ -2711,6 +3092,7 @@ var
     end;
 
   end;
+
 begin
   if Application.Terminated Then
     Exit;
@@ -2719,6 +3101,7 @@ begin
 
   LExtension   := LowerCase(Copy(ExtractFileExt(PFileName),2,5));
   phoneNumber := AjustNumber.FormatIn(phoneNumber);
+
   if pos('@', phoneNumber) = 0 then
   Begin
     Int_OnErroInterno(Self, MSG_ExceptPhoneNumberError, phoneNumber);
@@ -2756,42 +3139,44 @@ begin
   options :=
     'createChat: true, ';
 
-
   if (LExtension = 'mp3') then
-    begin
-      options := options +
-        'type: "audio", ' +
-        'isPtt: true';
-    end
+  begin
+    options := options +
+      'type: "audio", ' +
+      'isPtt: true';
+  end
 
   else if (LExtension = 'mpeg') or (LExtension = 'avi') or (LExtension = 'mpg') or (LExtension = 'mp4') then
-    begin
-      options := options +
-        'type: "video" ' ;
-    end
+  begin
+    options := options +
+      '  type: "video",' +
+      '  caption: "' + PMessage + '"';
+      //'  filename: "' + ExtractFileName(PFileName) + '", '+
+      //'  mimetype: "video/'+LExtension+'"';
+  end
 
   else if IsImage then
-    begin
-      if pIsSticker then
-        begin
-          options := options +
-             '  type: "sticker" ';
-        end
-      else
-        begin
-          options := options +
-             '  type: "image", ' +
-             '  caption: "'+PMessage+'"  ';
-        end;
-    end
-  Else
+  begin
+    if pIsSticker then
     begin
       options := options +
-         '  type: "document", '+
-         '  caption: "'+PMessage+'",  '+
-         '  filename: "'+ExtractFileName(PFileName)+'", '+
-         '  mimetype: "application/'+LExtension+'"';
+         '  type: "sticker" ';
+    end
+    else
+    begin
+      options := options +
+         '  type: "image", ' +
+         '  caption: "'+PMessage+'"  ';
     end;
+  end
+  else
+  begin
+    options := options +
+       '  type: "document", '+
+       '  caption: "'+PMessage+'",  '+
+       '  filename: "'+ExtractFileName(PFileName)+'", '+
+       '  mimetype: "application/'+LExtension+'"';
+  end;
 
   SendFileMessageEx( phoneNumber, lBase64, options, xSeuID);
 
@@ -3478,6 +3863,51 @@ begin
 
 end;
 
+procedure TWPPConnect.sendVCardContactMessageEx(vNumDest, vNum, vNameContact, vOptions, vSeuID: string);
+var
+  lThread : TThread;
+begin
+  If Application.Terminated Then
+     Exit;
+  if not Assigned(FrmConsole) then
+     Exit;
+
+  vNumDest := AjustNumber.FormatIn(vNumDest);
+
+  if (pos('@', vNumDest) = 0) then
+  Begin
+    Int_OnErroInterno(Self, MSG_ExceptPhoneNumberError, vNumDest);
+    Exit;
+  end;
+
+  vNum := AjustNumber.FormatIn(vNum);
+
+  if (pos('@', vNum) = 0) then
+  begin
+    Int_OnErroInterno(Self, MSG_WarningNothingtoSend, vNumDest);
+    Exit;
+  end;
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        if Config.AutoDelay > 0 then
+           sleep(random(Config.AutoDelay));
+
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.sendVCardContactMessageEx(vNumDest, vNum, vNameContact, vOptions, vSeuID);
+          end;
+        end);
+
+      end);
+
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+
+end;
+
 procedure TWPPConnect.sendVideoStatus(Content, Options: string);
 var
   lThread : TThread;
@@ -3598,6 +4028,42 @@ begin
 
 end;
 
+procedure TWPPConnect.SendCall(id, Options: string);
+var
+  lThread : TThread;
+begin
+  //Adicionado Por Marcelo 18/05/2022
+  if Application.Terminated Then
+    Exit;
+  if not Assigned(FrmConsole) then
+    Exit;
+
+  id := AjustNumber.FormatIn(id);
+  if pos('@', id) = 0 then
+  Begin
+    //Int_OnErroInterno(Self, MSG_ExceptPhoneNumberError, phoneNumber);
+    Exit;
+  end;
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        if Config.AutoDelay > 0 then
+           sleep(random(Config.AutoDelay));
+
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.SendCall(id, Options);
+          end;
+        end);
+
+      end);
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+
+end;
+
 procedure TWPPConnect.SendContact(PNumberPhone, PNumber: string; PNameContact: string = '');
 var
   lThread : TThread;
@@ -3689,6 +4155,23 @@ end;
 procedure TWPPConnect.SetdjustNumber(const Value: TWPPConnectAdjusteNumber);
 begin
   FAdjustNumber.Assign(Value);
+end;
+
+procedure TWPPConnect.SetGroupDescription(vIDGroup, vDescription: string);
+begin
+  If Application.Terminated Then
+    Exit;
+
+  if not Assigned(FrmConsole) then
+    Exit;
+
+  if Trim(vIDGroup) = '' then
+  begin
+    Int_OnErroInterno(Self, MSG_WarningNothingtoSend, vIDGroup);
+    Exit;
+  end;
+
+  FrmConsole.SetGroupDescription(vIDGroup, vDescription);
 end;
 
 procedure TWPPConnect.SetGroupPicture(PIDGroup, PFileName: string);
@@ -3849,6 +4332,72 @@ begin
   FDestroyTmr.Enabled := True;
 end;
 
+
+procedure TWPPConnect.EndCall(id: string);
+var
+  lThread : TThread;
+begin
+  //Adicionado Por Marcelo 18/05/2022
+  if Application.Terminated Then
+    Exit;
+  if not Assigned(FrmConsole) then
+    Exit;
+
+  //callid diferente do phonenumber
+  {id := AjustNumber.FormatIn(id);
+  if pos('@', id) = 0 then
+  Begin
+    //Int_OnErroInterno(Self, MSG_ExceptPhoneNumberError, phoneNumber);
+    Exit;
+  end;}
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        if Config.AutoDelay > 0 then
+           sleep(random(Config.AutoDelay));
+
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.EndCall(id);
+          end;
+        end);
+
+      end);
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+
+end;
+
+procedure TWPPConnect.EndCallALL;
+var
+  lThread : TThread;
+begin
+  //Adicionado Por Marcelo 18/05/2022
+  if Application.Terminated Then
+    Exit;
+  if not Assigned(FrmConsole) then
+    Exit;
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        if Config.AutoDelay > 0 then
+           sleep(random(Config.AutoDelay));
+
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.EndCallALL;
+          end;
+        end);
+
+      end);
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+
+end;
 
 function TWPPConnect.TestConnect: Boolean;
 begin
@@ -4100,21 +4649,29 @@ begin
 
   if Status in [Inject_Destroying, Server_Disconnecting] then
   begin
+    {$IFNDEF STANDALONE}
     Application.MessageBox(PWideChar(MSG_WarningQrCodeStart1), PWideChar(Application.Title), MB_ICONERROR + mb_ok);
+    {$ELSE}
+    raise exception.Create(MSG_WarningQrCodeStart1);
+    {$ENDIF}
     Exit;
   end;
 
   if Status in [Server_Disconnected, Inject_Destroy] then
   begin
-    //SleepNoFreeze(1000);
-    if  ConsolePronto then
+    SleepNoFreeze(1000);
+    if ConsolePronto then
     begin
 
     end
     else
     if not ConsolePronto then
     begin
+      {$IFNDEF STANDALONE}
       Application.MessageBox(PWideChar(MSG_ConfigCEF_ExceptConsoleNaoPronto), PWideChar(Application.Title), MB_ICONERROR + mb_ok);
+      {$ELSE}
+      Raise exception.Create(MSG_ConfigCEF_ExceptConsoleNaoPronto);
+      {$ENDIF}
       Exit;
     end;
 

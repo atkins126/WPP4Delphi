@@ -890,6 +890,7 @@ object frameLogin: TframeLogin
       14F640ADA5924463183F90A67692095E54E613D4E2A01CFB5F02848AE364A31E
       E00000000049454E44AE426082}
     ShowHint = False
+    OnClick = whatsOffClick
   end
   object imgQrCode: TImage
     Left = 394
@@ -1302,6 +1303,7 @@ object frameLogin: TframeLogin
       0C18C07599324E37C36AB3C7BB88C0C44FCEC830D3358E28B2BDBCB9730CF77E
       3C75350728D6FF03977073E6941C5E320000000049454E44AE426082}
     Visible = False
+    OnClick = whatsOnClick
   end
   object rgTipoLogin: TRadioGroup
     Left = 192
@@ -1309,12 +1311,13 @@ object frameLogin: TframeLogin
     Width = 185
     Height = 185
     Caption = 'M'#233'todo de acesso'
-    ItemIndex = 0
+    ItemIndex = 1
     Items.Strings = (
       'Formul'#225'rio com QrCode'
       'Whatsapp Web'
       'QrCode Manual')
     TabOrder = 0
+    OnClick = rgTipoLoginClick
   end
   object SpeedButton3: TButton
     Left = 189
@@ -1328,6 +1331,13 @@ object frameLogin: TframeLogin
     Images = ImageList1
     TabOrder = 1
     OnClick = SpeedButton3Click
+  end
+  object ProgressBar1: TProgressBar
+    Left = 189
+    Top = 304
+    Width = 188
+    Height = 17
+    TabOrder = 2
   end
   object ImageList1: TImageList
     DrawingStyle = dsTransparent
