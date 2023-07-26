@@ -90,6 +90,8 @@ type
     Button4: TButton;
     btnLigar: TButton;
     btnEncerrarChamada: TButton;
+    eChoicesPool: TEdit;
+    Label2: TLabel;
     procedure edtURLDblClick(Sender: TObject);
     procedure btnTextoSimplesClick(Sender: TObject);
     procedure btnBotaoSimplesClick(Sender: TObject);
@@ -373,6 +375,36 @@ end;
 
 procedure TframeMensagem.btnBotaoSimplesClick(Sender: TObject);
 var
+  LDescricao: String;
+  LOpcoes, Options: String;
+begin
+  if not frDemo.TWPPConnect1.Auth then
+     Exit;
+
+  LDescricao:= InputBox('Informe a descrição da votação','Descrição','Votação WPPConnect');
+
+  if LDescricao = '' then
+    exit;
+
+  if Trim(ed_num.Text) = '' then
+  begin
+    messageDlg('Informe o Contato para Continuar', mtWarning, [mbOk], 0);
+    ed_num.SetFocus;
+    Exit;
+  end;
+
+  Lopcoes := '["OPÇÃO 1","OPÇÃO 2","OPÇÃO 3"]';
+  //Lopcoes := '["Bolo","Cachorro Quente"]';
+
+  if eChoicesPool.Text <> '' then
+    Lopcoes := eChoicesPool.Text;
+
+  Options := 'createchat:true, selectableCount:1'; // Apenas 1 Escolha
+  //Options := 'createchat:true, selectableCount:0'; // Multipla Escolha
+
+  frDemo.TWPPConnect1.CreatePool(ed_num.Text, LDescricao, Lopcoes, Options);
+
+(*var
   S_RETORNO, options : wideString;
 begin
   try
@@ -419,7 +451,7 @@ begin
   finally
     ed_num.SelectAll;
     ed_num.SetFocus;
-  end;
+  end;*)
 end;
 
 procedure TframeMensagem.btnContatoClick(Sender: TObject);

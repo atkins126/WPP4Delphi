@@ -237,6 +237,7 @@ type
     procedure getMessageById(UniqueIDs: string; etapa: string = '');
 
     procedure getMessageACK(UniqueIDs: string); //Adicionado Por Marcelo 14/03/2023
+    procedure getVotes(UniqueID: string); //Adicionado Por Marcelo 07/07/2023
 
     procedure getPlatformFromMessage(UniqueIDs, PNumberPhone: string);  //Add Marcelo 20/09/2022
     procedure deleteMessageById(PNumberPhone, UniqueIDs : string);  //Add Marcelo 20/09/2022
@@ -279,7 +280,8 @@ type
     procedure GroupLeave(vIDGroup: string);
     procedure GroupDelete(vIDGroup: string);
     procedure GroupJoinViaLink(vLinkGroup: string);
-    procedure GroupPoolCreate(vIDGroup, vDescription, vPoolOptions: string);
+    procedure GroupPoolCreate(vIDGroup, vDescription, vPoolOptions, vOptions: string);
+    procedure PoolCreate(vID, vDescription, vPoolOptions, vOptions: string);
     procedure SetGroupPicture(vIDGroup, vBase64:string);
     procedure GroupMsgAdminOnly(vIDGroup: string);
     procedure GroupMsgAll(vIDGroup: string);
@@ -604,6 +606,22 @@ begin
   end;
 end;
 
+procedure TFrmConsole.PoolCreate(vID, vDescription, vPoolOptions, vOptions: string);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS   := FrmConsole_JS_VAR_CreatePoolMessage;
+  FrmConsole_JS_AlterVar(LJS, '#GROUP_ID#',           Trim(vID));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_CONTENT#',        Trim(vDescription));
+  FrmConsole_JS_AlterVar(LJS, '#POOL_OPTIONS#',       Trim(vPoolOptions));
+  FrmConsole_JS_AlterVar(LJS, '#OPTIONS#',            Trim(vOptions));
+
+  ExecuteJS(LJS, true);
+end;
+
 procedure TFrmConsole.ProcessGroupBook(PCommand: string);
 var
   LAllGroups : TRetornoAllGroups;
@@ -773,6 +791,18 @@ begin
 end;
 
 
+procedure TFrmConsole.getVotes(UniqueID: string);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS   := FrmConsole_JS_VAR_getMessageACK;
+  FrmConsole_JS_AlterVar(LJS, '#MSG_UNIQUE_ID#', Trim(UniqueID));
+  ExecuteJS(LJS, false);
+end;
+
 procedure TFrmConsole.GroupAddParticipant(vIDGroup, vNumber: string);
 var
   Ljs: string;
@@ -859,8 +889,7 @@ begin
   ExecuteJS(LJS, true);
 end;
 
-procedure TFrmConsole.GroupPoolCreate(vIDGroup, vDescription,
-  vPoolOptions: string);
+procedure TFrmConsole.GroupPoolCreate(vIDGroup, vDescription, vPoolOptions, vOptions: string);
 var
   Ljs: string;
 begin
@@ -871,6 +900,7 @@ begin
   FrmConsole_JS_AlterVar(LJS, '#GROUP_ID#',           Trim(vIDGroup));
   FrmConsole_JS_AlterVar(LJS, '#MSG_CONTENT#',        Trim(vDescription));
   FrmConsole_JS_AlterVar(LJS, '#POOL_OPTIONS#',        Trim(vPoolOptions));
+  FrmConsole_JS_AlterVar(LJS, '#OPTIONS#',            Trim(vOptions));
   ExecuteJS(LJS, true);
 end;
 
@@ -1026,7 +1056,10 @@ begin
     raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
 
   LJS := FrmConsole_JS_VAR_DeleteChat;
-  ExecuteJS(FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#', Trim(vID)), False);
+  FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',     Trim(vID));
+  //ExecuteJS(FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#', Trim(vID)), False);
+  ExecuteJS(LJS, true);
+
 end;
 
 procedure TFrmConsole.deleteMessageById(PNumberPhone, UniqueIDs: string);
@@ -1039,7 +1072,7 @@ begin
   LJS   := FrmConsole_JS_VAR_deleteMessageById;
   FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',     Trim(PNumberPhone));
   FrmConsole_JS_AlterVar(LJS, '#MSG_UNIQUE_ID#', Trim(UniqueIDs));
-  ExecuteJS(LJS, false);
+  ExecuteJS(LJS, True);
 end;
 
 procedure TFrmConsole.DeleteMessages(vID: string);
@@ -2372,6 +2405,31 @@ begin
                              LResultStr := copy(LResultStr, 11, length(LResultStr)); //REMOVENDO RESULT
                              LResultStr := copy(LResultStr, 0, length(LResultStr)-1); // REMOVENDO }
                              LOutClass := TPlatformFromMessage.Create(LResultStr);
+                             try
+                               SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass);
+                             finally
+                               FreeAndNil(LOutClass);
+                             end;
+                     end;
+
+
+    Th_GetVotes :
+                     begin
+                             LResultStr := copy(LResultStr, 11, length(LResultStr)); //REMOVENDO RESULT
+                             LResultStr := copy(LResultStr, 0, length(LResultStr)-1); // REMOVENDO }
+                             LOutClass := TPoolResponseClass.Create(LResultStr);
+                             try
+                               SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass);
+                             finally
+                               FreeAndNil(LOutClass);
+                             end;
+                     end;
+
+    Th_Getpoll_response :
+                     begin
+                             LResultStr := copy(LResultStr, 11, length(LResultStr)); //REMOVENDO RESULT
+                             LResultStr := copy(LResultStr, 0, length(LResultStr)-1); // REMOVENDO }
+                             LOutClass := TPoolResponseClass.Create(LResultStr);
                              try
                                SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass);
                              finally

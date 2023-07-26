@@ -5722,6 +5722,8 @@ object frDemo: TfrDemo
     OnCheckNumberExists = TWPPConnect1CheckNumberExists
     OnGetLastSeen = TWPPConnect1GetLastSeen
     OnGetPlatformFromMessage = TWPPConnect1GetPlatformFromMessage
+    OnGetPoolResponse = TWPPConnect1GetPoolResponse
+    OnGetPoolResponseEvento = TWPPConnect1GetPoolResponseEvento
     OnGetHistorySyncProgress = TWPPConnect1GetHistorySyncProgress
     OnGetQrCodeDesconectouErroCache = TWPPConnect1GetQrCodeDesconectouErroCache
     Left = 288
