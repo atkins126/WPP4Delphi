@@ -87,6 +87,9 @@ type
   TOnGetNewMessageResponseEvento = procedure(Const NewMessageResponse: TNewMessageResponseClass) of object; //Marcelo 25/07/2023
   TOnGet_SendPollMessageResponse = procedure(Const SendPollMessageResponse: TSendPollMessageResponseClass) of object; //Marcelo 25/07/2023
 
+  TOnGetAck_changeEvento = procedure(Const Ack_change: TAck_changeClass) of object; //Marcelo 26/07/2023
+  TOnGetmsg_revokeEvento = procedure(Const RevokeMsg: TRevokeClass) of object; //Marcelo 26/07/2023
+
   TOnGetHistorySyncProgress = procedure(Const GetHistorySyncProgress: TResponsegetHistorySyncProgress) of object; //Marcelo 17/01/2023
   TOnGetQrCodeDesconectouErroCache = procedure(Const QrCodeDesconectouErroCache: TQrCodeDesconectouErroCache) of object; //Marcelo 06/02/2023
 
@@ -215,6 +218,9 @@ type
     FOnGetNewMessageResponseEvento : TOnGetNewMessageResponseEvento; //Marcelo 25/07/2023
     FOnGet_SendPollMessageResponse : TOnGet_SendPollMessageResponse; //Marcelo 25/07/2023
 
+    FOnGetAck_changeEvento      : TOnGetAck_changeEvento; //Marcelo 26/07/2023
+    FOnGetmsg_revokeEvento      : TOnGetmsg_revokeEvento; //Marcelo 26/07/2023
+
     FOnGetHistorySyncProgress   : TOnGetHistorySyncProgress; //Marcelo 17/01/2023
     FOnGetQrCodeDesconectouErroCache   : TOnGetQrCodeDesconectouErroCache; //Marcelo 06/02/2023
 
@@ -287,6 +293,8 @@ type
     procedure SendTextMessageEx(phoneNumber, content, options: string; xSeuID: string = '');
     procedure SendListMessageEx(phoneNumber, buttonText, description, sections: string; xSeuID: string = '');
     procedure SendLocationMessageEx(phoneNumber, options: string; xSeuID: string = '');
+
+    procedure editMessage(UniqueID, NewMessage, Options: string); //Add Marcelo 15/08/2023
 
     procedure getList(options: string); //Add Marcelo 25/10/2022
 
@@ -517,6 +525,9 @@ type
     property OnGetReactResponseEvento      : TOnGetReactResponseEvento       read FOnGetReactResponseEvento       write FOnGetReactResponseEvento;
     property OnGetNewMessageResponseEvento : TOnGetNewMessageResponseEvento  read FOnGetNewMessageResponseEvento  write FOnGetNewMessageResponseEvento;
     property OnGet_SendPollMessageResponse : TOnGet_SendPollMessageResponse  read FOnGet_SendPollMessageResponse  write FOnGet_SendPollMessageResponse;
+
+    property OnGetAck_changeEvento      : TOnGetAck_changeEvento       read FOnGetAck_changeEvento       write FOnGetAck_changeEvento;
+    property OnGetmsg_revokeEvento      : TOnGetmsg_revokeEvento       read FOnGetmsg_revokeEvento       write FOnGetmsg_revokeEvento;
 
     property OnGetHistorySyncProgress    : TOnGetHistorySyncProgress  read FOnGetHistorySyncProgress       write FOnGetHistorySyncProgress;
     property OnGetQrCodeDesconectouErroCache  : TOnGetQrCodeDesconectouErroCache  read FOnGetQrCodeDesconectouErroCache       write FOnGetQrCodeDesconectouErroCache;
@@ -993,7 +1004,7 @@ begin
   FInjectConfig                       := TWPPConnectConfig.Create(self);
   FInjectConfig.OnNotificationCenter  := Int_OnNotificationCenter;
   FInjectConfig.AutoDelay             := 1000;
-  FInjectConfig.SecondsMonitor        := 3;
+  //FInjectConfig.SecondsMonitor        := 3;
   FInjectConfig.ControlSend           := True;
   FInjectConfig.LowBatteryis          := 30;
   FInjectConfig.ControlSendTimeSec    := 8;
@@ -1568,7 +1579,9 @@ begin
   if not Assigned(FrmConsole) then
     Exit;
 
+  FrmConsole.getMessageById(UniqueIDs);
 
+  {
   lThread := TThread.CreateAnonymousThread(procedure
       begin
         if Config.AutoDelay > 0 then
@@ -1590,7 +1603,7 @@ begin
       end);
   lThread.FreeOnTerminate := true;
   lThread.Start;
-
+  }
 end;
 
 procedure TWPPConnect.GetMyContacts;
@@ -2754,6 +2767,13 @@ begin
         OnGet_sendVCardContactMessageEx(TResponsesendTextMessage(PReturnClass));
     end;
 
+    //Marcelo 25/07/2023
+    if PTypeHeader = Th_sendCreatePollMessageEx  then
+    begin
+      if Assigned(FOnGet_SendPollMessageResponse) then
+        FOnGet_SendPollMessageResponse(TSendPollMessageResponseClass(PReturnClass));
+    end;
+
     //Marcelo 17/06/2022
     If PTypeHeader = Th_IncomingiCall Then
     Begin
@@ -2926,12 +2946,20 @@ begin
       FOnGetReactResponseEvento(TReactionResponseClass(PReturnClass));
   end;
 
-  //Marcelo 25/07/2023
-  if PTypeHeader = Th_sendCreatePollMessageEx  then
+  //Marcelo 26/07/2023
+  if PTypeHeader = Th_Getmsg_ack_change  then
   begin
-    if Assigned(FOnGet_SendPollMessageResponse) then
-      FOnGet_SendPollMessageResponse(TSendPollMessageResponseClass(PReturnClass));
+    if Assigned(FOnGetAck_changeEvento) then
+      FOnGetAck_changeEvento(TAck_changeClass(PReturnClass));
   end;
+
+  //Marcelo 26/07/2023
+  if PTypeHeader = Th_Getmsg_revoke  then
+  begin
+    if Assigned(FOnGetmsg_revokeEvento) then
+      FOnGetmsg_revokeEvento(TRevokeClass(PReturnClass));
+  end;
+
 
   //Marcelo 17/01/2023
   if PTypeHeader = Th_GetHistorySyncProgress  then
@@ -4548,6 +4576,49 @@ begin
   FDestroyTmr.Enabled := True;
 end;
 
+
+procedure TWPPConnect.editMessage(UniqueID, NewMessage, Options: string);
+var
+  lThread : TThread;
+begin
+  //Marcelo 15/08/2023
+  if Application.Terminated Then
+    Exit;
+
+  if not Assigned(FrmConsole) then
+    Exit;
+
+  if Trim(UniqueID) = '' then
+  begin
+    Int_OnErroInterno(Self, MSG_WarningNothingtoSend, UniqueID);
+    Exit;
+  end;
+
+  if Trim(NewMessage) = '' then
+  begin
+    Int_OnErroInterno(Self, MSG_WarningNothingtoSend, NewMessage);
+    Exit;
+  end;
+
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        if Config.AutoDelay > 0 then
+           sleep(random(Config.AutoDelay));
+
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            FrmConsole.editMessage(UniqueID, NewMessage, options);
+          end;
+       end);
+
+      end);
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+
+end;
 
 procedure TWPPConnect.EndCall(id: string);
 var
