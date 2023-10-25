@@ -46,6 +46,17 @@ type
     CEFWindowParent1: TCEFWindowParent;
     lbl_Versao: TLabel;
     Img_LogoInject: TImage;
+    bInfo: TBitBtn;
+    lblNumber: TLabel;
+    Pnl_quick_maintenance: TPanel;
+    bDeleteOldChats: TBitBtn;
+    eNumberChats: TEdit;
+    Label1: TLabel;
+    bDeleteAllChat: TBitBtn;
+    Label2: TLabel;
+    bFinish: TBitBtn;
+    bMarkIsReadChats: TBitBtn;
+    bMarkIsUnreadChats: TBitBtn;
     procedure Chromium1AfterCreated(Sender: TObject;      const browser: ICefBrowser);
     procedure Chromium1BeforeClose(Sender: TObject; const browser: ICefBrowser);
     procedure Chromium1BeforePopup(Sender: TObject; const browser: ICefBrowser;
@@ -94,6 +105,13 @@ type
       out Result: Boolean);
     procedure Img_LogoInjectClick(Sender: TObject);
     procedure Lbl_CaptionClick(Sender: TObject);
+    procedure bInfoClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure bDeleteOldChatsClick(Sender: TObject);
+    procedure bDeleteAllChatClick(Sender: TObject);
+    procedure bFinishClick(Sender: TObject);
+    procedure bMarkIsReadChatsClick(Sender: TObject);
+    procedure bMarkIsUnreadChatsClick(Sender: TObject);
   protected
     // You have to handle this two messages to call NotifyMoveOrResizeStarted or some page elements will be misaligned.
     procedure WMMove(var aMessage : TWMMove); message WM_MOVE;
@@ -199,6 +217,7 @@ type
     procedure SendListMessageEx(phoneNumber, buttonText, description, sections: string; xSeuID: string = '');
 
     procedure editMessage(UniqueID, NewMessage, Options: string); //Add Marcelo 15/08/2023
+    procedure forwardMessage(phoneNumber, UniqueID: string); //Add Marcelo 30/08/2023
 
     //Adicionado Por Marcelo 17/09/2022
     procedure SendLocationMessageEx(phoneNumber, options: string; xSeuID: string = '');
@@ -217,6 +236,10 @@ type
     //Adicionado Por Marcelo 13/06/2022
     procedure markmarkIsRecording(phoneNumber, duration: string; etapa: string = '');
     procedure setKeepAlive(Ativo: string);
+
+    //Marcelo 09/10/2023
+    procedure CreateNewsLetter(Content, Options: string);
+
     procedure sendTextStatus(Content, Options: string);
 
     //MARCELO 28/06/2022
@@ -256,6 +279,10 @@ type
     procedure DesarquivarChat(vContato:String);
     procedure ArquivarTodosOsChats;
     procedure DeletarTodosOsChats;
+    procedure DeletarOldChats(QtdChatsExcluir: string);
+    procedure MarkIsReadChats(NumberChatsIsRead: string);
+    procedure MarkIsUnreadChats(NumberChatsUnread: string);
+
     procedure FixarChat(vContato:String);
     procedure DesfixarChat(vContato:String);
     //Daniel - 13/06/2022
@@ -282,6 +309,7 @@ type
     procedure GroupLeave(vIDGroup: string);
     procedure GroupDelete(vIDGroup: string);
     procedure GroupJoinViaLink(vLinkGroup: string);
+    procedure sendScheduledCallMessage(vID, vOptions: string);
     procedure GroupPoolCreate(vIDGroup, vDescription, vPoolOptions, vOptions: string);
     procedure PoolCreate(vID, vDescription, vChoices, vOptions: string);
     procedure PoolCreateEx(vID, vDescription, vChoices, vOptions, vSeuID, vSeuID2: string);
@@ -303,6 +331,9 @@ type
     procedure getLastSeen(vNumber:String); //Marcelo 31/07/2022
     procedure getMessage(vNumber, vOptions :String); //Marcelo 14/08/2022
 
+    procedure getWAVersion;
+    procedure GetTotalChatsUserRead;
+
     procedure GetAllChats;
     procedure GetUnreadMessages;
     procedure GetBatteryLevel; deprecated; //Não Habilitar Função deprecated GetBatteryLevel
@@ -322,9 +353,15 @@ type
 
     procedure DeleteChat(vID: string);
 
+    procedure localStorage_debug;
+
     procedure StartMonitor(Seconds: Integer);
     procedure StartMonitorNew(Seconds: Integer);
     procedure StartMonitorWPPCrash(Seconds: Integer);
+    procedure startEvento_msg_ack_change(active: Boolean);
+    procedure startEvento_msg_revoke(active: Boolean);
+    procedure startEvento_new_message(active: Boolean);
+    procedure startEvento_new_reaction(active: Boolean);
     procedure StopMonitor;
     procedure StopMonitorNew;
   end;
@@ -423,6 +460,39 @@ begin
   LJS   := FrmConsole_JS_VAR_ArchiveAllChats;
   ExecuteJS(LJS, true);
 
+end;
+
+procedure TFrmConsole.bInfoClick(Sender: TObject);
+begin
+  getWAVersion;
+  GetTotalChatsUserRead;
+  Caption := 'WPPConnect Team - WPP4Delphi - WhatsAppWeb v' + TWPPConnect(FOwner).WhatsAppWebVersion +  ' - Conversas Lidas(' + TWPPConnect(FOwner).TotalChatsUserRead.ToString + ')  Number: ' + TWPPConnect(FOwner).MyNumber;
+  lblNumber.Caption := 'Number: ' + TWPPConnect(FOwner).MyNumber;
+end;
+
+procedure TFrmConsole.bDeleteOldChatsClick(Sender: TObject);
+begin
+  DeletarOldChats(eNumberChats.Text);
+end;
+
+procedure TFrmConsole.bFinishClick(Sender: TObject);
+begin
+  Pnl_quick_maintenance.Visible := False;
+end;
+
+procedure TFrmConsole.bMarkIsReadChatsClick(Sender: TObject);
+begin
+  markIsReadChats(eNumberChats.Text);
+end;
+
+procedure TFrmConsole.bMarkIsUnreadChatsClick(Sender: TObject);
+begin
+  MarkIsUnreadChats(eNumberChats.Text);
+end;
+
+procedure TFrmConsole.bDeleteAllChatClick(Sender: TObject);
+begin
+  DeletarTodosOsChats;
 end;
 
 procedure TFrmConsole.BloquearContato(vContato: string);
@@ -533,6 +603,8 @@ begin
   try
     If TWPPConnect(FOwner).Status = Server_Connected then
     Begin
+      localStorage_debug;
+
       //Marcelo 12/08/2022
       //Aguardar "X" Segundos Injetar JavaScript
       if TWPPConnect(FOwner).InjectJS.SecondsWaitInject > 0 then
@@ -552,12 +624,18 @@ begin
       SleepNoFreeze(40);
 
       If Assigned(TWPPConnect(FOwner).OnAfterInjectJs) Then
-         TWPPConnect(FOwner).OnAfterInjectJs(FOwner);
+        TWPPConnect(FOwner).OnAfterInjectJs(FOwner);
 
       //Auto monitorar mensagens não lidas
       StartMonitor(TWPPConnect(FOwner).Config.SecondsMonitor);
       StartMonitorNew(TWPPConnect(FOwner).Config.SecondsMonitorNew);
       StartMonitorWPPCrash(TWPPConnect(FOwner).Config.SecondsMonitorWppCrash);
+
+      //Ativar Eventos add Marcelo 28/09/2023
+      startEvento_msg_ack_change(TWPPConnect(FOwner).Config.Evento_msg_ack_change);
+      startEvento_msg_revoke(TWPPConnect(FOwner).Config.Evento_msg_revoke);
+      startEvento_new_message(TWPPConnect(FOwner).Config.Evento_new_message);
+      startEvento_new_reaction(TWPPConnect(FOwner).Config.Evento_new_reaction);
 
       SleepNoFreeze(40);
 
@@ -814,6 +892,14 @@ begin
   ExecuteJS(LJS, False);
 end;
 
+procedure TFrmConsole.GetTotalChatsUserRead;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  FrmConsole.ExecuteJS(FrmConsole_JS_GetTotalChatsUserRead, False);
+end;
+
 procedure TFrmConsole.GetUnreadMessages;
 begin
   ExecuteJS(FrmConsole_JS_GetUnreadMessages, False);
@@ -830,6 +916,14 @@ begin
   LJS   := FrmConsole_JS_VAR_getMessageACK;
   FrmConsole_JS_AlterVar(LJS, '#MSG_UNIQUE_ID#', Trim(UniqueID));
   ExecuteJS(LJS, false);
+end;
+
+procedure TFrmConsole.getWAVersion;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  FrmConsole.ExecuteJS(FrmConsole_JS_getWAVersion, False);
 end;
 
 procedure TFrmConsole.GroupAddParticipant(vIDGroup, vNumber: string);
@@ -1080,6 +1174,18 @@ begin
   ExecuteJS(FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#' , Trim(vID)), True);
 end;
 
+procedure TFrmConsole.DeletarOldChats(QtdChatsExcluir: string);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS   := FrmConsole_JS_VAR_DeleteOldChats;
+  FrmConsole_JS_AlterVar(LJS, '#QtdChatsExcluir#',     Trim(QtdChatsExcluir));
+  ExecuteJS(LJS, true);
+end;
+
 procedure TFrmConsole.DeletarTodosOsChats;
 var
   Ljs: string;
@@ -1237,6 +1343,8 @@ begin
   Chromium1.StopLoad;
   Chromium1.Browser.ReloadIgnoreCache;
 
+  localStorage_debug;
+
   //Aguardar "X" Segundos Injetar JavaScript
   if TWPPConnect(FOwner).InjectJS.SecondsWaitInject > 0 then
     SleepNoFreeze(TWPPConnect(FOwner).InjectJS.SecondsWaitInject * 1000);
@@ -1250,6 +1358,13 @@ begin
   StartMonitor(TWPPConnect(FOwner).Config.SecondsMonitor);
   StartMonitorNew(TWPPConnect(FOwner).Config.SecondsMonitorNew);
   StartMonitorWPPCrash(TWPPConnect(FOwner).Config.SecondsMonitorWppCrash);
+
+  //Ativar Eventos add Marcelo 28/09/2023
+  startEvento_msg_ack_change(TWPPConnect(FOwner).Config.Evento_msg_ack_change);
+  startEvento_msg_revoke(TWPPConnect(FOwner).Config.Evento_msg_revoke);
+  startEvento_new_message(TWPPConnect(FOwner).Config.Evento_new_message);
+  startEvento_new_reaction(TWPPConnect(FOwner).Config.Evento_new_reaction);
+
   SleepNoFreeze(40);
   SendNotificationCenterDirect(Th_Initialized);
 end;
@@ -1685,6 +1800,48 @@ begin
     Chromium1.DecZoomStep;
 end;
 
+procedure TFrmConsole.startEvento_msg_ack_change(active: Boolean);
+var
+  LJS: String;
+begin
+  LJS := FrmConsole_JS_VAR_StartEvento_msg_ack_change;
+  if active then
+    ExecuteJSDir(FrmConsole_JS_AlterVar(LJS, '#ACTIVE#' , 'true')) else
+    ExecuteJSDir(FrmConsole_JS_AlterVar(LJS, '#ACTIVE#' , 'false'));
+end;
+
+procedure TFrmConsole.startEvento_msg_revoke(active: Boolean);
+var
+  LJS: String;
+begin
+  LJS := FrmConsole_JS_VAR_StartEvento_msg_revoke;
+  if active then
+    ExecuteJSDir(FrmConsole_JS_AlterVar(LJS, '#ACTIVE#' , 'true')) else
+    ExecuteJSDir(FrmConsole_JS_AlterVar(LJS, '#ACTIVE#' , 'false'));
+end;
+
+procedure TFrmConsole.startEvento_new_message(active: Boolean);
+var
+  LJS: String;
+begin
+  LJS := FrmConsole_JS_VAR_StartEvento_new_message;
+  if active then
+    ExecuteJSDir(FrmConsole_JS_AlterVar(LJS, '#ACTIVE#' , 'true')) else
+    ExecuteJSDir(FrmConsole_JS_AlterVar(LJS, '#ACTIVE#' , 'false'));
+
+end;
+
+procedure TFrmConsole.startEvento_new_reaction(active: Boolean);
+var
+  LJS: String;
+begin
+  LJS := FrmConsole_JS_VAR_StartEvento_new_reaction;
+  if active then
+    ExecuteJSDir(FrmConsole_JS_AlterVar(LJS, '#ACTIVE#' , 'true')) else
+    ExecuteJSDir(FrmConsole_JS_AlterVar(LJS, '#ACTIVE#' , 'false'));
+
+end;
+
 procedure TFrmConsole.SendNotificationCenterDirect(PValor: TTypeHeader; Const PSender : TObject);
 begin
   FHeaderAtual := PValor;
@@ -1736,6 +1893,23 @@ begin
   LJS   := FrmConsole_JS_VAR_SendReactionMessage;
   FrmConsole_JS_AlterVar(LJS, '#MSG_UNIQUE_ID#',    Trim(UniqueID));
   FrmConsole_JS_AlterVar(LJS, '#MSG_REACTION#',  Trim(Reaction));
+  ExecuteJS(LJS, true);
+end;
+
+procedure TFrmConsole.sendScheduledCallMessage(vID, vOptions: string);
+var
+  Ljs: string;
+  i : integer;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  vOptions := CaractersQuebraLinha(vOptions);
+
+  LJS   := FrmConsole_JS_VAR_SendScheduledCallMessage;
+
+  FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',    Trim(vID));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_OPTIONS#',  Trim(vOptions));
   ExecuteJS(LJS, true);
 end;
 
@@ -2088,7 +2262,31 @@ begin
                             end;
                          end;
 
+    //Marcelo 22/10/2023
+    Th_GetTotalChatsUserRead   : begin
+                            LResultStr := copy(LResultStr, 11, length(LResultStr)); //REMOVENDO RESULT
+                            LResultStr := copy(LResultStr, 0, length(LResultStr)-1); // REMOVENDO }
+                            LOutClass := TTotalChatsUserRead.Create(LResultStr);
 
+                            try
+                              SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass);
+                            finally
+                              FreeAndNil(LOutClass);
+                            end;
+                         end;
+
+    //Marcelo 22/10/2023
+    Th_GetWAVersion   : begin
+                            LResultStr := copy(LResultStr, 11, length(LResultStr)); //REMOVENDO RESULT
+                            LResultStr := copy(LResultStr, 0, length(LResultStr)-1); // REMOVENDO }
+                            LOutClass := TWAVersion.Create(LResultStr);
+
+                            try
+                              SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass);
+                            finally
+                              FreeAndNil(LOutClass);
+                            end;
+                         end;
 
 
     //Marcelo 31/05/2022
@@ -2600,6 +2798,8 @@ begin
     Chromium1.StopLoad;
     Chromium1.Browser.ReloadIgnoreCache;
 
+    localStorage_debug;
+
     //Aguardar "X" Segundos Injetar JavaScript
     if TWPPConnect(FOwner).InjectJS.SecondsWaitInject > 0 then
       SleepNoFreeze(TWPPConnect(FOwner).InjectJS.SecondsWaitInject * 1000);
@@ -2613,6 +2813,13 @@ begin
     StartMonitor(TWPPConnect(FOwner).Config.SecondsMonitor);
     StartMonitorNew(TWPPConnect(FOwner).Config.SecondsMonitorNew);
     StartMonitorWPPCrash(TWPPConnect(FOwner).Config.SecondsMonitorWppCrash);
+
+    //Ativar Eventos add Marcelo 28/09/2023
+    startEvento_msg_ack_change(TWPPConnect(FOwner).Config.Evento_msg_ack_change);
+    startEvento_msg_revoke(TWPPConnect(FOwner).Config.Evento_msg_revoke);
+    startEvento_new_message(TWPPConnect(FOwner).Config.Evento_new_message);
+    startEvento_new_reaction(TWPPConnect(FOwner).Config.Evento_new_reaction);
+
     SleepNoFreeze(40);
     SendNotificationCenterDirect(Th_Initialized);
 
@@ -2654,7 +2861,7 @@ begin
   end
   else
   Begin
-    if (message = FrmConsole_JS_Ignorar) or (message = FrmConsole_JS_RetornoVazio)  then
+    if (message = FrmConsole_JS_Ignorar) or (message = FrmConsole_JS_RetornoVazio) or (message = FrmConsole_JS_Ignorar2) then
     begin
       {if POS('getUnreadMessages', message) = 0 then
         LogAdd(message, 'CONSOLE VAZIO');  }
@@ -2717,6 +2924,8 @@ procedure TFrmConsole.Chromium1LoadEnd(Sender: TObject;
 begin
   if TWPPConnect(FOwner).Status = Server_Rebooting then
   begin
+    localStorage_debug;
+
     //Marcelo 12/08/2022
     //Aguardar "X" Segundos Injetar JavaScript
     if TWPPConnect(FOwner).InjectJS.SecondsWaitInject > 0 then
@@ -2731,6 +2940,14 @@ begin
     StartMonitor(TWPPConnect(FOwner).Config.SecondsMonitor);
     StartMonitorNew(TWPPConnect(FOwner).Config.SecondsMonitorNew);
     StartMonitorWPPCrash(TWPPConnect(FOwner).Config.SecondsMonitorWppCrash);
+
+    //Ativar Eventos add Marcelo 28/09/2023
+    startEvento_msg_ack_change(TWPPConnect(FOwner).Config.Evento_msg_ack_change);
+    startEvento_msg_revoke(TWPPConnect(FOwner).Config.Evento_msg_revoke);
+    startEvento_new_message(TWPPConnect(FOwner).Config.Evento_new_message);
+    startEvento_new_reaction(TWPPConnect(FOwner).Config.Evento_new_reaction);
+
+
     SleepNoFreeze(40);
     SendNotificationCenterDirect(Th_Initialized);
   end;
@@ -2910,6 +3127,26 @@ begin
   ExecuteJS(LJS, true);
 end;
 
+procedure TFrmConsole.CreateNewsLetter(Content, Options: string);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  Content := CaractersWeb(Content);
+  //options := CaractersWeb(options);
+  options := CaractersQuebraLinha(options);
+
+  LJS   := FrmConsole_JS_VAR_newsletter_create;
+  FrmConsole_JS_AlterVar(LJS, '#NAME#',  Trim(Content));
+  FrmConsole_JS_AlterVar(LJS, '#OPTIONS#',  Trim(options));
+
+  SalvaLog(LJS + #13#10, 'CONSOLE');
+
+  ExecuteJS(LJS, true);
+end;
+
 procedure TFrmConsole.FixarChat(vContato: String);
 var
   Ljs: string;
@@ -3024,6 +3261,14 @@ begin
 end;
 
 
+procedure TFrmConsole.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if key = vk_F2 then
+  begin
+    Pnl_quick_maintenance.Visible := not Pnl_quick_maintenance.Visible;
+  end;
+end;
+
 procedure TFrmConsole.FormShow(Sender: TObject);
 var
   Version_JS, vWAJS: string;
@@ -3040,6 +3285,8 @@ begin
   Version_JS := Copy(Version_JS,1,pos(';', Version_JS) -1);
 
   lbl_Versao.Caption := vWAJS + ' / ' + Version_JS;
+
+
 end;
 
 procedure TFrmConsole.Form_Normal;
@@ -3059,6 +3306,19 @@ begin
   Width                    := 1000; //680
   Pnl_Geral.Enabled        := True;
   BorderStyle              := bsDialog;
+end;
+
+procedure TFrmConsole.forwardMessage(phoneNumber, UniqueID: string);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS   := FrmConsole_JS_VAR_forwardMessage;
+  FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',  Trim(phoneNumber));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_UNIQUE_ID#',    Trim(UniqueID));
+  ExecuteJS(LJS, true);
 end;
 
 procedure TFrmConsole.Image2Click(Sender: TObject);
@@ -3085,6 +3345,8 @@ begin
   Chromium1.StopLoad;
   Chromium1.Browser.ReloadIgnoreCache;
 
+  localStorage_debug;
+
   //Aguardar "X" Segundos Injetar JavaScript
   if TWPPConnect(FOwner).InjectJS.SecondsWaitInject > 0 then
     SleepNoFreeze(TWPPConnect(FOwner).InjectJS.SecondsWaitInject * 1000);
@@ -3098,6 +3360,14 @@ begin
   StartMonitor(TWPPConnect(FOwner).Config.SecondsMonitor);
   StartMonitorNew(TWPPConnect(FOwner).Config.SecondsMonitorNew);
   StartMonitorWPPCrash(TWPPConnect(FOwner).Config.SecondsMonitorWppCrash);
+
+  //Ativar Eventos add Marcelo 28/09/2023
+  startEvento_msg_ack_change(TWPPConnect(FOwner).Config.Evento_msg_ack_change);
+  startEvento_msg_revoke(TWPPConnect(FOwner).Config.Evento_msg_revoke);
+  startEvento_new_message(TWPPConnect(FOwner).Config.Evento_new_message);
+  startEvento_new_reaction(TWPPConnect(FOwner).Config.Evento_new_reaction);
+
+
   SleepNoFreeze(40);
   SendNotificationCenterDirect(Th_Initialized);
 end;
@@ -3161,6 +3431,14 @@ var
 begin
   LJS   := FrmConsole_JS_VAR_listGroupContacts;
   FrmConsole_JS_AlterVar(LJS, '#GROUP_ID#', Trim(vIDGroup));
+  ExecuteJS(LJS, true);
+end;
+
+procedure TFrmConsole.localStorage_debug;
+var
+  Ljs: string;
+begin
+  LJS   := 'localStorage.debug = ''*'';';
   ExecuteJS(LJS, true);
 end;
 
@@ -3444,6 +3722,18 @@ begin
   ExecuteJS(LJS, true);
 end;
 
+procedure TFrmConsole.MarkIsReadChats(NumberChatsIsRead: string);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS   := FrmConsole_JS_VAR_MarkIsReadChats;
+  FrmConsole_JS_AlterVar(LJS, '#NumberChatsIsRead#', Trim(NumberChatsIsRead));
+  ExecuteJS(LJS, true);
+end;
+
 procedure TFrmConsole.markIsUnread(phoneNumber: string);
 var
   Ljs: string;
@@ -3453,6 +3743,18 @@ begin
 
   LJS   := FrmConsole_JS_VAR_markIsUnread;
   FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',    Trim(phoneNumber));
+  ExecuteJS(LJS, true);
+end;
+
+procedure TFrmConsole.MarkIsUnreadChats(NumberChatsUnread: string);
+var
+  Ljs: string;
+begin
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+  LJS := FrmConsole_JS_VAR_MarkIsUnreadChats;
+  FrmConsole_JS_AlterVar(LJS, '#NumberChatsUnread#', Trim(NumberChatsUnread));
   ExecuteJS(LJS, true);
 end;
 

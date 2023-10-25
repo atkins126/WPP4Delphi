@@ -22,7 +22,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
   Vcl.Buttons, System.ImageList, Vcl.ImgList, Vcl.ComCtrls, uTWPPConnect.Constant ,
-  EncdDecd, System.NetEncoding, Vcl.Imaging.jpeg, System.TypInfo;
+  EncdDecd, System.NetEncoding, Vcl.Imaging.jpeg, System.TypInfo, System.DateUtils;
 
 type
   TframeMensagem = class(TFrame)
@@ -36,7 +36,7 @@ type
     btnLink: TButton;
     btnImagemBotao: TButton;
     btnImagem: TButton;
-    btnVideoBotao: TButton;
+    btnInstantVideo: TButton;
     btnVideo: TButton;
     btnListaMenu: TButton;
     btnBotaoSimples: TButton;
@@ -93,12 +93,13 @@ type
     eChoicesPool: TEdit;
     Label2: TLabel;
     bEditMessage: TButton;
+    btnDeletarOldChat: TButton;
     procedure edtURLDblClick(Sender: TObject);
     procedure btnTextoSimplesClick(Sender: TObject);
     procedure btnBotaoSimplesClick(Sender: TObject);
     procedure btnListaMenuClick(Sender: TObject);
     procedure btnVideoClick(Sender: TObject);
-    procedure btnVideoBotaoClick(Sender: TObject);
+    procedure btnInstantVideoClick(Sender: TObject);
     procedure btnImagemClick(Sender: TObject);
     procedure btnImagemBotaoClick(Sender: TObject);
     procedure btnLinkClick(Sender: TObject);
@@ -140,6 +141,7 @@ type
     procedure btnLigarClick(Sender: TObject);
     procedure btnEncerrarChamadaClick(Sender: TObject);
     procedure bEditMessageClick(Sender: TObject);
+    procedure btnDeletarOldChatClick(Sender: TObject);
   private
     { Private declarations }
      FStatus: Boolean;
@@ -193,8 +195,6 @@ begin
   content := '';
   IdMensagem := '';
   option := '';
-
-  option := 'linkPreview: true, mentionedJidList: [''5517981388414@c.us'']';
 
   if InputQuery('Informe a ID da Mensagem que Deseja Editar.', 'Unique ID: ', IdMensagem) then
   begin
@@ -510,8 +510,8 @@ end;
 procedure TframeMensagem.btnDeletarTodosChatsClick(Sender: TObject);
 begin
   if not frDemo.TWPPConnect1.Auth then
-      Exit;
-   frDemo.TWPPConnect1.DeletarTodosOsChats;
+    Exit;
+  frDemo.TWPPConnect1.DeletarTodosOsChats;
 end;
 
 procedure TframeMensagem.btnDesbloquearClick(Sender: TObject);
@@ -549,15 +549,31 @@ begin
 end;
 
 procedure TframeMensagem.btnDetalheClick(Sender: TObject);
+var
+  idMensagem: string;
 begin
-
   try
 
     if not frDemo.TWPPConnect1.Auth then
        Exit;
 
+    if ed_Num.Text = '' then
+    begin
+      if Trim(ed_num.Text) = '' then
+      begin
+        messageDlg('Informe o Contato para Continuar', mtWarning, [mbOk], 0);
+        ed_num.SetFocus;
+        Exit;
+      end;
+    end;
+
+    if InputQuery('Informe a ID da Mensagem.', 'Unique ID: ', IdMensagem) then
+    begin
+
+      frDemo.TWPPConnect1.forwardMessage(ed_num.text, IdMensagem);
+    end;
     //frDemo.TWPPConnect1.GetMe();
-    frDemo.TWPPConnect1.getList('');
+    //frDemo.TWPPConnect1.getList('');
   finally
 
   end;
@@ -608,12 +624,52 @@ begin
 end;
 
 procedure TframeMensagem.btnImagemBotaoClick(Sender: TObject);
-var
+{var
   content, options, options_Figurinha, options_Imagem, options_Audio,
     description, buttontext, menu, menu2, menu3 : string;
+  LBase64 : TStringList;}
+var
+  content, options : string;
   LBase64 : TStringList;
 begin
+  if not frDemo.TWPPConnect1.Auth then
+    Exit;
 
+  if Trim(mem_message.Text) = '' then
+  begin
+    messageDlg('Informe o Nome do Canal para na Caixa da Mensagem para Continuar', mtWarning, [mbOk], 0);
+    mem_message.SetFocus;
+    Exit;
+  end;
+
+  LBase64 := TStringList.Create;
+  TRY
+    if FileExists('C:\Executaveis\WPPConnectDemo\Base64Imagem.txt') then
+      LBase64.LoadFromFile('C:\Executaveis\WPPConnectDemo\Base64Imagem.txt')
+    else
+    begin
+      {inicio - capturando imagem e convertendo em base 64}
+      OpenDialog1.Execute;
+      Image1.Picture.LoadFromFile(OpenDialog1.FileName);
+      lblCaminhoImagem.Caption := OpenDialog1.FileName;
+      LBase64.text  := ImageToBase64( Image1 ) ;
+      //LBase64.text := StrExtFile_Base64Type( ExtractFileName(OpenDialog1.FileName) ) + LBase64.text; //add DataURI
+      memo1.clear;
+      memo1.Text    := LBase64.text ;
+      {final - capturando imagem e convertendo em base 64}
+    end;
+
+    options := 'description:"Description for that",picture:"' + LBase64.Text + '"';
+    //options := 'description:"Description for that"'; //sem imagem
+
+    //Nome do Canal
+    content := mem_message.Text;
+    frDemo.TWPPConnect1.CreateNewsLetter(content, options);
+
+  finally
+    freeAndNil(LBase64);
+  end;
+(*
   try
     if Trim(ed_num.Text) = '' then
     begin
@@ -680,21 +736,10 @@ begin
          '  caption: "My image",  ' +
          '  isViewOnce: true  '; //Temporaria Somente 1 Visualização
 
-      //Imagem com Temporaria Somente 1 Visualização
-      //TWPPConnect1.SendFileMessage(ed_num.text, LBase64.Text, options_Imagem, '');
 
-      //Audio
-      //TWPPConnect1.SendFileMessage(ed_num.text, LBase64.Text, options_Audio, '');
-
-      //Botões IMAGEM
-      //frDemo.TWPPConnect1.SendFileMessage(ed_num.text, LBase64.Text, options, '');
       frDemo.TWPPConnect1.SendFileMessageEx(ed_num.text, LBase64.Text, options, '123');
 
-      //Botões VIDEO
-      //TWPPConnect1.SendFileMessage(ed_num.text, LBase64.Text, options, '');
 
-      //Figurinha Stickers
-      //TWPPConnect1.SendFileMessage(ed_num.text, LBase64.Text, options_Figurinha, '');
     FINALLY
       freeAndNil(LBase64);
     END;
@@ -702,7 +747,7 @@ begin
     ed_num.SelectAll;
     ed_num.SetFocus;
   end;
-
+  *)
 end;
 
 procedure TframeMensagem.btnImagemClick(Sender: TObject);
@@ -744,16 +789,12 @@ begin
 
       caption := frDemo.CaractersWeb(mem_message.Text);
 
-
       options :=
         ' type: "image", ' +
         ' caption: "' + caption + '",  ' +
         ' isViewOnce: false  '; //Temporaria Somente 1 Visualização
 
-      //Botões IMAGEM
-      //frDemo.TWPPConnect1.SendFileMessage(ed_num.text, LBase64.Text, '', '');
       frDemo.TWPPConnect1.SendFileMessageEx(ed_num.text, LBase64.Text, options, '123');
-
 
     FINALLY
       freeAndNil(LBase64);
@@ -777,6 +818,7 @@ end;
 procedure TframeMensagem.btnLinkClick(Sender: TObject);
  var
   options: string;
+  LBase64 : TStringList;
 begin
   try
     if Trim(ed_num.Text) = '' then
@@ -789,10 +831,50 @@ begin
     if not frDemo.TWPPConnect1.Auth then
       Exit;
 
-    options :=
-      'linkPreview: { ' +
-      'title: "WPPConnect", ' +
-      'description: "WPPConnect/WA-JS" }';
+    LBase64 := TStringList.Create;
+    TRY
+      if FileExists('C:\Executaveis\WPPConnectDemo\Base64ImagemPuro.txt') then
+      begin
+        LBase64.LoadFromFile('C:\Executaveis\WPPConnectDemo\Base64ImagemPuro.txt');
+        memo1.clear;
+        memo1.Text := LBase64.text;
+      end
+      else
+      begin
+        {inicio - capturando imagem e convertendo em base 64}
+        OpenDialog1.Execute;
+        Image1.Picture.LoadFromFile(OpenDialog1.FileName);
+        lblCaminhoImagem.Caption := OpenDialog1.FileName;
+        LBase64.text  := ImageToBase64( Image1 ) ;
+        //LBase64.text := StrExtFile_Base64Type( ExtractFileName(OpenDialog1.FileName) ) + LBase64.text;  //add DataURI
+        memo1.clear;
+        memo1.Text := LBase64.Text ;
+        {final - capturando imagem e convertendo em base 64}
+      end;
+    FINALLY
+      options :=
+        '"linkPreview": { ' +
+        '  "title": "WPPConnect", ' +
+        '  "description": "WPPConnect/WA-JS", ' +
+        '  "canonicalUrl": "' + edtUrl.text + '",  ' +
+        '  "matchedText": "' + edtUrl.text + '",  ' +
+        '  "doNotPlayInline": false, ' +
+        '  "richPreviewType": 0, ' +
+        '  "thumbnail": "' + LBase64.Text {memo1.Text} + '" ' +
+        '}';
+      freeAndNil(LBase64);
+    END;
+
+
+
+(*linkPreview?: boolean | {
+    canonicalUrl?: string;
+    description?: string;
+    doNotPlayInline: boolean;
+    matchedText?: string;
+    richPreviewType?: number;
+    thumbnail?: string;
+    title?: string;}*)
 
     //frDemo.TWPPConnect1.sendLinkPreview(ed_num.text, edtUrl.text, options);
     frDemo.TWPPConnect1.SendTextMessageEx(ed_num.text, edtUrl.text, options, '123');
@@ -885,6 +967,7 @@ end;
 procedure TframeMensagem.btnLocalizacaoBotaoClick(Sender: TObject);
 var
   options : string;
+  horarioAgendamento: string;
 begin
   try
     if Trim(ed_num.Text) = '' then
@@ -897,7 +980,21 @@ begin
     if not frDemo.TWPPConnect1.Auth then
       Exit;
 
+    horarioAgendamento := '';
+
+    //horarioAgendamento :=  IntToStr(DateTimeToUnix( IncDay(now,3), False) * 1000);
+    horarioAgendamento :=  IntToStr(DateTimeToUnix( IncMinute(now,3), False) * 1000);
+
     options :=
+      'title:"Reunião Agendada",' +
+      'callType:"voice",'+
+      'scheduledTimestampMs:' + horarioAgendamento;
+      //'scheduledTimestampMs: 1696084222000';
+
+    frDemo.TWPPConnect1.sendScheduledCallMessage(ed_num.text, options);
+
+
+    (*options :=
       'createChat: true, ' +
       'lat: -22.95201, ' +
       'lng: -43.2102601, ' +
@@ -923,9 +1020,9 @@ begin
       '    text: "Curti"  ' +
       '  }  ' +
       ']  ';
+  *)
 
-    //frDemo.TWPPConnect1.SendLocationMessage(ed_num.text, options, '');
-    frDemo.TWPPConnect1.SendLocationMessageEx(ed_num.text, options, '123');
+
 
   finally
     ed_num.SelectAll;
@@ -966,6 +1063,15 @@ begin
     ed_num.SelectAll;
     ed_num.SetFocus;
   end;
+end;
+
+procedure TframeMensagem.btnDeletarOldChatClick(Sender: TObject);
+begin
+  if not frDemo.TWPPConnect1.Auth then
+    Exit;
+
+  frDemo.TWPPConnect1.DeletarOldChats('2'); //Exemplo Apagando os 2 Últimos Chats mais antigos da sua lista de conversa
+
 end;
 
 procedure TframeMensagem.btnReagirClick(Sender: TObject);
@@ -1192,7 +1298,6 @@ begin
     frDemo.TWPPConnect1.markIsComposing(ed_num.Text, '5000'); //Digitando 5 Segundos
     //Sleep(5000);
 
-    //frDemo.TWPPConnect1.SendTextMessage(ed_num.Text, mem_message.Text, options, '');
     frDemo.TWPPConnect1.SendTextMessageEx(ed_num.Text, mem_message.Text, options, '123');
   finally
     ed_num.SelectAll;
@@ -1269,7 +1374,7 @@ begin
 
 end;
 
-procedure TframeMensagem.btnVideoBotaoClick(Sender: TObject);
+procedure TframeMensagem.btnInstantVideoClick(Sender: TObject);
 var
   content, options, options_Figurinha, options_Imagem, options_Audio,
     description, buttontext, menu, menu2, menu3 : string;
@@ -1306,59 +1411,14 @@ begin
 
       content := mem_message.Text;
 
-      options_Audio :=
-        'type: "audio", ' +
-        'isPtt: true'; // false for common audio
-
       options :=
         'createChat: true, ' +
-        //'useTemplateButtons: undefined, ' +
-        'useTemplateButtons: true, ' +
-        //'title: "Novidades",  ' +
-        //'footer: "Video com Botão",  ' +
-        'caption: "Video com Botão", ' +
-        'buttons: [ ' +
+        'type: "ptv", ' +
+        'isPtv: true';
 
-        (*
-        '  { ' +
-        '    url: "https://wppconnect-team.github.io/", ' +
-        '    text: "Acesse Nosso Site" ' +
-        '  }, ' +
-        '{phoneNumber: "5517981388414", text: "☎️ Qualquer Dúvida Ligue"},' +
-        *)
-
-        '  { ' +
-        '    id: "001",  ' +
-        '    text: "Show de Bola"  ' +
-        '  },  ' +
-        '  {  ' +
-        '    id: "002",  ' +
-        '    text: "Curti"  ' +
-        '  }  ' +
-        ']  ';
-
-      options_Figurinha := 'type: "sticker"';
-
-      options_Imagem :=
-         '  type: "image", ' +
-         '  caption: "My image",  ' +
-         '  isViewOnce: true  '; //Temporaria Somente 1 Visualização
-
-      //Imagem com Temporaria Somente 1 Visualização
-      //TWPPConnect1.SendFileMessage(ed_num.text, LBase64.Text, options_Imagem, '');
-
-      //Audio
-      //TWPPConnect1.SendFileMessage(ed_num.text, LBase64.Text, options_Audio, '');
-
-      //Botões IMAGEM
-      //TWPPConnect1.SendFileMessage(ed_num.text, LBase64.Text, options, '');
-
-      //Botões VIDEO
-      //frDemo.TWPPConnect1.SendFileMessage(ed_num.text, LBase64.Text, options, '');
       frDemo.TWPPConnect1.SendFileMessageEx(ed_num.text, LBase64.Text, options, '123');
 
-      //Figurinha Stickers
-      //TWPPConnect1.SendFileMessage(ed_num.text, LBase64.Text, options_Figurinha, '');
+
     FINALLY
       freeAndNil(LBase64);
     END;

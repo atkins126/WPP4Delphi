@@ -80,8 +80,9 @@ Const
   TWPPConnectJS_JSLinhasMInimas         = 17726; //1400;
   FrmConsole_JS_RetornoVazio            = '{"result":[]}';
   FrmConsole_JS_Ignorar                 = '{"name":"getUnreadMessages","result":"{\"result\":[]}"}';
+  FrmConsole_JS_Ignorar2                = '{"name":"getList","result":"{\"result\":[]}"}';
 
-  //FrmConsole_JS_URL                     = 'https://web.whatsapp.com/?v=2.2335.6';
+  //FrmConsole_JS_URL                     = 'https://web.whatsapp.com/?v=2.2346.52';
   FrmConsole_JS_URL                     = 'https://web.whatsapp.com/';
 
   FrmConsole_JS_GetAllContacts          = 'window.WAPI.getAllContacts();';
@@ -90,6 +91,10 @@ Const
   FrmConsole_JS_GetMyNumber             = 'getMyNumber();';
   FrmConsole_JS_GetUnreadMessages       = 'window.WAPI.getUnreadMessages(includeMe="True", includeNotifications="True", use_unread_count="True");';
   //FrmConsole_JS_GetUnreadMessages       = '';
+
+  //Marcelo 22/10/2023
+  FrmConsole_JS_getWAVersion            = 'window.WAPI.getWAVersion();';
+  FrmConsole_JS_GetTotalChatsUserRead   = 'TotalChatsUserRead();';
 
   FrmConsole_JS_GetAllChats             = 'window.WAPI.getAllChats();';
   FrmConsole_JS_checkDelivered          = 'window.WAPI.getDelivered();';
@@ -112,6 +117,11 @@ Const
   FrmConsole_JS_VAR_StartMonitor         = 'startMonitor(intervalSeconds=<#TEMPO#>)';
   FrmConsole_JS_VAR_StartMonitorNew      = 'startMonitorNew(intervalSecondsNew=<#TEMPO#>)'; //Add Marcelo 25/08/2023
   FrmConsole_JS_VAR_StartMonitorWPPCrash = 'startMonitorWPPCrash(intervalSeconds=<#TEMPO#>)';
+
+  FrmConsole_JS_VAR_StartEvento_msg_ack_change = 'startEvento_msg_ack_change(hab_msg_ack_change=<#ACTIVE#>)';
+  FrmConsole_JS_VAR_StartEvento_msg_revoke = 'startEvento_msg_revoke(hab_msg_revoke=<#ACTIVE#>)';
+  FrmConsole_JS_VAR_StartEvento_new_message = 'startEvento_new_message(hab_new_message=<#ACTIVE#>)';
+  FrmConsole_JS_VAR_StartEvento_new_reaction = 'startEvento_new_reaction(hab_new_reaction=<#ACTIVE#>)';
 
   //Marcelo 21/06/2022
   //FrmConsole_JS_VAR_ReadMessages        = 'window.WAPI.sendSeen("<#MSG_PHONE#>")';
@@ -228,6 +238,8 @@ Const
   FrmConsole_JS_VAR_SendReactionMessage = 'WPP.chat.sendReactionToMessage("<#MSG_UNIQUE_ID#>", <#MSG_REACTION#>);';
 
 
+  FrmConsole_JS_VAR_SendScheduledCallMessage = 'WPP.chat.sendScheduledCallMessage("<#MSG_PHONE#>", {<#MSG_OPTIONS#>}); ';
+
   //Adicionado Por Marcelo 26/04/2022
   //FrmConsole_JS_VAR_SendButtons        = 'window.WAPI.sendButtons("<#MSG_PHONE#>","<#MSG_TITLE#>",<#MSG_BUTTONS#>,"<#MSG_FOOTER#>")';
                                         //Alterado Por Marcelo 31/05/2022
@@ -266,6 +278,14 @@ Const
   FrmConsole_JS_VAR_PinChat             = 'WPP.chat.pin("<#CTT_NAME#>");';
   FrmConsole_JS_VAR_UnPinChat           = 'WPP.chat.unpin("<#CTT_NAME#>");';
 
+  //MARCELO 21/10/2023
+  FrmConsole_JS_VAR_DeleteOldChats      = 'deleteOldChats(<#QtdChatsExcluir#>);';
+
+  //MARCELO 22/10/2023
+  FrmConsole_JS_VAR_MarkIsReadChats     = 'markIsReadChats(<#NumberChatsIsRead#>);';
+
+  //MARCELO 23/10/2023
+  FrmConsole_JS_VAR_MarkIsUnreadChats   = 'markIsUnreadChats(<#NumberChatsUnread#>);';
 
   FrmConsole_JS_VAR_CreatePoolMessage   = 'WPP.chat.sendCreatePollMessage("<#GROUP_ID#>","<#MSG_CONTENT#>",<#CHOICES#>, {<#OPTIONS#>} ); ';
   FrmConsole_JS_VAR_CreatePoolMessageEx = 'window.WAPI.sendCreatePollMessage2Ex("<#GROUP_ID#>","<#MSG_CONTENT#>",<#CHOICES#>, {<#OPTIONS#>}, "<#MSG_SEUID#>", "<#MSG_SEUID2#>" ); ';
@@ -291,6 +311,9 @@ Const
 
   FrmConsole_JS_VAR_editMessage         = 'WPP.chat.editMessage("<#MSG_UNIQUE_ID#>","<#MSG_NEW_MESSAGE#>",{<#MSG_OPTIONS#>} );';
 
+  //WPP.chat.forwardMessage("91xxxxxx@c.us","true_91xxxxxxxx@c.us_3EB0B2E90C7D0xxxxxx6");
+  FrmConsole_JS_VAR_forwardMessage      =  'WPP.chat.forwardMessage("<#MSG_PHONE#>","<#MSG_UNIQUE_ID#>" );';
+
   //Marcelo 25/10/2022
   FrmConsole_JS_VAR_getList   = 'window.WAPI.list();';
 
@@ -309,6 +332,8 @@ Const
   FrmConsole_JS_VAR_sendVideoStatus  = 'WPP.status.sendVideoStatus("<#MSG_CONTENT#>",{<#MSG_OPTIONS#>} );';
   FrmConsole_JS_VAR_sendRawStatus    = 'WPP.status.sendRawStatus("<#MSG_CONTENT#>",{<#MSG_OPTIONS#>} );';
   FrmConsole_JS_VAR_getMyStatus      = 'getMyStatus();';
+
+  FrmConsole_JS_VAR_newsletter_create  = 'WPP.newsletter.create("<#NAME#>",{<#OPTIONS#>} );';
 
   //Marcelo 15/06/2022
   FrmConsole_JS_VAR_rejectCall       = 'WPP.call.rejectCall("<#MSG_ID#>");';
@@ -492,6 +517,8 @@ type
                    , Th_Getnew_reaction=74 //Marcelo 25/07/2023
                    , Th_Getmsg_ack_change=75 //Marcelo 26/07/2023
                    , Th_Getmsg_revoke=76 //Marcelo 26/07/2023
+                   , Th_GetTotalChatsUserRead=77 //Marcelo 22/10/2023
+                   , Th_GetWAVersion=78 //Marcelo 22/10/2023
                    );
 
     Function   VerificaCompatibilidadeVersao(PVersaoExterna:String; PversaoInterna:String):Boolean;
@@ -628,8 +655,8 @@ Begin
   end;
 End;
 
-function   StrToTypeHeader(PText: string): TTypeHeader;
-const LmaxCount = 76; //Marcelo 26/07/2023
+function  StrToTypeHeader(PText: string): TTypeHeader;
+const LmaxCount = 78; //Marcelo 22/10/2023
 var
   I: Integer;
   LNome: String;
