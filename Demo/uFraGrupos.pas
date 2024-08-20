@@ -75,6 +75,8 @@ type
     Label2: TLabel;
     edtIdGrupo: TEdit;
     Label3: TLabel;
+    Button1: TButton;
+    Lbl_InviteCode: TLabel;
     procedure btnCriarGrupoClick(Sender: TObject);
     procedure btnEntrarLinkClick(Sender: TObject);
     procedure btnListarGruposClick(Sender: TObject);
@@ -95,6 +97,7 @@ type
     procedure btnAdminOnlyClick(Sender: TObject);
     procedure btnMsgAllClick(Sender: TObject);
     procedure btnDescricaoGrupoClick(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -109,7 +112,7 @@ uses uFrDemo;
 
 procedure TframeGrupos.btnSairGrupoClick(Sender: TObject);
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
      Exit;
 
   if lbl_idgroup.caption = '' then
@@ -121,9 +124,36 @@ begin
   frDemo.TWPPConnect1.groupLeave(lbl_idGroup.Caption);
 end;
 
+procedure TframeGrupos.Button1Click(Sender: TObject);
+begin
+  if not frDemo.TWPPConnect1.Auth(False) then
+    Exit;
+
+  //edtNovoParticipante
+  if edtNovoParticipante.Text = '' then
+  begin
+    ShowMessage('Informe o ChatID de Destino');
+    Abort;
+  end;
+
+  if lbl_idgroup.caption = '' then
+  begin
+    ShowMessage('Selecione um grupo na lista');
+    Abort;
+  end;
+
+  if Trim(lbl_idGroup.Caption) = '' then
+  begin
+    ShowMessage('Gere o Invite Code do Grupo');
+    Abort;
+  end;
+
+  frDemo.TWPPConnect1.sendGroupInviteMessage(edtNovoParticipante.Text, lbl_idGroup.Caption, Lbl_InviteCode.Caption, '123');
+end;
+
 procedure TframeGrupos.btnMsgAllClick(Sender: TObject);
 begin
-   if not frDemo.TWPPConnect1.Auth then
+   if not frDemo.TWPPConnect1.Auth(False) then
      Exit;
 
   if lbl_idgroup.caption = '' then
@@ -139,7 +169,7 @@ procedure TframeGrupos.btnMudarImagemGrupoClick(Sender: TObject);
 var
   LNomeArquivo: String;
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
      Exit;
 
   if lbl_idGroup.Caption = ''  then
@@ -161,7 +191,7 @@ end;
 
 procedure TframeGrupos.btnDeletarGrupoClick(Sender: TObject);
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
     Exit;
 
   if lbl_idgroup.caption = '' then
@@ -175,7 +205,7 @@ end;
 
 procedure TframeGrupos.btnAddPArticiClick(Sender: TObject);
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
      Exit;
 
   if lbl_idgroup.caption = '' then
@@ -196,7 +226,7 @@ end;
 
 procedure TframeGrupos.btnAdminOnlyClick(Sender: TObject);
 begin
-   if not frDemo.TWPPConnect1.Auth then
+   if not frDemo.TWPPConnect1.Auth(False) then
      Exit;
 
   if lbl_idgroup.caption = '' then
@@ -209,7 +239,7 @@ begin
 
 procedure TframeGrupos.btnCancelaLinkClick(Sender: TObject);
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
     Exit;
 
   if lbl_idgroup.caption = '' then
@@ -223,7 +253,7 @@ end;
 
 procedure TframeGrupos.btnCriarGrupoClick(Sender: TObject);
 begin
- if not frDemo.TWPPConnect1.Auth then
+ if not frDemo.TWPPConnect1.Auth(False) then
    Exit;
 
   if edtnomeGrupo.Text = '' then
@@ -247,7 +277,7 @@ end;
 
 procedure TframeGrupos.btnDescricaoGrupoClick(Sender: TObject);
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
     Exit;
 
   if lbl_idgroup.caption = '' then
@@ -267,7 +297,7 @@ end;
 
 procedure TframeGrupos.btnDespromoverClick(Sender: TObject);
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
     Exit;
 
   if lbl_idgroup.caption = '' then
@@ -281,7 +311,7 @@ end;
 
 procedure TframeGrupos.btnEntrarLinkClick(Sender: TObject);
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
     Exit;
 
   frDemo.TWPPConnect1.groupJoinViaLink(edtLinkConvite.Text);
@@ -289,7 +319,7 @@ end;
 
 procedure TframeGrupos.btnGerarLinkConviteClick(Sender: TObject);
 begin
-  if not frDemo.TWPPConnect1.Auth then    Exit;
+  if not frDemo.TWPPConnect1.Auth(False) then    Exit;
 
   if lbl_idGroup.caption = '' then
   begin
@@ -302,7 +332,7 @@ end;
 
 procedure TframeGrupos.btnListarGruposClick(Sender: TObject);
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
      Exit;
 
   frDemo.TWPPConnect1.getAllGroups;
@@ -310,7 +340,7 @@ end;
 
 procedure TframeGrupos.btnPromoverClick(Sender: TObject);
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
     Exit;
 
   if lbl_idgroup.caption = '' then
@@ -324,7 +354,7 @@ end;
 
 procedure TframeGrupos.btnRemoveParticiClick(Sender: TObject);
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
     Exit;
 
   if lbl_idgroup.caption = '' then
@@ -341,7 +371,7 @@ var
   LDescricao: String;
   LOpcoes, Options: String;
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
      Exit;
 
   LDescricao:= InputBox('Informe a descrição da votação','Descrição','Votação WPPConnect');
@@ -386,7 +416,7 @@ begin
 
     edtIdGrupo.Text := lbl_idGroup.Caption;
 
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
 
     frDemo.TWPPConnect1.listGroupContacts(lbl_idGroup.Caption);

@@ -94,6 +94,14 @@ type
     Label2: TLabel;
     bEditMessage: TButton;
     btnDeletarOldChat: TButton;
+    bGetMe: TButton;
+    bGetMensagem: TButton;
+    btnSendSimpleTextNew: TButton;
+    Button5: TButton;
+    btnPoolMessage: TButton;
+    btnImageButton: TButton;
+    SendPix: TButton;
+    SendDocumentButton: TButton;
     procedure edtURLDblClick(Sender: TObject);
     procedure btnTextoSimplesClick(Sender: TObject);
     procedure btnBotaoSimplesClick(Sender: TObject);
@@ -142,6 +150,14 @@ type
     procedure btnEncerrarChamadaClick(Sender: TObject);
     procedure bEditMessageClick(Sender: TObject);
     procedure btnDeletarOldChatClick(Sender: TObject);
+    procedure bGetMeClick(Sender: TObject);
+    procedure bGetMensagemClick(Sender: TObject);
+    procedure btnSendSimpleTextNewClick(Sender: TObject);
+    procedure Button5Click(Sender: TObject);
+    procedure btnPoolMessageClick(Sender: TObject);
+    procedure btnImageButtonClick(Sender: TObject);
+    procedure SendPixClick(Sender: TObject);
+    procedure SendDocumentButtonClick(Sender: TObject);
   private
     { Private declarations }
      FStatus: Boolean;
@@ -200,10 +216,45 @@ begin
   begin
     if InputQuery('Informe a Nova Mensagem.', 'New Message: ', content) then
     begin
-      frDemo.TWPPConnect1.editMessage(IdMensagem, content, option);
+      //frDemo.TWPPConnect1.editMessage(IdMensagem, content, option);
+      frDemo.TWPPConnect1.editMessageNew(IdMensagem, content, option, IdMensagem, 'SEUID2', 'SEUID3', 'SEUID4');
     end;
   end;
 
+end;
+
+procedure TframeMensagem.bGetMeClick(Sender: TObject);
+begin
+  try
+   if not frDemo.TWPPConnect1.Auth(False) then
+     Exit;
+
+    frDemo.TWPPConnect1.GetMe;
+  finally
+  end;
+end;
+
+procedure TframeMensagem.bGetMensagemClick(Sender: TObject);
+var
+ options: string;
+begin
+  if ed_Num.Text = '' then
+  begin
+    if Trim(ed_num.Text) = '' then
+    begin
+      messageDlg('Informe o Contato para Continuar', mtWarning, [mbOk], 0);
+      ed_num.SetFocus;
+      Exit;
+    end;
+  end;
+
+  if not frDemo.TWPPConnect1.Auth(False) then
+    Exit;
+
+  //https://wppconnect.io/wa-js/functions/chat.getMessages.html
+  options := 'count: -1'; //All messages
+
+  frDemo.TWPPConnect1.getMessage(ed_num.text, options);
 end;
 
 procedure TframeMensagem.BitBtn1Click(Sender: TObject);
@@ -218,7 +269,7 @@ begin
     end;
   end;
 
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
     Exit;
   frDemo.TWPPConnect1.DesarquivarChat(ed_num.text);
 end;
@@ -256,7 +307,7 @@ begin
       Exit;
     end;
 
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
        Exit;
 
     options := 'createChat: true';
@@ -286,8 +337,10 @@ begin
     //frDemo.TWPPConnect1.markIsComposing(ed_num.Text, '5000'); //Digitando 5 Segundos
     //Sleep(5000);
 
+    frDemo.TWPPConnect1.Send(ed_num.Text, mem_message.Text);
+
     //frDemo.TWPPConnect1.SendTextMessage(ed_num.Text, mem_message.Text, options, '');
-    frDemo.TWPPConnect1.SendTextMessageEx(ed_num.Text, mem_message.Text, options, '123');
+    //frDemo.TWPPConnect1.SendTextMessageEx(ed_num.Text, mem_message.Text, options, '123');
   finally
     ed_num.SelectAll;
     ed_num.SetFocus;
@@ -306,14 +359,14 @@ begin
     end;
   end;
 
-   if not frDemo.TWPPConnect1.Auth then
+   if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
   frDemo.TWPPConnect1.ArquivarChat(ed_num.text);
 end;
 
 procedure TframeMensagem.btnArquivarTodosChatsClick(Sender: TObject);
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
 
    frDemo.TWPPConnect1.ArquivarTodosOsChats;
@@ -334,7 +387,7 @@ begin
       Exit;
     end;
 
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
 
     LBase64 := TStringList.Create;
@@ -362,7 +415,7 @@ begin
 
       //Opicional Não Utilizar para primeira mensagem, somente para contatos que já houve alguma interação
       frDemo.TWPPConnect1.setKeepAlive('true'); //Marca como Online
-      frDemo.TWPPConnect1.markmarkIsRecording(ed_num.Text, '5000'); //Gravando Audio 5 Segundos
+      frDemo.TWPPConnect1.markIsRecording(ed_num.Text, '5000'); //Gravando Audio 5 Segundos
       Sleep(5000);
 
       //Audio
@@ -390,44 +443,13 @@ begin
     end;
   end;
 
-   if not frDemo.TWPPConnect1.Auth then
+   if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
   frDemo.TWPPConnect1.BloquearContato(ed_num.text);
 end;
 
 procedure TframeMensagem.btnBotaoSimplesClick(Sender: TObject);
 var
-  LDescricao: String;
-  LChoices, Options: String;
-begin
-  if not frDemo.TWPPConnect1.Auth then
-     Exit;
-
-  LDescricao:= InputBox('Informe a descrição da votação','Descrição','Votação WPPConnect');
-
-  if LDescricao = '' then
-    exit;
-
-  if Trim(ed_num.Text) = '' then
-  begin
-    messageDlg('Informe o Contato para Continuar', mtWarning, [mbOk], 0);
-    ed_num.SetFocus;
-    Exit;
-  end;
-
-  LChoices := '["OPÇÃO 1","OPÇÃO 2","OPÇÃO 3"]';
-  //LChoices := '["Bolo","Cachorro Quente"]';
-
-  if eChoicesPool.Text <> '' then
-    LChoices := eChoicesPool.Text;
-
-  Options := 'createchat:true, selectableCount:1'; // Apenas 1 Escolha
-  //Options := 'createchat:true, selectableCount:0'; // Multipla Escolha
-
-  //frDemo.TWPPConnect1.CreatePool(ed_num.Text, LDescricao, LChoices, Options);
-  frDemo.TWPPConnect1.CreatePoolEx(ed_num.Text, LDescricao, LChoices, Options, '123', 'Enquete01');
-
-(*var
   S_RETORNO, options : wideString;
 begin
   try
@@ -438,9 +460,8 @@ begin
       Exit;
     end;
 
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
-
 
     //Opicional Não Utilizar para primeira mensagem, somente para contatos que já houve alguma interação
     //frDemo.TWPPConnect1.setKeepAlive('true'); //Marca como Online
@@ -448,33 +469,50 @@ begin
     //Sleep(5000);
 
     options :=
-      'useTemplateButtons: undefined,' + //Is Working Android and iOS
-      //'useTemplateButtons: true,' +  //Crash iOS
-      'createChat: true,' +
-      'buttons:' +
-      '['+
-        //'{url: "https://wppconnect-team.github.io/", text: "🌐️ Acesse Nosso Site"},' + //Crash iOS
+      //'useTemplateButtons: undefined,' + //deprecated
+      //'useTemplateButtons: true,' +  //deprecated
+      'createChat: true, ' +
+      'useInteractiveMesssage: true, ' + //Is Working Android and iOS
+      'type: "text", ' +
+      'buttons: ' +
+      '[ ' +
+        //'{url: "https://wppconnect-team.github.io/", text: "🌐️ Acesse Nosso Site"}, ' +
         //'{url: "https://wa.me/5517981388414", text: "Fale Conosco"}, ' +
         //'{url: "https://apoia.se/wppconnect", text: "🌐️ APOIA.se"},' + //Crash iOS
         //'{url: "https://www.whatsapp.com/otp/copy/text%20here", text: "Copy Chave Pix" }, ' +
         //'{url: "https://www.whatsapp.com/otp/copy/8e3fda51-2c8f-4134-a154-24cd02e07890", text: "Copy Chave Pix" }, ' +  //8e3fda51-2c8f-4134-a154-24cd02e07890
-        //'{phoneNumber: "5517981388414", text: "☎️ Qualquer Dúvida Ligue"},' + //Crash iOS
+        //'{phoneNumber: "0800404", text: "☎️ Qualquer Dúvida Ligue"}, ' +
+        '{id: "001", text: "Sim"}, ' +
+        '{id: "002", text: "Não"}, ' +
 
-        '{id: "idVISITASIM", text: "Sim"},' +
-        '{id: "idVISITANAO", text: "Não"}' +
-      ']' +
-      ',footer: "Escolha uma Opção"';
+        '{ ' +
+        '    raw: { ' +
+        '        name: "cta_copy", ' +
+        '        buttonParamsJson: JSON.stringify({ ' +
+        '            display_text: "Copiar Chave Pix", ' +
+        '            copy_code: "17981388414", ' +
+        '        }) ' +
+        '    } ' +
+        '} ' +
+
+      '] ' +
+      ',title: "Bom dia Marcelo", ' +
+      'footer: "Escolha uma Opção" ' +
+      ' ';
+
       //'';
 
-    S_RETORNO := TWPPConnectEmoticons.robot + ' *Confirma Visita do Nosso Técnico?* ' + '\n';
+    //S_RETORNO := TWPPConnectEmoticons.robot + ' *Confirma Visita do Nosso Técnico?* ' + '\n';
+    S_RETORNO := '*Confirma Visita do Nosso Técnico?*';
     //S_RETORNO := TWPPConnectEmoticons.robot + ' *Teste Botão com Função Copy* ' + '\n';
 
-    frDemo.TWPPConnect1.SendTextMessageEx(ed_num.Text, S_RETORNO, options, '123');
+    frDemo.TWPPConnect1.SendTextMessageEx(ed_num.Text, S_RETORNO, options, 'SEUID1','SEUID2','SEUID3','SEUID4');
+    //frDemo.TWPPConnect1.SendTextMessageNew(ed_num.Text, S_RETORNO, options, '123');
 
   finally
     ed_num.SelectAll;
     ed_num.SetFocus;
-  end;*)
+  end;
 end;
 
 procedure TframeMensagem.btnContatoClick(Sender: TObject);
@@ -494,13 +532,15 @@ begin
       Exit;
     end;
 
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
        Exit;
     //               Dest                    Contact
     //               ex: 558199301443@c.us   558187576958@c.us
     //frDemo.TWPPConnect1.sendContact(ed_num.Text,        mem_message.Text);
 
-    frDemo.TWPPConnect1.sendVCardContactMessageEx(ed_num.Text, mem_message.Text, '', '', '123');
+    //frDemo.TWPPConnect1.sendVCardContactMessageEx(ed_num.Text, mem_message.Text, '', '', '123');
+    frDemo.TWPPConnect1.sendVCardContactMessageNew(ed_num.Text, mem_message.Text, '', '', '123');
+
   finally
     ed_num.SelectAll;
     ed_num.SetFocus;
@@ -509,9 +549,11 @@ end;
 
 procedure TframeMensagem.btnDeletarTodosChatsClick(Sender: TObject);
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
     Exit;
-  frDemo.TWPPConnect1.DeletarTodosOsChats;
+
+  //frDemo.TWPPConnect1.DeletarTodosOsChats;
+  frDemo.TWPPConnect1.DeletarTodosOsChatsUsers
 end;
 
 procedure TframeMensagem.btnDesbloquearClick(Sender: TObject);
@@ -526,7 +568,7 @@ begin
     end;
   end;
 
-   if not frDemo.TWPPConnect1.Auth then
+   if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
   frDemo.TWPPConnect1.DesbloquearContato(ed_num.text);
 end;
@@ -543,7 +585,7 @@ begin
     end;
   end;
 
-   if not frDemo.TWPPConnect1.Auth then
+   if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
   frDemo.TWPPConnect1.DesfixarCHat(ed_num.text);
 end;
@@ -553,8 +595,7 @@ var
   idMensagem: string;
 begin
   try
-
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
        Exit;
 
     if ed_Num.Text = '' then
@@ -592,8 +633,9 @@ begin
     end;
   end;
 
-   if not frDemo.TWPPConnect1.Auth then
-      Exit;
+   if not frDemo.TWPPConnect1.Auth(False) then
+     Exit;
+
   frDemo.TWPPConnect1.FixarChat(ed_num.text);
 end;
 
@@ -611,7 +653,7 @@ begin
     end;
   end;
 
-   if not frDemo.TWPPConnect1.Auth then
+   if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
 
 
@@ -620,6 +662,77 @@ begin
 
     frDemo.TWPPConnect1.getPlatformFromMessage(IdMensagem, ed_Num.Text);
   end;
+
+end;
+
+procedure TframeMensagem.btnImageButtonClick(Sender: TObject);
+var
+  content, options, options_Figurinha, options_Imagem, options_Audio,
+    description, buttontext, menu, menu2, menu3 : string;
+  LBase64 : TStringList;
+  S_RETORNO : wideString;
+begin
+
+    if not frDemo.TWPPConnect1.Auth(False) then
+      Exit;
+
+    LBase64 := TStringList.Create;
+    try
+      if FileExists('C:\Executaveis\WPPConnectDemo\Base64Imagem.txt') then
+        LBase64.LoadFromFile('C:\Executaveis\WPPConnectDemo\Base64Imagem.txt')
+      else
+      begin
+        {inicio - capturando imagem e convertendo em base 64}
+        OpenDialog1.Execute;
+        Image1.Picture.LoadFromFile(OpenDialog1.FileName);
+        lblCaminhoImagem.Caption := OpenDialog1.FileName;
+        LBase64.text  := ImageToBase64( Image1 ) ;
+        LBase64.text := StrExtFile_Base64Type( ExtractFileName(OpenDialog1.FileName) ) + LBase64.text; //add DataURI
+        memo1.clear;
+        memo1.Text    := LBase64.text ;
+        {final - capturando imagem e convertendo em base 64}
+      end;
+
+      content := mem_message.Text;
+
+      options :=
+        'createChat: true, ' +
+        ///'useTemplateButtons: undefined, ' + //deprecated
+        //'useTemplateButtons: true, ' + //deprecated
+        'useInteractiveMesssage: true, ' + //Android AND iOS WORKING
+        'footer: "Image With Button",  ' +
+        'caption: "My image", ' +
+        'type: "image", ' +
+        'buttons: [ ' +
+        '  { ' +
+        '    url: "https://wppconnect-team.github.io/", ' +
+        '    text: "Acesse Nosso Site" ' +
+        '  }, ' +
+        '{phoneNumber: "0800404", text: "☎️ Qualquer Dúvida Ligue"},' +
+        '  { ' +
+        '    id: "001",  ' +
+        '    text: "Show de Bola"  ' +
+        '  },  ' +
+        '  {  ' +
+        '    id: "002",  ' +
+        '    text: "Curti"  ' +
+        '  },  ' +
+        '  { ' +
+        '    raw: { ' +
+        '        name: "cta_copy", ' +
+        '        buttonParamsJson: JSON.stringify({ ' +
+        '            display_text: "Copiar Chave Pix", ' +
+        '            copy_code: "17981388414", ' +
+        '        }) ' +
+        '    } ' +
+        '  } ' +
+        ']  ';
+
+      frDemo.TWPPConnect1.SendFileMessageNew(ed_num.text, LBase64.Text, options, '123');
+
+    finally
+      freeAndNil(LBase64);
+    end;
 
 end;
 
@@ -632,7 +745,7 @@ var
   content, options : string;
   LBase64 : TStringList;
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
     Exit;
 
   if Trim(mem_message.Text) = '' then
@@ -678,7 +791,7 @@ begin
       Exit;
     end;
 
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
 
     LBase64 := TStringList.Create;
@@ -764,7 +877,7 @@ begin
       Exit;
     end;
 
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
 
     LBase64 := TStringList.Create;
@@ -790,6 +903,7 @@ begin
       caption := frDemo.CaractersWeb(mem_message.Text);
 
       options :=
+        ' createChat: true, ' +
         ' type: "image", ' +
         ' caption: "' + caption + '",  ' +
         ' isViewOnce: false  '; //Temporaria Somente 1 Visualização
@@ -807,7 +921,7 @@ end;
 
 procedure TframeMensagem.btnLimparConversaClick(Sender: TObject);
 begin
- if not frDemo.TWPPConnect1.Auth then
+ if not frDemo.TWPPConnect1.Auth(False) then
 
      Exit;
 
@@ -828,7 +942,7 @@ begin
       Exit;
     end;
 
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
 
     LBase64 := TStringList.Create;
@@ -877,7 +991,7 @@ begin
     title?: string;}*)
 
     //frDemo.TWPPConnect1.sendLinkPreview(ed_num.text, edtUrl.text, options);
-    frDemo.TWPPConnect1.SendTextMessageEx(ed_num.text, edtUrl.text, options, '123');
+    frDemo.TWPPConnect1.SendTextMessageEx(ed_num.text, edtUrl.text, options, '123', '', '', '');
 
   finally
     ed_num.SelectAll;
@@ -898,7 +1012,7 @@ begin
       Exit;
     end;
 
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
 
     titleText := 'Forma de Pagamento';
@@ -956,7 +1070,8 @@ begin
 
 
     //frDemo.TWPPConnect1.SendListMessage(ed_num.text, ButtonText, description, menu, '');
-    frDemo.TWPPConnect1.SendListMessageEx(ed_num.text, ButtonText, description, menu, '123');
+    //frDemo.TWPPConnect1.SendListMessageEx(ed_num.text, ButtonText, description, menu, '123');
+    frDemo.TWPPConnect1.SendListMessageNew(ed_num.text, menu, '123');
 
   finally
     ed_num.SelectAll;
@@ -977,7 +1092,7 @@ begin
       Exit;
     end;
 
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
 
     horarioAgendamento := '';
@@ -987,7 +1102,8 @@ begin
 
     options :=
       'title:"Reunião Agendada",' +
-      'callType:"voice",'+
+      //'callType:"voice",'+
+      'callType:"video",'+
       'scheduledTimestampMs:' + horarioAgendamento;
       //'scheduledTimestampMs: 1696084222000';
 
@@ -1042,7 +1158,7 @@ begin
       Exit;
     end;
 
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
 
     options :=
@@ -1050,14 +1166,14 @@ begin
       'lat: -22.95201, ' +
       'lng: -43.2102601, ' +
       'name: "Cristo Rendentor", ' +
-      'createChat: true, ' +
       'title: "Cristo Rendentor",  ' +
       'footer: "Pacote de Viagem",  ' +
       'address: "Parque Nacional da Tijuca - Alto da Boa Vista, Rio de Janeiro - RJ"';
 
     //frDemo.TWPPConnect1.SendLocationMessage(ed_num.text, options, '');
     //Marcelo 17/09/2022
-    frDemo.TWPPConnect1.SendLocationMessageEx(ed_num.text, options, '123');
+    //frDemo.TWPPConnect1.SendLocationMessageEx(ed_num.text, options, '123');
+    frDemo.TWPPConnect1.SendLocationMessageNew(ed_num.text, options, '123');
 
   finally
     ed_num.SelectAll;
@@ -1065,9 +1181,43 @@ begin
   end;
 end;
 
+procedure TframeMensagem.btnPoolMessageClick(Sender: TObject);
+var
+  LDescricao: String;
+  LChoices, Options: String;
+begin
+  if not frDemo.TWPPConnect1.Auth(False) then
+     Exit;
+
+  LDescricao:= InputBox('Informe a descrição da votação','Descrição','Votação WPPConnect');
+
+  if LDescricao = '' then
+    exit;
+
+  if Trim(ed_num.Text) = '' then
+  begin
+    messageDlg('Informe o Contato para Continuar', mtWarning, [mbOk], 0);
+    ed_num.SetFocus;
+    Exit;
+  end;
+
+  LChoices := '["OPÇÃO 1","OPÇÃO 2","OPÇÃO 3"]';
+  //LChoices := '["Bolo","Cachorro Quente"]';
+
+  if eChoicesPool.Text <> '' then
+    LChoices := eChoicesPool.Text;
+
+  Options := 'createChat:true, selectableCount:1'; // Apenas 1 Escolha
+  //Options := 'createChat:true, selectableCount:0'; // Multipla Escolha
+
+  //frDemo.TWPPConnect1.CreatePool(ed_num.Text, LDescricao, LChoices, Options);
+  frDemo.TWPPConnect1.CreatePoolEx(ed_num.Text, LDescricao, LChoices, Options, '123', 'Enquete01');
+
+end;
+
 procedure TframeMensagem.btnDeletarOldChatClick(Sender: TObject);
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
     Exit;
 
   frDemo.TWPPConnect1.DeletarOldChats('2'); //Exemplo Apagando os 2 Últimos Chats mais antigos da sua lista de conversa
@@ -1109,13 +1259,12 @@ end;
 
 procedure TframeMensagem.btnStatusClick(Sender: TObject);
 begin
- try
-
+  try
     FStatus := true;
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
        Exit;
 
-   frDemo.TWPPConnect1.GetStatusContact(ed_num.Text);
+    frDemo.TWPPConnect1.GetStatusContact(ed_num.Text);
   finally
 
   end;
@@ -1127,7 +1276,7 @@ var
   LBase64 : TStringList;
 begin
   try
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
        Exit;
 
     LBase64 := TStringList.Create;
@@ -1159,7 +1308,7 @@ var
   options, content : string;
 begin
   try
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
        Exit;
 
     content := mem_message.Text;
@@ -1192,7 +1341,7 @@ begin
       Exit;
     end;
 
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
     LBase64 := TStringList.Create;
     TRY
@@ -1288,17 +1437,18 @@ begin
       Exit;
     end;
 
-    if not frDemo.TWPPConnect1.Auth then
-       Exit;
+    if not frDemo.TWPPConnect1.Auth(False) then
+      Exit;
 
     options := 'createChat: true';
 
     //Opicional Não Utilizar para primeira mensagem, somente para contatos que já houve alguma interação
-    frDemo.TWPPConnect1.setKeepAlive('true'); //Marca como Online
-    frDemo.TWPPConnect1.markIsComposing(ed_num.Text, '5000'); //Digitando 5 Segundos
+    //frDemo.TWPPConnect1.setKeepAlive('true'); //Marca como Online
+    //frDemo.TWPPConnect1.markIsComposing(ed_num.Text, '5000'); //Digitando 5 Segundos
     //Sleep(5000);
 
-    frDemo.TWPPConnect1.SendTextMessageEx(ed_num.Text, mem_message.Text, options, '123');
+    //Optional Parameters SeuID, SeuID2, SeuID3 and SeuID4
+    frDemo.TWPPConnect1.SendTextMessageEx(ed_num.Text, mem_message.Text, options, '123', 'SEUID2', 'SEUID3', 'SEUID4');
   finally
     ed_num.SelectAll;
     ed_num.SetFocus;
@@ -1357,7 +1507,7 @@ end;
 
 procedure TframeMensagem.btnVerificarNumeroClick(Sender: TObject);
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
     Exit;
 
   if Trim(ed_num.Text) = '' then
@@ -1389,7 +1539,7 @@ begin
       Exit;
     end;
 
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
     LBase64 := TStringList.Create;
     TRY
@@ -1443,7 +1593,7 @@ begin
       Exit;
     end;
 
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
     LBase64 := TStringList.Create;
 
@@ -1487,7 +1637,7 @@ var
   LBase64 : TStringList;
 begin
   try
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
        Exit;
 
     LBase64 := TStringList.Create;
@@ -1516,7 +1666,7 @@ end;
 
 procedure TframeMensagem.Button1Click(Sender: TObject);
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
     Exit;
 
   if Trim(ed_num.Text) = '' then
@@ -1538,7 +1688,7 @@ var
 begin
 
   try
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
 
     if Trim(ed_num.Text) = '' then
@@ -1552,7 +1702,8 @@ begin
     if InputQuery('Informe a ID da Mensagem.', 'Unique ID: ', IdMensagem) then
     begin
 
-      frDemo.TWPPConnect1.deleteMessageById(ed_num.Text, IdMensagem);
+      frDemo.TWPPConnect1.deleteMessageByIdNew(ed_num.Text, IdMensagem);
+      //frDemo.TWPPConnect1.deleteMessageById(ed_num.Text, IdMensagem);
     end;
 
 
@@ -1565,7 +1716,7 @@ procedure TframeMensagem.Button3Click(Sender: TObject);
 var
   IdMensagem : string;
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
     Exit;
 
   if InputQuery('Informe a ID da Mensagem.', 'Unique ID: ', IdMensagem) then
@@ -1580,7 +1731,7 @@ procedure TframeMensagem.Button4Click(Sender: TObject);
 var
   IdMensagem : string;
 begin
-  if not frDemo.TWPPConnect1.Auth then
+  if not frDemo.TWPPConnect1.Auth(False) then
     Exit;
 
   if InputQuery('Informe a ID da Mensagem.', 'Unique ID: ', IdMensagem) then
@@ -1589,6 +1740,155 @@ begin
     frDemo.TWPPConnect1.markPlayed(IdMensagem);
   end;
 
+end;
+
+procedure TframeMensagem.Button5Click(Sender: TObject);
+var
+  caption, Extensao : string;
+  caminhoArquivo : string;
+  isFigurinha : Boolean;
+begin
+
+  try
+    if Trim(ed_num.Text) = '' then
+    begin
+      messageDlg('Informe o Celular para Continuar', mtWarning, [mbOk], 0);
+      ed_num.SetFocus;
+      Exit;
+    end;
+
+    if not frDemo.TWPPConnect1.Auth(False) then
+      Exit;
+
+    caption := frDemo.CaractersWeb(mem_message.Text);
+
+    caminhoArquivo := '';
+
+    OpenDialog1.Execute();
+
+    if FileExists(OpenDialog1.FileName) then
+      caminhoArquivo := OpenDialog1.FileName
+    else
+      Exit;
+
+    Extensao  := LowerCase(Copy(ExtractFileExt(caminhoArquivo),2,5));
+
+    if Extensao = 'webp' then
+      isFigurinha := True else
+      isFigurinha := False;
+
+    //Arquivo Selecionado da Pasta
+    frDemo.TWPPConnect1.SendFileMessageNew(ed_num.text, caminhoArquivo, '123', caption, isFigurinha);
+
+
+  finally
+    ed_num.SelectAll;
+    ed_num.SetFocus;
+  end;
+end;
+
+procedure TframeMensagem.SendDocumentButtonClick(Sender: TObject);
+var
+  content, options : string;
+  LBase64 : TStringList;
+begin
+  if not frDemo.TWPPConnect1.Auth(False) then
+    Exit;
+
+  LBase64 := TStringList.Create;
+  try
+    if FileExists('C:\Executaveis\WPPConnectDemo\Base64Document.txt') then
+      LBase64.LoadFromFile('C:\Executaveis\WPPConnectDemo\Base64Document.txt')
+    else
+    begin
+      {inicio - capturando file e convertendo em base 64}
+      OpenDialog1.Execute;
+      lblCaminhoImagem.Caption := OpenDialog1.FileName;
+      LBase64.text  := FileToBase64( OpenDialog1.FileName, 'file_' + FormatDateTime('YYYYMMDDhhmmsszzz', now) ) ;  //FileToBase64
+      LBase64.text := StrExtFile_Base64Type( ExtractFileName(OpenDialog1.FileName) ) + LBase64.text; //add DataURI
+      memo1.clear;
+      memo1.Text    := LBase64.text ;
+      {final - capturando imagem e convertendo em base 64}
+    end;
+
+    content := mem_message.Text;
+
+    options :=
+      'createChat: true, ' +
+      'useInteractiveMesssage: true, ' + //Android AND iOS WORKING
+      'caption: "My Document", ' +
+      'footer: "Document With Button",  ' +
+      'filename: "' + ExtractFileName(OpenDialog1.FileName) + '", ' +
+      'type: "document", ' +
+      'buttons: [ ' +
+      (*'  { ' +
+      '    url: "https://wppconnect-team.github.io/", ' +
+      '    text: "Acesse Nosso Site" ' +
+      '  }, ' +
+      '{phoneNumber: "0800404", text: "☎️ Qualquer Dúvida Ligue"},' +
+      '  { ' +
+      '    id: "001",  ' +
+      '    text: "Show de Bola"  ' +
+      '  },  ' +
+      '  {  ' +
+      '    id: "002",  ' +
+      '    text: "Curti"  ' +
+      '  },  ' + *)
+      '  { ' +
+      '    raw: { ' +
+      '        name: "cta_copy", ' +
+      '        buttonParamsJson: JSON.stringify({ ' +
+      '            display_text: "Copy BarCode", ' +
+      '            copy_code: "123456789", ' +
+      '        }) ' +
+      '    } ' +
+      '  } ' +
+      ']  ';
+
+    frDemo.TWPPConnect1.SendFileMessageNew(ed_num.text, LBase64.Text, options, '123');
+
+  finally
+    freeAndNil(LBase64);
+  end;
+
+end;
+
+procedure TframeMensagem.btnSendSimpleTextNewClick(Sender: TObject);
+var
+  options : string;
+begin
+  try
+    if Trim(ed_num.Text) = '' then
+    begin
+      messageDlg('Informe o Celular para Continuar', mtWarning, [mbOk], 0);
+      ed_num.SetFocus;
+      Exit;
+    end;
+
+    if Trim(mem_message.Text) = '' then
+    begin
+      messageDlg('Informe o Texto da Mensagem para Continuar', mtWarning, [mbOk], 0);
+      mem_message.SetFocus;
+      Exit;
+    end;
+
+    if not frDemo.TWPPConnect1.Auth(False) then
+      Exit;
+
+    options := 'createChat: true';
+
+    //Opicional Não Utilizar para primeira mensagem, somente para contatos que já houve alguma interação
+    //frDemo.TWPPConnect1.setKeepAlive('true'); //Marca como Online
+    //frDemo.TWPPConnect1.markIsComposing(ed_num.Text, '5000'); //Digitando 5 Segundos
+    //Sleep(5000);
+
+    //Optional Parameters SeuID, SeuID2, SeuID3 and SeuID4
+    frDemo.TWPPConnect1.SendTextMessageNew(ed_num.Text, mem_message.Text, options, 'SEUID1', 'SEUID2', 'SEUID3', 'SEUID4');
+
+  finally
+    ed_num.SelectAll;
+    ed_num.SetFocus;
+  end;
 end;
 
 procedure TframeMensagem.btnLigarClick(Sender: TObject);
@@ -1603,13 +1903,12 @@ begin
       Exit;
     end;
 
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
 
     options := '';
     //options := 'isVideo: true'; //Chamada de Video
 
-    //frDemo.TWPPConnect1.sendLinkPreview(ed_num.text, edtUrl.text, options);
     frDemo.TWPPConnect1.SendCall(ed_num.text, options);
 
   finally
@@ -1628,7 +1927,7 @@ begin
       Exit;
     end;}
 
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
 
     //frDemo.TWPPConnect1.EndCall(ed_num.text);
@@ -1655,7 +1954,7 @@ begin
       Exit;
     end;
 
-    if not frDemo.TWPPConnect1.Auth then
+    if not frDemo.TWPPConnect1.Auth(False) then
       Exit;
 
     caption := frDemo.CaractersWeb(mem_message.Text);
@@ -1802,6 +2101,42 @@ begin
     LInput.Free;
     LOutput.Free;
     Imagetxt.Free;
+  end;
+end;
+
+procedure TframeMensagem.SendPixClick(Sender: TObject);
+var
+  options : wideString;
+begin
+  try
+    if Trim(ed_num.Text) = '' then
+    begin
+      messageDlg('Informe o Celular para Continuar', mtWarning, [mbOk], 0);
+      ed_num.SetFocus;
+      Exit;
+    end;
+
+    if not frDemo.TWPPConnect1.Auth(False) then
+      Exit;
+
+    //Exemplo Mudar o KeyType para o Tipo de Chave desejado, só enviar em Chat de Usuário, Grupos não vai funcionar
+    options :=
+      'createChat: true, ' +
+      'keyType: "PHONE", ' +{
+          | "CNPJ"
+          | "CPF"
+          | "PHONE"
+          | "EMAIL"
+          | "EVP"}
+      'name: "WPPCONNECT-TEAM", ' +
+      'key: "5517981388414", ' +
+      'instructions: "Pay text for instructions here" ';
+
+    frDemo.TWPPConnect1.sendPixKeyMessageNew(ed_num.Text, options, '123');
+
+  finally
+    ed_num.SelectAll;
+    ed_num.SetFocus;
   end;
 end;
 

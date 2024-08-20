@@ -6,7 +6,6 @@ uses
   uTWPPConnect.ConfigCEF,
   iniFiles,
   SysUtils,
-  u_principal in 'u_principal.pas' {frmPrincipal},
   u_Messagem in 'u_Messagem.pas',
   uFraLogin in 'uFraLogin.pas' {frameLogin: TFrame},
   uFraMensagens in 'uFraMensagens.pas' {frameMensagem: TFrame},
@@ -22,9 +21,9 @@ uses
 {$R *.res}
 
 var
-arqIni: TInifile;
-pathapp, pathcef : string ;
-pathcustom : boolean;
+  arqIni: TInifile;
+  pathapp, pathcef, language, AcceptLanguageList : string ;
+  pathcustom : boolean;
 begin
   {##########################################################################################
   Place CEFLib files next to the application's executable path (Do not set or pass empty)
@@ -38,7 +37,10 @@ begin
 
 
   {file ini}
-  arqIni  := Tinifile.Create(ExtractFilePath(Application.ExeName)+ 'ConfTWPPConnect.ini');
+  try
+    arqIni  := Tinifile.Create(ExtractFilePath(Application.ExeName)+ 'ConfTWPPConnect.ini');
+  except on E: Exception do
+  end;
 
  case pathcustom of
    true : //path custom
@@ -65,36 +67,72 @@ begin
       end;
 
       {create file ini}
-      arqIni.WriteString('Path Defines', 'Binary', pathapp + pathcef);
-      arqIni.WriteString('Path Defines', 'FrameWork', pathapp + pathcef);
-      arqIni.WriteString('Path Defines', 'Resources', pathapp + pathcef);
-      arqIni.WriteString('Path Defines', 'Locales', pathapp + pathcef + 'locales');
-      arqIni.WriteString('Path Defines', 'Cache', pathapp + pathcef + 'cache');
-      arqIni.WriteString('Path Defines', 'Data User', pathapp + pathcef + 'User Data');
-      arqIni.WriteString('Path Defines', 'Log File', pathapp + pathcef + 'logs\Log File');
-      arqIni.WriteString('Path Defines', 'Log Console', pathapp + pathcef + 'logs\Log Console');
+      try
+        arqIni.WriteString('Path Defines', 'Binary', pathapp + pathcef);
+        arqIni.WriteString('Path Defines', 'FrameWork', pathapp + pathcef);
+        arqIni.WriteString('Path Defines', 'Resources', pathapp + pathcef);
+        arqIni.WriteString('Path Defines', 'Locales', pathapp + pathcef + 'locales');
+        arqIni.WriteString('Path Defines', 'Cache', pathapp + pathcef + 'cache');
+        arqIni.WriteString('Path Defines', 'Data User', pathapp + pathcef + 'User Data');
+        arqIni.WriteString('Path Defines', 'Log File', pathapp + pathcef + 'logs\Log File');
+        arqIni.WriteString('Path Defines', 'Log Console', pathapp + pathcef + 'logs\Log Console');
 
-      {read file ini}
-      GlobalCEFApp.PathLogFile          := pathapp + pathcef + 'logs\';
-      GlobalCEFApp.PathFrameworkDirPath := arqIni.ReadString('Path Defines', 'FrameWork', '');
-      GlobalCEFApp.PathResourcesDirPath := arqIni.ReadString('Path Defines', 'Resources', '');
-      GlobalCEFApp.PathLocalesDirPath   := arqIni.ReadString('Path Defines', 'Locales', '');
-      GlobalCEFApp.Pathcache            := arqIni.ReadString('Path Defines', 'Cache', '');
-      GlobalCEFApp.PathUserDataPath     := arqIni.ReadString('Path Defines', 'Data User', '');
+        //Config Values Default Language
+        if not(arqIni.ValueExists('Config', 'language')) then
+          arqIni.WriteString('Path Defines', 'language', 'pt-BR');
+
+        if not(arqIni.ValueExists('Config', 'AcceptLanguageList')) then
+          arqIni.WriteString('Config', 'AcceptLanguageList', 'pt-BR,pt-BR;q=0.9,en-US;q=0.8,en;q=0.7');
+
+        {read file ini}
+        GlobalCEFApp.PathLogFile          := pathapp + pathcef + 'logs\';
+        GlobalCEFApp.PathFrameworkDirPath := arqIni.ReadString('Path Defines', 'FrameWork', '');
+        GlobalCEFApp.PathResourcesDirPath := arqIni.ReadString('Path Defines', 'Resources', '');
+        GlobalCEFApp.PathLocalesDirPath   := arqIni.ReadString('Path Defines', 'Locales', '');
+        GlobalCEFApp.Pathcache            := arqIni.ReadString('Path Defines', 'Cache', '');
+        GlobalCEFApp.PathUserDataPath     := arqIni.ReadString('Path Defines', 'Data User', '');
+
+        GlobalCEFApp.DisableBlinkFeatures := 'AutomationControlled';
+
+      except on E: Exception do
+      end;
     end;
 
     false: {example default demo}
     begin
       {read file ini}
-      GlobalCEFApp.PathLogFile          := '';
-      GlobalCEFApp.PathFrameworkDirPath := arqIni.ReadString('Path Defines', 'FRAMEWORK', '');
-      GlobalCEFApp.PathResourcesDirPath := arqIni.ReadString('Path Defines', 'RESOURCES', '');
-      GlobalCEFApp.PathLocalesDirPath   := arqIni.ReadString('Path Defines', 'LOCALES', '');
-      GlobalCEFApp.Pathcache            := arqIni.ReadString('Path Defines', 'CACHE', '');
-      GlobalCEFApp.PathUserDataPath     := arqIni.ReadString('Path Defines', 'USERDATA', '');
+      try
+        GlobalCEFApp.PathLogFile          := '';
+        GlobalCEFApp.PathFrameworkDirPath := arqIni.ReadString('Path Defines', 'FRAMEWORK', '');
+        GlobalCEFApp.PathResourcesDirPath := arqIni.ReadString('Path Defines', 'RESOURCES', '');
+        GlobalCEFApp.PathLocalesDirPath   := arqIni.ReadString('Path Defines', 'LOCALES', '');
+        GlobalCEFApp.Pathcache            := arqIni.ReadString('Path Defines', 'CACHE', '');
+        GlobalCEFApp.PathUserDataPath     := arqIni.ReadString('Path Defines', 'USERDATA', '');
+        GlobalCEFApp.DisableBlinkFeatures := 'AutomationControlled';
+
+       //Config Values Default Language
+        if not(arqIni.ValueExists('Config', 'language')) then
+          arqIni.WriteString('Path Defines', 'language', 'pt-BR');
+
+        if not(arqIni.ValueExists('Config', 'AcceptLanguageList')) then
+          arqIni.WriteString('Config', 'AcceptLanguageList', 'pt-BR,pt-BR;q=0.9,en-US;q=0.8,en;q=0.7');
+
+
+        //Config Read Default Language
+        language := arqIni.ReadString('Config', 'language', 'pt-BR');
+        AcceptLanguageList := arqIni.ReadString('Config', 'AcceptLanguageList', 'pt-BR,pt-BR;q=0.9,en-US;q=0.8,en;q=0.7');
+
+        //Config Default Language
+        GlobalCEFApp.Locale := language;
+        GlobalCEFApp.AcceptLanguageList   := AcceptLanguageList;
+
+      except on E: Exception do
+      end;
     end;
   end;
- 
+
+  GlobalCEFApp.DisableBlinkFeatures := 'AutomationControlled';
+
   {start service cef4delphi chromium}
   If not GlobalCEFApp.StartMainProcess then Exit;
 

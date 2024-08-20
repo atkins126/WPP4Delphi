@@ -180,6 +180,10 @@ end;
     FInviteGrpType: String;
     FTitle: String;
     FFooter: String;
+    FgifAttribution: Extended;
+    FisGif: Boolean;
+    FselectedId: string;
+    FselectedIndex: integer;
   public
     property ack: Extended read FAck write FAck;
     property author: String read FAuthor write FAuthor;
@@ -225,6 +229,8 @@ end;
     property mediaKey: String read FMediaKey write FMediaKey;
     property mediaKeyTimestamp: Extended read FMediaKeyTimestamp write FMediaKeyTimestamp;
     property mimetype: String read FMimetype write FMimetype;
+     property gifAttribution         : Extended      read FgifAttribution              write FgifAttribution;
+     property isGif                  : Boolean       read FisGif                       write FisGif;
     property pageCount: Extended read FPageCount write FPageCount;
     property pollOptions: TArray<String> read FPollOptions write FPollOptions;
     property rowId: Extended read FRowId write FRowId;
@@ -248,7 +254,8 @@ end;
     property quotedStanzaID: String read FQuotedStanzaID write FQuotedStanzaID;
     property richPreviewType: Extended read FRichPreviewType write FRichPreviewType;
     property thumbnail: String read FThumbnail write FThumbnail;
-
+    property selectedId            : string                  read FselectedId             write FselectedId;
+    property selectedIndex         : integer                 read FselectedIndex          write FselectedIndex;
 
     constructor Create(pAJsonString: string);
     destructor Destroy; override;
