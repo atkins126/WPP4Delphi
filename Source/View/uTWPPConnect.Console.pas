@@ -21,8 +21,8 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.ExtCtrls, StrUtils,
 
-  uCEFWinControl, uCEFChromiumCore,   uCEFTypes,
-  uCEFInterfaces, uCEFConstants,      uCEFWindowParent, uCEFChromium, uCEFApplication,
+  uCEFWinControl, uCEFChromiumCore, uCEFTypes,
+  uCEFInterfaces, uCEFConstants, uCEFWindowParent, uCEFChromium, uCEFApplication,
 
   //units adicionais obrigatórias
   uTWPPConnect.Classes,  uTWPPConnect.constant, uTWPPConnect.Diversos,
@@ -266,6 +266,7 @@ type
     procedure sendPixKeyMessageNew(phoneNumber, options: string; xSeuID: string = ''; xSeuID2: string = ''; xSeuID3: string = ''; xSeuID4: string = '');
 
     procedure sendOrderMessageNew(phoneNumber, items, options: string; xSeuID: string = ''; xSeuID2: string = ''; xSeuID3: string = ''; xSeuID4: string = '');
+    procedure sendChargeMessageNew(phoneNumber, items, options: string; xSeuID: string = ''; xSeuID2: string = ''; xSeuID3: string = ''; xSeuID4: string = '');
 
     procedure editMessage(UniqueID, NewMessage, Options: string); //Add Marcelo 15/08/2023
 
@@ -678,9 +679,11 @@ procedure TFrmConsole.BrowserDestroyMsg(var aMessage : TMessage);
 begin
   CEFWindowParent1.Free;
   SleepNoFreeze(10);
+  save_log('  Th_Disconnected');
   SendNotificationCenterDirect(Th_Disconnected);
   SleepNoFreeze(150);
 
+  save_log('  Th_Destroying');
   SendNotificationCenterDirect(Th_Destroying);
   SleepNoFreeze(10);
 end;
@@ -1810,6 +1813,33 @@ begin
   FrmConsole_JS_AlterVar(LJS, '#MSG_OPTIONS#', Trim(Options));
 
   ExecuteJS(LJS, true);
+end;
+
+procedure TFrmConsole.sendChargeMessageNew(phoneNumber, items, options, xSeuID, xSeuID2, xSeuID3, xSeuID4: string);
+var
+  Ljs: string;
+begin
+  //Adicionado Por Marcelo 06/04/2024
+  if not FConectado then
+    raise Exception.Create(MSG_ConfigCEF_ExceptConnetServ);
+
+
+  options := CaractersQuebraLinha(options);
+
+  //if Trim(options) = '' then
+    //options := 'createChat: true';
+
+  LJS   := FrmConsole_JS_VAR_sendChargeMessageNew;
+  FrmConsole_JS_AlterVar(LJS, '#MSG_PHONE#',    Trim(phoneNumber));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_ITEMS#',    Trim(items));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_OPTIONS#',  Trim(options));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_SEUID#',    Trim(xSeuID));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_SEUID2#',   Trim(xSeuID2));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_SEUID3#',   Trim(xSeuID3));
+  FrmConsole_JS_AlterVar(LJS, '#MSG_SEUID4#',   Trim(xSeuID4));
+
+  ExecuteJS(LJS, true);
+
 end;
 
 procedure TFrmConsole.SendContact(vNumDest, vNum: string; vNameContact: string = '');
@@ -3026,6 +3056,17 @@ begin
                            end;
                          end;
 
+    //Marcelo 21/08/2024
+    Th_GetEnvrequire_auth   : begin
+
+                            LOutClass2 := TIsRequire_auth.Create(LResultStr);
+                            try
+                              SendNotificationCenterDirect(PResponse.TypeHeader, LOutClass2);
+                            finally
+                              FreeAndNil(LOutClass2);
+                            end;
+                         end;
+
 
     //Marcelo 30/10/2023
     Th_GetgenLinkDeviceCodeForPhoneNumber   :
@@ -3732,14 +3773,16 @@ begin
 
   if (Copy(message, 0, 2) <> '{"') then
   begin
+
     LogAdd(message, 'CONSOLE IGNORADO');
 
-    if (pos('NOTINITIALIZEDERROR', AnsiUpperCase(Trim(message))) > 0)
-    or (pos('NotInitializedError',  Trim(message)) > 0) then
+    if (pos('NOTINITIALIZEDERROR',  AnsiUpperCase(Trim(message))) > 0)
+    or (pos('NotInitializedError',  Trim(message)) > 0)
+    or (pos('DROPPING DB WRITE OPERATION DUE TO LOGOUT',  AnsiUpperCase(Trim(message))) > 0)
+    or (pos('DBONLOGOUTABORTERROR', AnsiUpperCase(Trim(message))) > 0)
+    then
     begin
-      FOnNotificationCenter(Th_ForceDisconnect, '');
-      //FOnNotificationCenter(Th_IsLogout, '');
-
+      save_log('  DESCONECTOU.., ' + message);
       LogAdd('DESCONECTOU QRCODE, REALIZAR A LIMPEZA CACHE E NOVA LEITURA DE UM NOVO QRCODE');
       AResponse := TResponseConsoleMessage.Create( '{"name":"QrCodeDesconectouErroCache","result":"{\"result\":\"Another connection wants to delete database wawc. Closing db now to resume the delete request.\"}"}');
       //{"name":"getMyNumber","result":"{\"result\":\"5517@c.us\"}"}
@@ -3750,6 +3793,9 @@ begin
       finally
         FreeAndNil(AResponse);
       end;
+
+      FOnNotificationCenter(Th_ForceDisconnect, '');
+      //FOnNotificationCenter(Th_IsLogout, '');
     end
     else
 
@@ -3919,14 +3965,16 @@ begin
 
   if (Copy(message, 0, 2) <> '{"') then
   begin
+
     LogAdd(message, 'CONSOLE IGNORADO');
 
-    if (pos('NOTINITIALIZEDERROR', AnsiUpperCase(Trim(message))) > 0)
-    or (pos('NotInitializedError',  Trim(message)) > 0) then
+    if (pos('NOTINITIALIZEDERROR',  AnsiUpperCase(Trim(message))) > 0)
+    or (pos('NotInitializedError',  Trim(message)) > 0)
+    or (pos('DROPPING DB WRITE OPERATION DUE TO LOGOUT',  AnsiUpperCase(Trim(message))) > 0)
+    or (pos('DBONLOGOUTABORTERROR', AnsiUpperCase(Trim(message))) > 0)
+    then
     begin
-      FOnNotificationCenter(Th_ForceDisconnect, '');
-      //FOnNotificationCenter(Th_IsLogout, '');
-
+      save_log('  DESCONECTOU.., ' + message);
       LogAdd('DESCONECTOU QRCODE, REALIZAR A LIMPEZA CACHE E NOVA LEITURA DE UM NOVO QRCODE');
       AResponse := TResponseConsoleMessage.Create( '{"name":"QrCodeDesconectouErroCache","result":"{\"result\":\"Another connection wants to delete database wawc. Closing db now to resume the delete request.\"}"}');
       //{"name":"getMyNumber","result":"{\"result\":\"5517@c.us\"}"}
@@ -3937,12 +3985,16 @@ begin
       finally
         FreeAndNil(AResponse);
       end;
+
+      FOnNotificationCenter(Th_ForceDisconnect, '');
+      //FOnNotificationCenter(Th_IsLogout, '');
     end
     else
+
     //Desconexão do QrCode, Tratamento após desconectado Add Marcelo 06/02/2023
     //'Another connection wants to delete database 'wawc'. Closing db now to resume the delete request.'
     if (Pos('ANOTHER CONNECTION WANTS TO DELETE DATABASE', UpperCase(message)) > 0)
-    or (Pos('CLOSING DB NOW TO RESUME THE DELETE REQUEST.', UpperCase(message)) > 0)  then
+    or (Pos('CLOSING DB NOW TO RESUME THE DELETE REQUEST.', UpperCase(message)) > 0) then
     begin
       LogAdd('DESCONECTOU QRCODE, ARQUIVO CORROMPIDO PASTA CACHE, NECESSÁRIO RESTAURAR A PASTA DO CACHE ORIGINAL OU REALIZAR A LIMPEZA E NOVA LEITURA DE UM NOVO QRCODE');
       AResponse := TResponseConsoleMessage.Create( '{"name":"QrCodeDesconectouErroCache","result":"{\"result\":\"Another connection wants to delete database wawc. Closing db now to resume the delete request.\"}"}');
@@ -4369,6 +4421,7 @@ begin
     if not FConectado then
     begin
       save_log('  FConectado: false');
+      save_log('  Th_Disconnected');
       SendNotificationCenterDirect(Th_Disconnected);
       raise Exception.Create(MSG_ConfigCEF_ExceptBrowse);
     end

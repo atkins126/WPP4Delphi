@@ -5812,6 +5812,7 @@ object frDemo: TfrDemo
     OnGetIsLoaded = TWPPConnect1GetIsLoaded
     OnGetIsAuthenticated = TWPPConnect1GetIsAuthenticated
     OnGetIsLogout = TWPPConnect1GetIsLogout
+    OnGetEnvrequire_auth = TWPPConnect1GetEnvrequire_auth
     OnGetIsOnline = TWPPConnect1GetIsOnline
     OnGetEnvIsOnline = TWPPConnect1GetEnvIsOnline
     OnGetEnvneedsUpdate = TWPPConnect1GetEnvneedsUpdate
@@ -5865,7 +5866,7 @@ object frDemo: TfrDemo
     Top = 8
   end
   object TimerVerificaConexao: TTimer
-    Interval = 40000
+    Interval = 50000
     OnTimer = TimerVerificaConexaoTimer
     Left = 544
     Top = 8
@@ -5896,16 +5897,16 @@ object frDemo: TfrDemo
     Left = 1004
     Top = 8
   end
-  object Timer1: TTimer
+  object TimerBegin: TTimer
     Interval = 7000
-    OnTimer = Timer1Timer
+    OnTimer = TimerBeginTimer
     Left = 912
     Top = 8
   end
-  object Timer2: TTimer
+  object TimerIsOnline: TTimer
     Enabled = False
     Interval = 4000
-    OnTimer = Timer2Timer
+    OnTimer = TimerIsOnlineTimer
     Left = 388
     Top = 8
   end

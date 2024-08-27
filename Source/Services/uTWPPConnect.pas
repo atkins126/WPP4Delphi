@@ -157,6 +157,7 @@ type
   TGetIsLoaded               = Procedure(Sender : TObject; IsLoaded: Boolean) of object; //Marcelo 17/08/2022
   TGetIsAuthenticated        = Procedure(Sender : TObject; IsAuthenticated: Boolean) of object; //Marcelo 18/08/2022
   TGetIsLogout               = Procedure(Sender : TObject; IsLogout: Boolean) of object; //Marcelo 18/08/2022
+  TGetEnvrequire_auth        = Procedure(Response : TIsRequire_auth) of object; //Marcelo 21/08/2023
   TGetIsOnline               = Procedure(Response : TIsOnline) of object; //Marcelo 03/05/2023
   TGetEnvIsOnline            = Procedure(Response : TEnvIsOnline) of object; //Marcelo 03/05/2023
   TGetEnvneedsUpdate         = Procedure(Response : TEnvneedsUpdate) of object; //Marcelo 03/05/2023
@@ -310,6 +311,7 @@ type
     FOnGetIsAuthenticated: TGetIsAuthenticated; //Marcelo 17/09/2022
 
     FOnGetIsOnline: TGetIsOnline; //Marcelo 03/05/2023
+    FOnGetEnvrequire_auth: TGetEnvrequire_auth; //Marcelo 03/05/2023
     FOnGetEnvIsOnline: TGetEnvIsOnline; //Marcelo 03/05/2023
     FOnGetEnvneedsUpdate: TGetEnvneedsUpdate; //Marcelo 03/07/2024
     FOnGetgenLinkDeviceCodeForPhoneNumber: TOnGetgenLinkDeviceCodeForPhoneNumber;
@@ -381,6 +383,7 @@ type
 
     procedure sendPixKeyMessageNew(phoneNumber, options: string; xSeuID: string = ''; xSeuID2: string = ''; xSeuID3: string = ''; xSeuID4: string = '');
     procedure sendOrderMessageNew(phoneNumber, items, options: string; xSeuID: string = ''; xSeuID2: string = ''; xSeuID3: string = ''; xSeuID4: string = '');
+    procedure sendChargeMessageNew(phoneNumber, items, options: string; xSeuID: string = ''; xSeuID2: string = ''; xSeuID3: string = ''; xSeuID4: string = '');
 
     procedure editMessage(UniqueID, NewMessage, Options: string); //Add Marcelo 15/08/2023
     procedure editMessageNew(UniqueID, NewMessage, Options: string; xSeuID: string = '';
@@ -622,6 +625,10 @@ type
     //Marcelo 18/09/2022
     property OnGetIsAuthenticated        : TGetIsAuthenticated        read FOnGetIsAuthenticated           write FOnGetIsAuthenticated;
     property OnGetIsLogout               : TGetIsLogout               read FOnGetIsLogout                  write FOnGetIsLogout;
+
+    //Marcelo 21/08/2024
+    property OnGetEnvrequire_auth        : TGetEnvrequire_auth        read FOnGetEnvrequire_auth           write FOnGetEnvrequire_auth;
+
 
     //Marcelo 03/05/2023
     property OnGetIsOnline               : TGetIsOnline               read FOnGetIsOnline                  write FOnGetIsOnline;
@@ -3686,6 +3693,13 @@ begin
       OnGetIsLogout( TIsLogout(PReturnClass), True);
   end;
 
+  //Add Marcelo 21/08/2024
+  if PTypeHeader = Th_GetEnvrequire_auth then
+  Begin
+    if Assigned(OnGetEnvrequire_auth) then
+      OnGetEnvrequire_auth( TIsRequire_auth(PReturnClass));
+  end;
+
   if PTypeHeader = Th_getIsOnline then
   Begin
     if Assigned(OnGetIsOnline) then
@@ -4600,7 +4614,7 @@ var
       end;
 
     result := false;
-    for I := 0 to 10 do
+    for I := 0 to 8 do
     begin
       Ltmp := LowerCase(Copy(GetEnumName(TypeInfo(TSendFile_Image), ord(TSendFile_Image(i))), 3, 50));
       if pos(LExtension, Ltmp) > 0 Then
@@ -4802,7 +4816,7 @@ var
       end;
 
     result := false;
-    for I := 0 to 10 do
+    for I := 0 to 8 do
     begin
       Ltmp := LowerCase(Copy(GetEnumName(TypeInfo(TSendFile_Image), ord(TSendFile_Image(i))), 3, 50));
       if pos(LExtension, Ltmp) > 0 Then
@@ -6074,6 +6088,48 @@ begin
             FrmConsole.SendCall(id, Options);
           end;
         end);
+
+      end);
+  lThread.FreeOnTerminate := true;
+  lThread.Start;
+
+end;
+
+procedure TWPPConnect.sendChargeMessageNew(phoneNumber, items, options, xSeuID, xSeuID2, xSeuID3, xSeuID4: string);
+var
+  lThread : TThread;
+begin
+  if Application.Terminated Then
+    Exit;
+
+  if not Assigned(FrmConsole) then
+    Exit;
+
+  if pos('@', phoneNumber) = 0 then
+    phoneNumber := SomenteNumero(phoneNumber);
+
+  {phoneNumber := AjustNumber.FormatIn(phoneNumber);
+
+  if pos('@', phoneNumber) = 0 then
+  Begin
+    Int_OnErroInterno(Self, MSG_ExceptPhoneNumberError, phoneNumber);
+    Exit;
+  end;}
+
+  lThread := TThread.CreateAnonymousThread(procedure
+      begin
+        if Config.AutoDelay > 0 then
+           sleep(random(Config.AutoDelay));
+
+        TThread.Synchronize(nil, procedure
+        begin
+          if Assigned(FrmConsole) then
+          begin
+            //FrmConsole.ReadMessages(phoneNumber); //Marca como lida a mensagem
+            FrmConsole.sendChargeMessageNew(phoneNumber, items, options, xSeuID, xSeuID2, xSeuID3, xSeuID4);
+            //FrmConsole.ReadMessagesAndDelete(phoneNumber);//Deleta a conversa
+          end;
+       end);
 
       end);
   lThread.FreeOnTerminate := true;

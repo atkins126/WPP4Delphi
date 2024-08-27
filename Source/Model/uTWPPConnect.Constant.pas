@@ -45,7 +45,7 @@ Uses
 Const
   //Uso GLOBAL
                                   //Version updates I=HIGH, II=MEDIUM, III=LOW, IV=VERY LOW
-  TWPPConnectVersion              = '3.6.0.0'; //  01/08/2024
+  TWPPConnectVersion              = '3.7.0.0'; //  22/08/2024
   CardContact                     = '@c.us';
   CardGroup                       = '@g.us';
   CardList                        = '@broadcast';
@@ -365,6 +365,7 @@ Const
 
   //Marcelo 29/06/2024
   FrmConsole_JS_VAR_sendOrderMessageNew    = 'window.WPP.sendOrderMessageNew("<#MSG_PHONE#>",[{<#MSG_ITEMS#>}], {<#MSG_OPTIONS#>},"<#MSG_SEUID#>", "<#MSG_SEUID2#>", "<#MSG_SEUID3#>", "<#MSG_SEUID4#>" );';
+  FrmConsole_JS_VAR_sendChargeMessageNew   = 'window.WPP.sendChargeMessageNew("<#MSG_PHONE#>",[{<#MSG_ITEMS#>}], {<#MSG_OPTIONS#>},"<#MSG_SEUID#>", "<#MSG_SEUID2#>", "<#MSG_SEUID3#>", "<#MSG_SEUID4#>" );';
 
   FrmConsole_JS_VAR_editMessage         = 'WPP.chat.editMessage("<#MSG_UNIQUE_ID#>","<#MSG_NEW_MESSAGE#>",{<#MSG_OPTIONS#>} );';
 
@@ -517,7 +518,7 @@ type
     TConnectionDBType     = (TCon_None=0, TCon_Memory=1,  TCon_FireDAC=2, TCon_DBExpress=3, TCon_ADO=4);
 
     TFormQrCodeType       = (Ft_Desktop=0,       Ft_Http=1,    Ft_None=2);  //Form ou RestDataWare
-    TSendFile_Image       = (Tsf_Jpg=0, Tsf_Jpeg=1, Tsf_Tif=2, Tsf_Ico=3, Tsf_Bmp=4, Tsf_Png=5, Tsf_Raw=6, Tsf_webP=7);
+    TSendFile_Image       = (Tsf_Jpg=0, Tsf_Jpeg=1, Tsf_Tif=2, Tsf_Ico=3, Tsf_Bmp=4, Tsf_Png=5, Tsf_Raw=6, Tsf_webP=7, Tsf_SVG=8);
 
     TDownloadJSType       = (DT_Indy=0, DT_Rest=1);
 
@@ -594,6 +595,7 @@ type
                    , Th_Getgroup_participant_changed=91 //Marcelo 13/08/2024
                    , Th_Getorder_payment_status=92 //Marcelo 13/08/2024
                    , Th_Getlive_location_start=93 //Marcelo 13/08/2024
+                   , Th_GetEnvrequire_auth=94 //Marcelo 21/08/2024
 
                    );
 
@@ -607,7 +609,7 @@ type
 implementation
 
 uses
-  System.JSON, System.Classes, Vcl.Dialogs, Vcl.Forms, Winapi.Windows;
+  System.JSON, System.Classes, Vcl.Dialogs, Vcl.Forms, Winapi.Windows, uTWPPConnect.ConfigCEF;
 
 
 Function VerificaCompatibilidadeVersao(PVersaoExterna:String; PversaoInterna:String):Boolean;
@@ -718,7 +720,7 @@ Begin
 
   Result := 'data:application/';
   try
-    for I := 0 to 10 do
+    for I := 0 to 8 do
     begin
       Ltmp := LowerCase(Copy(GetEnumName(TypeInfo(TSendFile_Image), ord(TSendFile_Image(i))), 3, 50));
       if pos(LExt, Ltmp) > 0 Then
@@ -733,7 +735,7 @@ Begin
 End;
 
 function  StrToTypeHeader(PText: string): TTypeHeader;
-const LmaxCount = 93; //Marcelo 13/08/2024
+const LmaxCount = 94; //Marcelo 21/08/2024
 var
   I: Integer;
   LNome: String;
@@ -775,22 +777,32 @@ var
   arq: TextFile;
 begin
   try
-    nomearq := ExtractFilePath(ParamStr(0)) + 'LogTWppConnect' + '\LogInit' +
-      FormatDateTime('YYYY-MM-DD', now) + '.log';
+    if Assigned(GlobalCEFApp) then
+    begin
+      if (not GlobalCEFApp.LogConsoleActive) or (GlobalCEFApp.LogConsole = '') Then
+        Exit;
 
-    AssignFile(arq, nomearq);
-    try
-      if FileExists(nomearq) then
-        Append(arq)
-      else
-        Rewrite(arq);
+      if not(DirectoryExists(ExtractFilePath(ParamStr(0)) + 'LogTWppConnect')) then
+        CreateDir(ExtractFilePath(ParamStr(0)) + 'LogTWppConnect');
 
-      Writeln(arq, FormatDateTime('DD/MM/YYYY', Date) + ' ' +
-        FormatDateTime('HH:MM:SS:ZZ', time) + ' ' + line);
-      Flush(arq);
-    finally
-      CloseFile(arq);
+      nomearq := ExtractFilePath(ParamStr(0)) + 'LogTWppConnect' + '\LogInit' +
+        FormatDateTime('YYYY-MM-DD', now) + '.log';
+
+      AssignFile(arq, nomearq);
+      try
+        if FileExists(nomearq) then
+          Append(arq)
+        else
+          Rewrite(arq);
+
+        Writeln(arq, FormatDateTime('DD/MM/YYYY', Date) + ' ' +
+          FormatDateTime('HH:MM:SS:ZZ', time) + ' ' + line);
+        Flush(arq);
+      finally
+        CloseFile(arq);
+      end;
     end;
+
   except
   end;
 end;
