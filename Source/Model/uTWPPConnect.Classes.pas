@@ -184,6 +184,16 @@ type
     property timestamp          : Int64            read Ftimestamp                write Ftimestamp;
   end;
 
+  TPollVotesSnapshotClass = class(TClassPadrao)
+  private
+    FPollVotes: TArray<String>;
+  public
+    property pollVotes: TArray<String> read FPollVotes write FPollVotes;
+    //function ToJsonString: string;
+    //class function FromJsonString(AJsonString: string): TPollVotesSnapshotClass;
+  end;
+
+
   //Marcelo 27/04/2022
   TpollOptionsClass = class(TClassPadrao)
   private
@@ -750,14 +760,14 @@ type
     Findex            : Extended;
     FquickReplyButton : TArray<TquickReplyButtonClass>;
     FurlButton        : TArray<TurlButtonClass>;
-    FcallButton      : TArray<TcallButtonClass>;
+    FcallButton       : TArray<TcallButtonClass>;
   public
     property    index            : Extended                       read Findex            write Findex;
     property    quickReplyButton : TArray<TquickReplyButtonClass> read FquickReplyButton write FquickReplyButton;
     property    urlButton        : TArray<TurlButtonClass>        read FurlButton        write FurlButton;
     property    callButton       : TArray<TcallButtonClass>       read FcallButton       write FcallButton;
     function ToJsonString: string;
-    //class function FromJsonString(AJsonString: string): ThydratedButtonsClass;
+    class function FromJsonString(AJsonString: string): ThydratedButtonsClass;
   end;
 
   //Marcelo 09/08/2022
@@ -831,10 +841,14 @@ type
     FDescription: String;
     FListType: Extended;
     FSections: TArray<TSectionsClass>;
+    FfooterText: String;
+    Ftitle: String;
   public
     //property $$unknownFieldCount: Extended read F$$unknownFieldCount write F$$unknownFieldCount;
     property buttonText: String read FButtonText write FButtonText;
     property description: String read FDescription write FDescription;
+    property title: String read Ftitle write Ftitle;
+    property footerText: String read FfooterText write FfooterText;
     property listType: Extended read FListType write FListType;
     property sections: TArray<TSectionsClass> read FSections write FSections;
     function ToJsonString: string;
@@ -925,6 +939,7 @@ type
     FscanLengths: TArray<Extended>;
     FInteractivePayload: TInteractivePayloadClass;
     FInteractiveHeader: TInteractiveHeaderClass;
+    FPollVotesSnapshot: TPollVotesSnapshotClass;
   public
     property    &type           : string     read Ftype               write Ftype;
     property    isFromTemplate  : Boolean    read FisFromTemplate     write FisFromTemplate;
@@ -951,6 +966,8 @@ type
     property    scanLengths                 : TArray<Extended>   read FscanLengths        write FscanLengths;
     property    interactivePayload: TInteractivePayloadClass     read FInteractivePayload write FInteractivePayload;
     property    interactiveHeader:  TInteractiveHeaderClass      read FInteractiveHeader  write FInteractiveHeader;
+    property    pollVotesSnapshot: TPollVotesSnapshotClass       read FPollVotesSnapshot  write FPollVotesSnapshot;
+    //TPollVotesSnapshotClass
   end;
 
   TstreamingSidecarClass = class(TClassPadrao)
@@ -1079,6 +1096,7 @@ type
     property list       : TListClass read FList       write FList;
     property interactivePayload: TInteractivePayloadClass     read FInteractivePayload write FInteractivePayload;
     property interactiveHeader: TInteractiveHeaderClass       read FInteractiveHeader  write FInteractiveHeader;
+
   end;
 
   //Marcelo 27/04/2022
@@ -1250,6 +1268,7 @@ type
     FLatestEditMsgKey: TLatestEditMsgKeyClass;
     FchatlistPreview: TchatlistPreviewClass;
     FpollOptions: TArray<TpollOptionsClass>;
+    FPollVotesSnapshot: TPollVotesSnapshotClass;
   public
     //constructor Create(pAJsonString: string);
     //destructor  Destroy;       override;
@@ -1354,6 +1373,7 @@ type
     property LatestEditMsgKey    : TLatestEditMsgKeyClass         read FLatestEditMsgKey    write FLatestEditMsgKey;
     property chatlistPreview     : TchatlistPreviewClass          read FchatlistPreview     write FchatlistPreview;
     property pollOptions         : TArray<TpollOptionsClass>      read FpollOptions         write FpollOptions;
+    property pollVotesSnapshot   : TPollVotesSnapshotClass        read FPollVotesSnapshot   write FPollVotesSnapshot;
   end;
 
   TItemClass = class(TClassPadrao)
@@ -1510,6 +1530,7 @@ type
     FtemplateParams: TArray<String>;
     FInteractivePayload: TInteractivePayloadClass;
     FInteractiveHeader: TInteractiveHeaderClass;
+    FPollVotesSnapshot: TPollVotesSnapshotClass;
     //FMsgs: TArray<TMsgsClass>;
 
     //FLastReceivedKey: TLastReceivedKeyClass;
@@ -1617,6 +1638,7 @@ type
 
     property interactivePayload          : TInteractivePayloadClass read FInteractivePayload write FInteractivePayload;
     property interactiveHeader           : TInteractiveHeaderClass  read FInteractiveHeader  write FInteractiveHeader;
+    property pollVotesSnapshot           : TPollVotesSnapshotClass  read FPollVotesSnapshot  write FPollVotesSnapshot;
   end;
 
 
@@ -1683,6 +1705,7 @@ type
     FmessageSecret: TmessageSecretClass;}
     //FpollOptions: TArray<TpollOptionsClass>;
     FpollOptions: TpollOptionsClass;
+    FPollVotesSnapshot: TPollVotesSnapshotClass;
 
     {FInteractiveHeader: TInteractiveHeaderClass;
     FInteractivePayload: TInteractivePayloadClass;
@@ -1755,6 +1778,8 @@ type
 
     property chatlistPreview    : TchatlistPreviewClass             read FchatlistPreview        write FchatlistPreview;
     property pollOptions        : TpollOptionsClass                 read FpollOptions            write FpollOptions;
+    property pollVotesSnapshot  : TPollVotesSnapshotClass           read FPollVotesSnapshot      write FPollVotesSnapshot;
+
     //property pollOptions        : TArray<TpollOptionsClass>         read FpollOptions            write FpollOptions;
 
     {property reportingTokenInfo : TReportingTokenInfoClass          read FReportingTokenInfo     write FReportingTokenInfo;
@@ -1766,6 +1791,8 @@ type
     property interactiveHeader  : TInteractiveHeaderClass           read FInteractiveHeader      write FInteractiveHeader;
     property LatestEditMsgKey   : TLatestEditMsgKeyClass            read FLatestEditMsgKey       write FLatestEditMsgKey;
     property listResponse       : TlistResponseClass                read FlistResponse           write FlistResponse;}
+
+
 
 
   end;
@@ -1857,6 +1884,7 @@ type
     F_phoneNumbers: TArray<String>;
     F_headerPhoneNumbers: TArray<String>;
     F_footerPhoneNumbers: TArray<String>;
+    FPollVotesSnapshot: TPollVotesSnapshotClass;
   public
     constructor Create(pAJsonString: string);
     destructor Destroy; override;
@@ -1917,6 +1945,7 @@ type
     property _phoneNumbers: TArray<String> read F_phoneNumbers write F_phoneNumbers;
     property _headerPhoneNumbers: TArray<String> read F_headerPhoneNumbers write F_headerPhoneNumbers;
     property _footerPhoneNumbers: TArray<String> read F_footerPhoneNumbers write F_footerPhoneNumbers;
+    property pollVotesSnapshot: TPollVotesSnapshotClass   read FPollVotesSnapshot  write FPollVotesSnapshot;
   end;
 
   TResultClass = class //MARCELO 03/09/2022
@@ -2345,13 +2374,24 @@ THydratedButtonsClass2 = class
 private
   //F$$unknownFieldCount: Extended;
   FUrlButton: TUrlButtonClass2;
+  //FcallButton: TArray<TcallButtonClass>;
+  //FquickReplyButton: TArray<TquickReplyButtonClass>;
+  Findex: Extended;
+  FcallButton: TcallButtonClass;
+  FquickReplyButton: TquickReplyButtonClass;
+
+
 public
   //property &$$unknownFieldCount: Extended read F$$unknownFieldCount write F$$unknownFieldCount;
-  property urlButton: TUrlButtonClass2 read FUrlButton write FUrlButton;
+  property    urlButton        : TUrlButtonClass2               read FUrlButton        write FUrlButton;
+  property    &index           : Extended                       read Findex            write Findex;
+  property    quickReplyButton : TquickReplyButtonClass         read FquickReplyButton write FquickReplyButton;
+  property    callButton       : TcallButtonClass               read FcallButton       write FcallButton;
+
   //constructor Create;
   //destructor Destroy; override;
-  //function ToJsonString: string;
-  //class function FromJsonString(AJsonString: string): THydratedButtonsClass;
+  function ToJsonString: string;
+  class function FromJsonString(AJsonString: string): THydratedButtonsClass2;
 end;
 
 TWaveformClass = class(TClassPadrao)
@@ -2461,6 +2501,8 @@ private
   FDynamicReplyButtons: TArray<TDynamicReplyButtonsClass>;
   FInteractivePayload: TInteractivePayloadClass;
   FInteractiveHeader: TInteractiveHeaderClass;
+  FselectedButtonId: string;
+    FPollVotesSnapshot: TPollVotesSnapshotClass;
 
 public
   property ack: Extended read FAck write FAck;
@@ -2542,6 +2584,8 @@ public
   property requiresDirectConnection   : Boolean           read FrequiresDirectConnection  write FrequiresDirectConnection;
   property hydratedButtons       : TArray<THydratedButtonsClass2>   read FHydratedButtons write FHydratedButtons;
   property waveform              : TWaveformClass            read FWaveform               write FWaveform;
+
+  property selectedButtonId      : string                    read FselectedButtonId       write FselectedButtonId;
   property selectedId            : string                    read FselectedId             write FselectedId;
   property selectedIndex         : integer                   read FselectedIndex          write FselectedIndex;
   property privacyModeWhenSent   : TPrivacyModeWhenSentClass read FPrivacyModeWhenSent    write FPrivacyModeWhenSent;
@@ -2550,6 +2594,7 @@ public
   //property interactiveAnnotations      : TArray<TinteractiveAnnotationsClass>  read  FinteractiveAnnotations write FinteractiveAnnotations; //NOT IMPLEMENT
   property interactivePayload    : TInteractivePayloadClass   read FInteractivePayload    write FInteractivePayload;
   property interactiveHeader     : TInteractiveHeaderClass    read FInteractiveHeader     write FInteractiveHeader;
+  property pollVotesSnapshot     : TPollVotesSnapshotClass    read FPollVotesSnapshot     write FPollVotesSnapshot;
 end;
 
 //Marcelo 25/07/2023
@@ -2966,6 +3011,36 @@ end;
 //  constructor Create(pAJsonString: string);
 //end;
 //Marcelo 06/05/2022
+
+
+//Marcelo 01/09/2024
+TAllParticipantsClass = class(TClassPadrao)
+private
+  FId: String;
+  FIsAdmin: Boolean;
+  FIsSuperAdmin: Boolean;
+  FName: String;
+  FPushname: String;
+public
+  property id: String read FId write FId;
+  property isAdmin: Boolean read FIsAdmin write FIsAdmin;
+  property isSuperAdmin: Boolean read FIsSuperAdmin write FIsSuperAdmin;
+  property name: String read FName write FName;
+  property pushname: String read FPushname write FPushname;
+  //function ToJsonString: string;
+  //class function FromJsonString(AJsonString: string): TResultClass;
+end;
+
+TParticipantsGroupClass = class(TClassPadrao)
+private
+  FResult: TArray<TAllParticipantsClass>;
+public
+  property result: TArray<TAllParticipantsClass> read FResult write FResult;
+  //destructor Destroy; override;
+  //function ToJsonString: string;
+  //class function FromJsonString(AJsonString: string): TParticipantsClass;
+end;
+
 TMessagesList = class(TClassPadraoList<TMessagesClass>)
 end;
 TChatList = class(TClassPadraoList<TChatClass>)
@@ -2997,6 +3072,7 @@ public
   property  AImageDif:  Boolean                read FAImageDif;
   Function  AQrCodeQuestion: Boolean;
 end;
+
 TQrCodeClass = class(TClassPadrao)
 private
   FResult: TResultQRCodeClass;
@@ -3093,6 +3169,7 @@ end;
     class function FromJsonString(AJsonString: string): TProductList;
     function ToJsonString: string;
   end;
+
   TProductsList = class(TClassPadraoList<TProductList>)
    private
     FResult: TArray<TProductList>;
@@ -4634,7 +4711,7 @@ end;
 
 class function TDynamicReplyButtonsClass.FromJsonString(AJsonString: string): TDynamicReplyButtonsClass;
 begin
-  result := TJson.JsonToObject<TDynamicReplyButtonsClass>(AJsonString)
+  result := TJson.JsonToObject<TDynamicReplyButtonsClass>(AJsonString);
 end;
 
 function TDynamicReplyButtonsClass.ToJsonString: string;
@@ -4683,6 +4760,11 @@ begin
 end;
 
 { ThydratedButtonsClass }
+
+class function ThydratedButtonsClass.FromJsonString(AJsonString: string): ThydratedButtonsClass;
+begin
+  result := TJson.JsonToObject<ThydratedButtonsClass>(AJsonString);
+end;
 
 function ThydratedButtonsClass.ToJsonString: string;
 begin
@@ -4771,6 +4853,18 @@ end;
 destructor TIsRequire_auth.Destroy;
 begin
   inherited;
+end;
+
+{ THydratedButtonsClass2 }
+
+class function THydratedButtonsClass2.FromJsonString(AJsonString: string): THydratedButtonsClass2;
+begin
+  result := TJson.JsonToObject<ThydratedButtonsClass2>(AJsonString);
+end;
+
+function THydratedButtonsClass2.ToJsonString: string;
+begin
+  result := TJson.ObjectToJsonString(self);
 end;
 
 end.

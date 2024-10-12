@@ -45,13 +45,13 @@ Uses
 Const
   //Uso GLOBAL
                                   //Version updates I=HIGH, II=MEDIUM, III=LOW, IV=VERY LOW
-  TWPPConnectVersion              = '3.7.0.0'; //  22/08/2024
+  TWPPConnectVersion              = '4.0.0.1'; //  02/10/2024
   CardContact                     = '@c.us';
   CardGroup                       = '@g.us';
   CardList                        = '@broadcast';
   NomeArquivoInject               = 'js.abr';//'wppconnect-wa.js';
   NomeArquivoIni                  = 'ConfTWPPConnect.ini';
-  MsMaxFindJSinDesigner           = 6123;//15000;
+  MsMaxFindJSinDesigner           = 15000;//15000;
   VersaoMinima_CF4_Major          = 78;
   VersaoMinima_CF4_Minor          = 3;
   VersaoMinima_CF4_Release        = 0;
@@ -78,7 +78,7 @@ Const
   TPPConnectJS_decryptFile              = 'https://github.com/wppconnect-team/WPP4Delphi/blob/main/Demo/BIN/decryptFile.dll?raw=true';
 
   //TWPPConnectJS_JSUrlPadrao             = '';
-  TWPPConnectJS_JSLinhasMInimas         = 17726; //2400; //17726; //1400;
+  TWPPConnectJS_JSLinhasMInimas         = 3000; //17726; //2400; //17726; //1400;
   FrmConsole_JS_RetornoVazio            = '{"result":[]}';
   FrmConsole_JS_Ignorar                 = '{"name":"getUnreadMessages","result":"{\"result\":[]}"}';
   FrmConsole_JS_Ignorar2                = '{"name":"getList","result":"{\"result\":[]}"}';
@@ -194,6 +194,8 @@ Const
   FrmConsole_JS_GetAllGroups                = 'window.WAPI.getAllGroups();';//'window.WAPI.listMyGroups();';
   FrmConsole_JS_GetGroupAdmins              = 'window.WAPI.getGroupAdmins("<#GROUP_ID#>");';
   FrmConsole_JS_VAR_listGroupContacts       = 'window.WAPI.getGroupParticipantIDs("<#GROUP_ID#>");';
+  FrmConsole_JS_VAR_GetAllParticipantsGroup = 'window.WAPI.getAllParticipantsGroup("<#GROUP_ID#>");';
+
   FrmConsole_JS_VAR_groupAddParticipant     = 'WPP.group.addParticipants("<#GROUP_ID#>", "<#PARTICIPANT_NUMBER#>");setTimeout(function(){ window.WAPI.getGroupParticipantIDs("<#GROUP_ID#>"); }, 3000);';
   FrmConsole_JS_VAR_groupRemoveParticipant  = 'WPP.group.removeParticipants("<#GROUP_ID#>", "<#PARTICIPANT_NUMBER#>");setTimeout(function(){ window.WAPI.getGroupParticipantIDs("<#GROUP_ID#>"); }, 3000);';
   FrmConsole_JS_VAR_groupPromoteParticipant = 'WPP.group.promoteParticipants("<#GROUP_ID#>", "<#PARTICIPANT_NUMBER#>");setTimeout(function(){ window.WAPI.getGroupAdmins("<#GROUP_ID#>"); }, 3000);';
@@ -514,7 +516,9 @@ resourcestring
 
 type
 
-    TLanguageInject       = (TL_Portugues_BR=0,  TL_English=1, TL_Espanol=2, TL_Farsi=3);
+    TLanguageInject       = (TL_Portugues_BR=0, TL_English=1, TL_Espanol=2, TL_Farsi=3, TL_Italian=4, TL_German=5, TL_French=6,
+      TL_Russian=7, TL_Afrikaans=8, TL_Hindi=9, TL_Indonesian=10, TL_Turkish=11, TL_Urdu=12, TL_Bengali=13 );
+
     TConnectionDBType     = (TCon_None=0, TCon_Memory=1,  TCon_FireDAC=2, TCon_DBExpress=3, TCon_ADO=4);
 
     TFormQrCodeType       = (Ft_Desktop=0,       Ft_Http=1,    Ft_None=2);  //Form ou RestDataWare
@@ -596,7 +600,7 @@ type
                    , Th_Getorder_payment_status=92 //Marcelo 13/08/2024
                    , Th_Getlive_location_start=93 //Marcelo 13/08/2024
                    , Th_GetEnvrequire_auth=94 //Marcelo 21/08/2024
-
+                   , Th_GetAllParticipantsGroup=95 //Marcelo 01/09/2024
                    );
 
     Function   VerificaCompatibilidadeVersao(PVersaoExterna:String; PversaoInterna:String):Boolean;
@@ -735,7 +739,7 @@ Begin
 End;
 
 function  StrToTypeHeader(PText: string): TTypeHeader;
-const LmaxCount = 94; //Marcelo 21/08/2024
+const LmaxCount = 95; //Marcelo 01/09/2024
 var
   I: Integer;
   LNome: String;

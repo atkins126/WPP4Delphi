@@ -1689,94 +1689,120 @@ object frDemo: TfrDemo
         ExplicitTop = 278
         ExplicitHeight = 309
         inherited tsImage: TTabSheet
-          ExplicitLeft = 4
-          ExplicitTop = 26
-          ExplicitWidth = 229
           ExplicitHeight = 279
           inherited Image1: TImage
             Height = 264
             ExplicitHeight = 264
           end
-          inherited lblCaminhoImagem: TLabel
-            Width = 229
-          end
-        end
-        inherited tsBase64: TTabSheet
-          ExplicitLeft = 4
-          ExplicitTop = 26
-          ExplicitWidth = 229
-          ExplicitHeight = 191
         end
       end
     end
-    inherited gbAcoesBasicas: TGroupBox
+    inherited gbAcoesBasicas: TScrollBox
       Height = 589
       ExplicitHeight = 589
-      inherited btnLocalizacaoBotao: TButton
-        ExplicitTop = 578
-      end
-      inherited btnLink: TButton
-        ExplicitTop = 330
-      end
-      inherited btnImagemBotao: TButton
-        ExplicitTop = 609
-      end
       inherited btnImagem: TButton
         OnClick = frameMensagem1btnImagemClick
       end
-      inherited btnAudio: TButton
-        ExplicitTop = 361
-      end
-      inherited btnContato: TButton
-        ExplicitTop = 423
-      end
-      inherited btnSticker: TButton
-        ExplicitTop = 392
-      end
-      inherited btnLocalizacao: TButton
-        ExplicitTop = 454
-      end
-      inherited btnArquivo: TButton
-        ExplicitTop = 547
-      end
-      inherited btnStatusTexto: TButton
-        ExplicitTop = 640
-      end
-      inherited btnStatusImagem: TButton
-        ExplicitTop = 671
-      end
-      inherited btnVideoStatus: TButton
-        ExplicitTop = 702
-      end
-      inherited Button2: TButton
-        ExplicitTop = 733
-      end
-      inherited bTextoMarcandoTodosGrupo: TButton
-        ExplicitTop = 764
-      end
-      inherited btnLigar: TButton
-        ExplicitTop = 795
-      end
-      inherited btnEncerrarChamada: TButton
-        ExplicitTop = 826
-      end
-      inherited Button5: TButton
-        ExplicitTop = 516
-      end
-      inherited btnPoolMessage: TButton
-        ExplicitTop = 485
-      end
-      inherited btnImageButton: TButton
-        ExplicitTop = 299
-      end
-      inherited SendDocumentButton: TButton
-        ExplicitLeft = 5
-        ExplicitTop = 268
-      end
     end
-    inherited GroupBox2: TGroupBox
+    inherited gbAcoesChats: TScrollBox
       Height = 589
       ExplicitHeight = 589
+      inherited btnLimparConversa: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited btnArquivar: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited btnResponder: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited btnReagir: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited btnVerificarNumero: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited btnStatus: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited btnDetalhe: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited btnBloquear: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited btnDesbloquear: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited btnFixarChat: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited btnDesfixarChat: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited BitBtn1: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited BitBtn2: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited btnArquivarTodosChats: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited btnDeletarTodosChats: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited Button1: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited btnValidarListarNumeros: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited btnGetMessage: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited Button3: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited Button4: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited bEditMessage: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited btnDeletarOldChat: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited bGetMe: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
+      inherited bGetMensagem: TButton
+        Width = 204
+        ExplicitWidth = 204
+      end
     end
     inherited GroupBox3: TGroupBox
       Height = 589
@@ -2006,9 +2032,6 @@ object frDemo: TfrDemo
         inherited gbacoes: TGroupBox
           Height = 411
           ExplicitHeight = 411
-          inherited btnDescricaoGrupo: TButton
-            ExplicitTop = 416
-          end
         end
       end
       inherited pnlEsquerda: TPanel
@@ -5768,8 +5791,7 @@ object frDemo: TfrDemo
     InjectJS.DownloadJSType = DT_Indy
     Config.AutoDelay = 500
     Config.ReceiveAttachmentAuto = False
-    Config.ReceiveAttachmentPath = 'C:\Executaveis\TWPPConnectAnexos\TWPPConnectAnexos\'
-    Config.SecondsMonitor = 40
+    Config.ReceiveAttachmentPath = 'C:\Executaveis\TWPPConnectAnexos\'
     Config.Evento_msg_ack_change = True
     Config.Evento_msg_revoke = True
     Config.Evento_new_message = True
@@ -5850,6 +5872,7 @@ object frDemo: TfrDemo
     OnGetgroup_participant_changed = TWPPConnect1Getgroup_participant_changed
     OnGetorder_payment_status = TWPPConnect1Getorder_payment_status
     OnGetlive_location_start = TWPPConnect1Getlive_location_start
+    OnGetAllParticipantsGroup = TWPPConnect1GetAllParticipantsGroup
     OnGetgenLinkDeviceCodeForPhoneNumber = TWPPConnect1GetgenLinkDeviceCodeForPhoneNumber
     OnGetHistorySyncProgress = TWPPConnect1GetHistorySyncProgress
     OnGetQrCodeDesconectouErroCache = TWPPConnect1GetQrCodeDesconectouErroCache
@@ -5905,9 +5928,9 @@ object frDemo: TfrDemo
   end
   object TimerIsOnline: TTimer
     Enabled = False
-    Interval = 4000
+    Interval = 40000
     OnTimer = TimerIsOnlineTimer
-    Left = 388
+    Left = 384
     Top = 8
   end
 end

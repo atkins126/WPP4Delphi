@@ -222,6 +222,7 @@ begin
   end;
 
   frDemo.TWPPConnect1.groupAddParticipant(lbl_idGroup.Caption, edtNovoParticipante.text);
+  frDemo.TWPPConnect1.GetAllParticipantsGroup(lbl_idGroup.Caption);
 end;
 
 procedure TframeGrupos.btnAdminOnlyClick(Sender: TObject);
@@ -364,6 +365,7 @@ begin
   end;
 
   frDemo.TWPPConnect1.groupRemoveParticipant(lbl_idGroup.Caption, lblidparticipante.caption);
+  frDemo.TWPPConnect1.GetAllParticipantsGroup(lbl_idGroup.Caption);
 end;
 
 procedure TframeGrupos.btnCriarVotacaoClick(Sender: TObject);
@@ -409,20 +411,22 @@ end;
 
 procedure TframeGrupos.listaGruposClick(Sender: TObject);
 begin
- if listaGrupos.ItemIndex <>  - 1 then
-  begin
-    lbl_idGroup.Caption :=  Copy(listaGrupos.Items[listaGrupos.Selected.Index].SubItems[1], 0,
-      Pos('@', listaGrupos.Items[listaGrupos.Selected.Index].SubItems[1]))+'g.us';
+    if listaGrupos.ItemIndex <>  - 1 then
+    begin
+      lbl_idGroup.Caption :=  Copy(listaGrupos.Items[listaGrupos.Selected.Index].SubItems[1], 0,
+        Pos('@', listaGrupos.Items[listaGrupos.Selected.Index].SubItems[1]))+'g.us';
 
-    edtIdGrupo.Text := lbl_idGroup.Caption;
+      edtIdGrupo.Text := lbl_idGroup.Caption;
 
-    if not frDemo.TWPPConnect1.Auth(False) then
-      Exit;
+      if not frDemo.TWPPConnect1.Auth(False) then
+        Exit;
 
-    frDemo.TWPPConnect1.listGroupContacts(lbl_idGroup.Caption);
+      //frDemo.TWPPConnect1.listGroupContacts(lbl_idGroup.Caption);
 
-    //frDemo.TWPPConnect1.listGroupContacts(lbl_idGroup.Caption);
-  end;
+      frDemo.TWPPConnect1.GetAllParticipantsGroup(lbl_idGroup.Caption);
+
+      //frDemo.TWPPConnect1.listGroupContacts(lbl_idGroup.Caption);
+    end;
 end;
 
 procedure TframeGrupos.listaParticipantesClick(Sender: TObject);

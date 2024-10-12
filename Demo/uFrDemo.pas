@@ -175,6 +175,7 @@ type
     procedure TWPPConnect1Getpresence_change(const response: TMsgPresence_change);
     procedure TWPPConnect1Getupdate_label(const response: TupdateLabelClass);
     procedure TWPPConnect1GetEnvrequire_auth(Response: TIsRequire_auth);
+    procedure TWPPConnect1GetAllParticipantsGroup(const response: TParticipantsGroupClass);
     //procedure frameGrupos1btnMudarImagemGrupoClick(Sender: TObject);
   private
     { Private declarations }
@@ -299,7 +300,7 @@ begin
   try
     //Request.User := '17981388414'
     Request.Prompt := Question;
-    Request.Model := 'text-davinci-003';
+    Request.Model := 'gpt-4'; //'text-davinci-003';
     Request.User := phoneNumber;
     Request.MaxTokens := 2048; // Be careful as this can quickly consume your API quota.
 
@@ -844,6 +845,7 @@ begin
         exit;
 
       TWPPConnect1.IsOnline;
+
     except on E: Exception do
     end;
 
@@ -1229,6 +1231,36 @@ begin
     AddGroupList(TextGroup);
   end;
 end;
+procedure TfrDemo.TWPPConnect1GetAllParticipantsGroup(const response: TParticipantsGroupClass);
+var
+  NomeContato, Contato : string;
+  i: Integer;
+begin
+  frameGrupos1.listaParticipantes.Clear;
+  frameComunidades1.listaParticipantes.Clear;
+
+  frameGrupos1.listaAdministradores.Clear;
+  frameComunidades1.listaAdministradores.Clear;
+
+  for i := 0 to Length(response.result) - 1 do
+  begin
+    //frameMensagensRecebidas1.memo_unReadMessage.Lines.Add('ChatID: ' + response.result[i].id);
+    NomeContato := response.result[i].name;
+    if NomeContato = '' then
+      NomeContato := response.result[i].pushname;
+
+    if Trim(NomeContato) <> '' then
+      Contato := response.result[i].id + ' - ' + NomeContato else
+      Contato := response.result[i].id;
+
+    AddGroupContacts(Contato);
+
+    if response.result[i].isAdmin then
+      AddGroupAdmins(Contato);
+  end;
+
+end;
+
 procedure TfrDemo.TWPPConnect1GetChatList(const Chats: TChatList);
 var
   AChat: TChatClass;
@@ -2091,6 +2123,26 @@ begin
       TWPPConnect1.ReadMessages(FChatID);
       frameMensagensRecebidas1.memo_unReadMessage.Lines.add('');
 
+
+      if NewMessageResponse.msg.id.fromMe = False then
+        if SwtChatGPT.IsOn then
+        begin
+          if Question <> '' then
+          begin
+            //Créditos --> https://github.com/landgraf-dev/openai-delphi
+            Answer := AskQuestion(Question, wlo_Celular);
+            phoneNumber := Copy(Answer, 1, pos('#', Answer)-1);
+            Answer := StringReplace(Answer, phoneNumber + '#', '',[]);
+
+            if Trim(Answer) <> '' then
+              frDemo.TWPPConnect1.SendTextMessageEx(phoneNumber, TWPPConnectEmoticons.robot + ' *ChatGPT* ' + Answer, 'createChat: true', '123')
+              //frDemo.TWPPConnect1.SendTextMessageEx(frameMensagem1.ed_num.Text, 'Escreva sua Perguanta?', options, '123')
+            else
+              frDemo.TWPPConnect1.SendTextMessageEx(phoneNumber, TWPPConnectEmoticons.robot + ' *ChatGPT* ' + 'Could not retrieve an answer.', 'createChat: true', '123');
+
+          end;
+        end;
+
       {ProcessaMsgNaoLida(FChatID, From, idMensagem, '', '', contato,
         body, S_Caption, Title, Footer, DescricaoLista,
         filename, S_Type, eh_arquivo,
@@ -2212,6 +2264,9 @@ begin
       end;
       TWPPConnect1.ReadMessages(FChatID);
       frameMensagensRecebidas1.memo_unReadMessage.Lines.add('');
+
+
+
     end;
   end;
 
