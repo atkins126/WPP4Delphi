@@ -254,6 +254,34 @@ type
     public
   end;
 
+  TctwaContextClass = class(TClassPadrao)
+    private
+      FConversionData: string;
+      FConversionSource: string;
+      FDescription: string;
+      FMediaType: Integer;
+      FMediaUrl: string;
+      FSourceUrl: string;
+      FThumbnail: string;
+      //FThumbnailUrl: string;
+      FTitle: string;
+      FFooter: string;
+      FThumbnailUrl: string;
+      procedure SetThumbnailUrl(const Value: string);
+    public
+      property ConversionData     : string       read FConversionData     write FConversionData;
+      property ConversionSource   : string       read FConversionSource   write FConversionSource;
+      property Description        : string       read FDescription        write FDescription;
+      property MediaType          : Integer      read FMediaType          write FMediaType;
+      property MediaUrl           : string       read FMediaUrl           write FMediaUrl;
+      property SourceUrl          : string       read FSourceUrl          write FSourceUrl;
+      property Thumbnail          : string       read FThumbnail          write FThumbnail;
+      //property ThumbnailUrl       : string       read FThumbnailUrl       write FThumbnailUrl;
+      property ThumbnailUrl       : string       read FThumbnailUrl       write SetThumbnailUrl;
+      property Title              : string       read FTitle              write FTitle;
+      property Footer             : string       read FFooter             write FFooter;
+  end;
+
   TmsgRowOpaqueDataClass = class(TClassPadrao) //Marcelo 14/08/2022
   private
     //Necessário Implementar, no meus testes está sempre vazio este ARRAY
@@ -912,6 +940,17 @@ type
   end;
 
   //Marcelo 27/04/2022
+  TunreadMentionsOfMeClass = class(TClassPadrao)
+  private
+    FId: String;
+    Ftimestamp: Extended;
+  public
+    property id             : String                      read FId                    write FId;
+    property timestamp      : Extended                    read Ftimestamp             write Ftimestamp;
+  end;
+
+
+  //Marcelo 27/04/2022
   TquotedMsgClass = class(TClassPadrao)
   private
     Ftype            : string;
@@ -940,6 +979,9 @@ type
     FInteractivePayload: TInteractivePayloadClass;
     FInteractiveHeader: TInteractiveHeaderClass;
     FPollVotesSnapshot: TPollVotesSnapshotClass;
+    FchatlistPreview: TchatlistPreviewClass;
+    FunreadMentionsOfMe: TArray<TunreadMentionsOfMeClass>;
+    FmessageSecret: TmessageSecretClass;
   public
     property    &type           : string     read Ftype               write Ftype;
     property    isFromTemplate  : Boolean    read FisFromTemplate     write FisFromTemplate;
@@ -967,6 +1009,11 @@ type
     property    interactivePayload: TInteractivePayloadClass     read FInteractivePayload write FInteractivePayload;
     property    interactiveHeader:  TInteractiveHeaderClass      read FInteractiveHeader  write FInteractiveHeader;
     property    pollVotesSnapshot: TPollVotesSnapshotClass       read FPollVotesSnapshot  write FPollVotesSnapshot;
+    property    messageSecret               : TmessageSecretClass      read FmessageSecret      write FmessageSecret;
+    property    chatlistPreview             : TchatlistPreviewClass    read FchatlistPreview    write FchatlistPreview;
+
+    property    unreadMentionsOfMe  : TArray<TunreadMentionsOfMeClass> read FunreadMentionsOfMe   write FunreadMentionsOfMe;
+
     //TPollVotesSnapshotClass
   end;
 
@@ -1028,6 +1075,58 @@ type
     property title: String                              read FTitle             write FTitle;
   end;
 
+  TSenderClass = class(TClassPadrao)
+  private
+    FFormattedName: String;
+    FId           : String;
+    FIsBusiness   : Boolean;
+    FIsEnterprise : Boolean;
+    FIsMe         : Boolean;
+    FIsMyContact  : Boolean;
+    FIsPSA        : Boolean;
+    FIsUser       : Boolean;
+    FIsWAContact  : Boolean;
+    FLabels            : TArray<String>;
+    FProfilePicThumbObj: TProfilePicThumbObjClass;
+    FProfilePicThumb   : string;
+    FPushname     : String;
+    FStatusMute   : Boolean;
+    FType         : String;
+    FName         : String;
+    FverifiedName : String;
+    //MARCELO 27/04/2022
+    FisContactSyncCompleted: Extended;
+  public
+    destructor Destroy; override;
+    constructor Create(pAJsonString: string);
+    property profilePicThumbObj: TProfilePicThumbObjClass read FProfilePicThumbObj write FProfilePicThumbObj;
+    property formattedName:   String         read FFormattedName    write FFormattedName;
+    property id:              String         read FId               write FId;
+    property isBusiness:      Boolean        read FIsBusiness       write FIsBusiness;
+    property isEnterprise:    Boolean        read FIsEnterprise     write FIsEnterprise;
+    property isMe:            Boolean        read FIsMe             write FIsMe;
+    property isMyContact:     Boolean        read FIsMyContact      write FIsMyContact;
+    property isPSA:           Boolean        read FIsPSA            write FIsPSA;
+    property isUser:          Boolean        read FIsUser           write FIsUser;
+    property isWAContact:     Boolean        read FIsWAContact      write FIsWAContact;
+    property labels:          TArray<String> read FLabels           write FLabels;
+    property pushname:        String         read FPushname         write FPushname;
+    property statusMute:      Boolean        read FStatusMute       write FStatusMute;
+    property &type:           String         read FType             write FType;
+    property name:            String         read FName             write FName;
+    property verifiedName:    String         read FverifiedName     write FverifiedName;
+    property profilePicThumb: String         read FProfilePicThumb  write FProfilePicThumb;
+    //MARCELO 27/04/2022
+    property isContactSyncCompleted:  Extended read FisContactSyncCompleted  write FisContactSyncCompleted;
+  end;
+
+  TChat001Class = class(TClassPadrao)
+  private
+
+  public
+
+  end;
+
   //Marcelo 06/07/2022
   TQuotedMsgObjClass = class
   private
@@ -1063,6 +1162,14 @@ type
     FList: TListClass;
     FInteractivePayload: TInteractivePayloadClass;
     FInteractiveHeader: TInteractiveHeaderClass;
+    Fchat: TChat001Class;
+    FtemplateParams: TArray<String>;
+    FProtocolMessageKey: TProtocolMessageKeyClass;
+    Frecipients: TArray<String>;
+    FgroupMentions: TArray<String>;
+    FlistResponse: TlistResponseClass;
+    FPollVotesSnapshot: TPollVotesSnapshotClass;
+    FMediaData: TMediaDataClass;
   public
     property &type: String read Ftype write Ftype;
     property author: String read FAuthor write FAuthor;
@@ -1096,7 +1203,17 @@ type
     property list       : TListClass read FList       write FList;
     property interactivePayload: TInteractivePayloadClass     read FInteractivePayload write FInteractivePayload;
     property interactiveHeader: TInteractiveHeaderClass       read FInteractiveHeader  write FInteractiveHeader;
+    property chat       :TChat001Class read Fchat   write Fchat;
 
+    property listResponse                : TlistResponseClass  read FlistResponse      write FlistResponse;
+
+    property recipients                  : TArray<String>         read Frecipients          write Frecipients; //Marcelo 14/08/2024
+    property groupMentions               : TArray<String>                 read FgroupMentions       write FgroupMentions; //Marcelo 14/08/2024
+    property templateParams              : TArray<String>                 read FtemplateParams      write FtemplateParams; //Marcelo 14/08/2024
+    property protocolMessageKey          : TProtocolMessageKeyClass       read FProtocolMessageKey  write FProtocolMessageKey; //Marcelo 14/08/2024
+
+    property pollVotesSnapshot   : TPollVotesSnapshotClass        read FPollVotesSnapshot   write FPollVotesSnapshot;
+    property mediaData  : TMediaDataClass     read FMediaData          write FMediaData;
   end;
 
   //Marcelo 27/04/2022
@@ -1106,15 +1223,6 @@ type
   public
   end;
 
-  //Marcelo 27/04/2022
-  TunreadMentionsOfMeClass = class(TClassPadrao)
-  private
-    FId: String;
-    Ftimestamp: Extended;
-  public
-    property id             : String                      read FId                    write FId;
-    property timestamp      : Extended                    read Ftimestamp             write Ftimestamp;
-  end;
 
   //Marcelo 27/04/2022
   TunsyncedButtonRepliesClass = class(TClassPadrao)
@@ -1235,6 +1343,7 @@ type
     FrequiresDirectConnection: Boolean;
     FpttForwardedFeaturesEnabled: Boolean;
     FhasReaction: Boolean;
+    FctwaContext: TctwaContextClass;
     FephemeralOutOfSync: Boolean;
     FfromMe: Boolean;
     FquotedMsg: TquotedMsgClass;
@@ -1337,6 +1446,7 @@ type
     property isMdHistoryMsg              : Boolean  read FisMdHistoryMsg               write FisMdHistoryMsg;
     property requiresDirectConnection    : Boolean  read FrequiresDirectConnection     write FrequiresDirectConnection;
     property hasReaction                 : Boolean  read FhasReaction                  write FhasReaction;
+    property ctwaContext                 : TctwaContextClass  read FctwaContext        write FctwaContext;
     property ephemeralOutOfSync          : Boolean  read FephemeralOutOfSync           write FephemeralOutOfSync;
     property fromMe                      : Boolean  read FfromMe                       write FfromMe;
     property quotedMsg                   : TquotedMsgClass  read FquotedMsg            write FquotedMsg;
@@ -1531,6 +1641,13 @@ type
     FInteractivePayload: TInteractivePayloadClass;
     FInteractiveHeader: TInteractiveHeaderClass;
     FPollVotesSnapshot: TPollVotesSnapshotClass;
+    FmessageSecret: TmessageSecretClass;
+    FctwaContext: TctwaContextClass;
+    FchatlistPreview: TchatlistPreviewClass;
+    FunreadMentionCount: Extended;
+    FarchiveAtMentionViewedInDrawer: Boolean;
+    FunreadMentionsOfMe: TArray<TunreadMentionsOfMeClass>;
+    FhasUnreadMention: Boolean;
     //FMsgs: TArray<TMsgsClass>;
 
     //FLastReceivedKey: TLastReceivedKeyClass;
@@ -1639,6 +1756,16 @@ type
     property interactivePayload          : TInteractivePayloadClass read FInteractivePayload write FInteractivePayload;
     property interactiveHeader           : TInteractiveHeaderClass  read FInteractiveHeader  write FInteractiveHeader;
     property pollVotesSnapshot           : TPollVotesSnapshotClass  read FPollVotesSnapshot  write FPollVotesSnapshot;
+    property messageSecret               : TmessageSecretClass      read FmessageSecret      write FmessageSecret;
+    property ctwaContext                 : TctwaContextClass        read FctwaContext        write FctwaContext;
+    property chatlistPreview             : TchatlistPreviewClass    read FchatlistPreview    write FchatlistPreview;
+
+    property unreadMentionsOfMe  : TArray<TunreadMentionsOfMeClass> read FunreadMentionsOfMe   write FunreadMentionsOfMe;
+    property unreadMentionCount  : Extended               read FunreadMentionCount             write FunreadMentionCount;
+    property hasUnreadMention    : Boolean                read FhasUnreadMention               write FhasUnreadMention;
+    property archiveAtMentionViewedInDrawer : Boolean     read FarchiveAtMentionViewedInDrawer write FarchiveAtMentionViewedInDrawer;
+
+
   end;
 
 
@@ -2422,6 +2549,7 @@ private
   FFrom: String;
   FGroupMentions: TArray<String>;
   FHasReaction: Boolean;
+  FctwaContext: TctwaContextClass;
   FId: TIdClass;
   FInvis: Boolean;
   FIsAvatar: Boolean;
@@ -2502,7 +2630,10 @@ private
   FInteractivePayload: TInteractivePayloadClass;
   FInteractiveHeader: TInteractiveHeaderClass;
   FselectedButtonId: string;
-    FPollVotesSnapshot: TPollVotesSnapshotClass;
+  FPollVotesSnapshot: TPollVotesSnapshotClass;
+  FinviteGrpType: string;
+  FmessageSecret: TmessageSecretClass;
+    FSubtype: String;
 
 public
   property ack: Extended read FAck write FAck;
@@ -2510,6 +2641,7 @@ public
   property from: String read FFrom write FFrom;
   property groupMentions: TArray<String> read FGroupMentions write FGroupMentions;
   property hasReaction: Boolean read FHasReaction write FHasReaction;
+  property ctwaContext: TctwaContextClass read FctwaContext write FctwaContext;
   property id: TIdClass read FId write FId;
   property invis: Boolean read FInvis write FInvis;
   property isAvatar: Boolean read FIsAvatar write FIsAvatar;
@@ -2536,8 +2668,9 @@ public
   property star: Boolean read FStar write FStar;
   property stickerSentTs: Extended read FStickerSentTs write FStickerSentTs;
   property t: Extended read FT write FT;
-  property &to                         : String read FTo write FTo;
-  property &type                       : String read FType write FType;
+  property &to                         : String   read FTo write FTo;
+  property &type                       : String   read FType write FType;
+  property subtype                     : String   read FSubtype write FSubtype;
   property pollOptions                 : TArray<TpollOptionsClass>  read FpollOptions  write FpollOptions;
   property pollname                    : string   read Fpollname                      write Fpollname;
   property pollSelectableOptionsCount  : Extended read FpollSelectableOptionsCount    write FpollSelectableOptionsCount;
@@ -2587,6 +2720,7 @@ public
 
   property selectedButtonId      : string                    read FselectedButtonId       write FselectedButtonId;
   property selectedId            : string                    read FselectedId             write FselectedId;
+
   property selectedIndex         : integer                   read FselectedIndex          write FselectedIndex;
   property privacyModeWhenSent   : TPrivacyModeWhenSentClass read FPrivacyModeWhenSent    write FPrivacyModeWhenSent;
   property dynamicReplyButtons   : TArray<TDynamicReplyButtonsClass> read FDynamicReplyButtons write FDynamicReplyButtons;
@@ -2595,6 +2729,10 @@ public
   property interactivePayload    : TInteractivePayloadClass   read FInteractivePayload    write FInteractivePayload;
   property interactiveHeader     : TInteractiveHeaderClass    read FInteractiveHeader     write FInteractiveHeader;
   property pollVotesSnapshot     : TPollVotesSnapshotClass    read FPollVotesSnapshot     write FPollVotesSnapshot;
+
+  property inviteGrpType         : string                     read FinviteGrpType         write FinviteGrpType;
+  property messageSecret         : TmessageSecretClass        read FmessageSecret         write FmessageSecret;
+
 end;
 
 //Marcelo 25/07/2023
@@ -3085,50 +3223,7 @@ public
 end;
 {##########################################################################################}
 
-TSenderClass = class(TClassPadrao)
-private
-  FFormattedName: String;
-  FId           : String;
-  FIsBusiness   : Boolean;
-  FIsEnterprise : Boolean;
-  FIsMe         : Boolean;
-  FIsMyContact  : Boolean;
-  FIsPSA        : Boolean;
-  FIsUser       : Boolean;
-  FIsWAContact  : Boolean;
-  FLabels            : TArray<String>;
-  FProfilePicThumbObj: TProfilePicThumbObjClass;
-  FProfilePicThumb   : string;
-  FPushname     : String;
-  FStatusMute   : Boolean;
-  FType         : String;
-  FName         : String;
-  FverifiedName : String;
-  //MARCELO 27/04/2022
-  FisContactSyncCompleted: Extended;
-public
-  destructor Destroy; override;
-  constructor Create(pAJsonString: string);
-  property profilePicThumbObj: TProfilePicThumbObjClass read FProfilePicThumbObj write FProfilePicThumbObj;
-  property formattedName:   String         read FFormattedName    write FFormattedName;
-  property id:              String         read FId               write FId;
-  property isBusiness:      Boolean        read FIsBusiness       write FIsBusiness;
-  property isEnterprise:    Boolean        read FIsEnterprise     write FIsEnterprise;
-  property isMe:            Boolean        read FIsMe             write FIsMe;
-  property isMyContact:     Boolean        read FIsMyContact      write FIsMyContact;
-  property isPSA:           Boolean        read FIsPSA            write FIsPSA;
-  property isUser:          Boolean        read FIsUser           write FIsUser;
-  property isWAContact:     Boolean        read FIsWAContact      write FIsWAContact;
-  property labels:          TArray<String> read FLabels           write FLabels;
-  property pushname:        String         read FPushname         write FPushname;
-  property statusMute:      Boolean        read FStatusMute       write FStatusMute;
-  property &type:           String         read FType             write FType;
-  property name:            String         read FName             write FName;
-  property verifiedName:    String         read FverifiedName     write FverifiedName;
-  property profilePicThumb: String         read FProfilePicThumb  write FProfilePicThumb;
-  //MARCELO 27/04/2022
-  property isContactSyncCompleted:  Extended read FisContactSyncCompleted  write FisContactSyncCompleted;
-end;
+
 
   TProductList = class(TClassPadrao)
   private
@@ -3582,28 +3677,33 @@ begin
 end;
 
 TClassPadrao }
+
 constructor TClassPadrao.Create(pAJsonString: string; PJsonOption: TJsonOptions);
 var
   lAJsonObj: TJSONValue;
   lAJsonArray: TJSONArray;
 begin
   lAJsonObj := nil;
-  //lAJsonObj := TJSONObject.ParseJSONValue(TFile.ReadAllBytes(pAJsonString), 0);
+
   lAJsonObj := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(pAJsonString), 0) as TJSONObject;
-  //lAJsonObj      := TJSONObject.ParseJSONValue(pAJsonString);
+
   FInjectWorking := False;
   try
     try
       if NOT Assigned(lAJsonObj) then
-         Exit;
+        Exit;
       //tentar thread aqui...
-      TJson.JsonToObject(Self, TJSONObject(lAJsonObj) ,PJsonOption); //ERRO AQUI
+      TJson.JsonToObject(Self, TJSONObject(lAJsonObj), PJsonOption); //ERRO AQUI
       //tentar thread aqui...
 
       FJsonString := pAJsonString;
-          SleepNoFreeze(10);
+      SleepNoFreeze(10);
+
       If LowerCase(SELF.ClassName) <> LowerCase('TResponseConsoleMessage') Then
-         LogAdd(PrettyJSON(pAJsonString), SELF.ClassName);
+      begin
+        LogAdd(PrettyJSON(pAJsonString), SELF.ClassName);
+      end;
+
       FTypeHeader := StrToTypeHeader(name);
     except
       on E : Exception do
@@ -3618,6 +3718,69 @@ begin
   end;
 
 end;
+
+(*
+constructor TClassPadrao.Create(pAJsonString: string; PJsonOption: TJsonOptions);
+var
+  lAJsonObj: TJSONValue;
+begin
+  lAJsonObj := nil;
+  FInjectWorking := False;
+  try
+    LogAdd('Início do método Create.', Self.ClassName);
+
+    try
+      // Verifica se a string JSON não está vazia
+      if pAJsonString.IsEmpty then
+      begin
+        raise Exception.Create('Erro: A string JSON está vazia.');
+      end;
+
+      // Tenta converter a string JSON para um objeto JSON
+      LogAdd('Tentando fazer o parse do JSON.', Self.ClassName);
+      lAJsonObj := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(pAJsonString), 0) as TJSONObject;
+
+      if not Assigned(lAJsonObj) then
+      begin
+        raise Exception.Create('Erro: Objeto JSON inválido ou não pôde ser carregado.');
+      end;
+
+      // Verifica se o objeto Self é válido
+      if Self = nil then
+      begin
+        raise Exception.Create('Erro: Instância da classe não está alocada corretamente.');
+      end;
+
+      LogAdd('Parse do JSON bem-sucedido.', Self.ClassName);
+
+      // Converte o objeto JSON para a instância atual
+      LogAdd('Tentando carregar o JSON na instância da classe.', Self.ClassName);
+      TJson.JsonToObject(Self, TJSONObject(lAJsonObj), PJsonOption);
+      LogAdd('Carregamento do JSON na classe bem-sucedido.', Self.ClassName);
+
+      // Armazena a string JSON original
+      FJsonString := pAJsonString;
+      SleepNoFreeze(10);
+
+      if LowerCase(Self.ClassName) <> LowerCase('TResponseConsoleMessage') then
+        LogAdd(PrettyJSON(pAJsonString), Self.ClassName);
+
+      FTypeHeader := StrToTypeHeader(name);
+      LogAdd('Método Create concluído com sucesso.', Self.ClassName);
+    except
+      on E: Exception do
+      begin
+        LogAdd('Erro ao processar JSON: ' + E.Message, 'ERROR ' + Self.ClassName);
+        LogAdd('Endereço da exceção: ' + IntToHex(Integer(ExceptAddr), 8), 'DETAIL');
+        LogAdd('Ponto de erro identificado na carga da classe.', Self.ClassName);
+        LogAdd('JSON processado: ' + PrettyJSON(pAJsonString), 'DETALHES DO ERRO');
+      end;
+    end;
+  finally
+    FreeAndNil(lAJsonObj);
+  end;
+end;
+*)
 destructor TClassPadrao.Destroy;
 begin
   FJsonString := '';
@@ -4865,6 +5028,13 @@ end;
 function THydratedButtonsClass2.ToJsonString: string;
 begin
   result := TJson.ObjectToJsonString(self);
+end;
+
+{ TctwaContextClass }
+
+procedure TctwaContextClass.SetThumbnailUrl(const Value: string);
+begin
+  FThumbnailUrl := StringReplace(Value, '\/', '/', [rfReplaceAll]);
 end;
 
 end.
