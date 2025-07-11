@@ -87,6 +87,10 @@ type
 
   TOnGetReactResponseEvento = procedure(Const ReactionResponse: TReactionResponseClass) of object; //Marcelo 25/07/2023
   TOnGetNewMessageResponseEvento = procedure(Const NewMessageResponse: TNewMessageResponseClass) of object; //Marcelo 25/07/2023
+
+  TOnGetReceived_Message_Socket = procedure(Const response: TReceived_Message_SocketClass) of object; //Marcelo 09/05/2025
+  TOnGetReceived_Message_Socket2 = procedure(Const response: TNewMsgClass) of object; //Marcelo 19/05/2025
+
   TOnGet_SendPollMessageResponse = procedure(Const SendPollMessageResponse: TSendPollMessageResponseClass) of object; //Marcelo 25/07/2023
 
   TOnGetAck_changeEvento = procedure(Const Ack_change: TAck_changeClass) of object; //Marcelo 26/07/2023
@@ -156,6 +160,9 @@ type
   //Adicionado por Marcelo 17/06/2024
   TGetOutgoingCall           = procedure(Const OutgoingCall: TOutgoingCall) of object;
 
+  //Marcelo 24/04/2025
+  TGetIsWhatsAppWebReady     = Procedure(Sender : TObject; IsWhatsAppWebReady: Boolean) of object; //Marcelo 24/04/2025
+
   TGetIsReady                = Procedure(Sender : TObject; IsReady: Boolean) of object; //Marcelo 17/08/2022
   TGetIsLoaded               = Procedure(Sender : TObject; IsLoaded: Boolean) of object; //Marcelo 17/08/2022
   TGetIsAuthenticated        = Procedure(Sender : TObject; IsAuthenticated: Boolean) of object; //Marcelo 18/08/2022
@@ -201,8 +208,6 @@ type
     FOnRetErrorWhiteScreen: TOnRetErrorWhiteScreen;
     FOnGetIsLogout: TGetIsLogout;
     FAuthenticated: boolean;
-
-
 
 
     { Private  declarations }
@@ -269,6 +274,8 @@ type
 
     FOnGetReactResponseEvento      : TOnGetReactResponseEvento; //Marcelo 25/07/2023
     FOnGetNewMessageResponseEvento : TOnGetNewMessageResponseEvento; //Marcelo 25/07/2023
+    FOnGetReceived_Message_Socket  : TOnGetReceived_Message_Socket;  //Marcelo 09/05/2025
+    FOnGetReceived_Message_Socket2 : TOnGetReceived_Message_Socket2; //Marcelo 19/05/2025
     FOnGet_SendPollMessageResponse : TOnGet_SendPollMessageResponse; //Marcelo 25/07/2023
 
     FOnGetAck_changeEvento      : TOnGetAck_changeEvento; //Marcelo 26/07/2023
@@ -308,6 +315,8 @@ type
     //Adicionado Por Marcelo 17/06/2022
     FOnGetIncomingiCall    : TGetIncomingiCall;
     FOnGetOutgoingCall     : TGetOutgoingCall;
+
+    FOnGetIsWhatsAppWebReady: TGetIsWhatsAppWebReady; //Marcelo 24/04/2025
 
     FOnGetIsReady: TGetIsReady; //Marcelo 17/09/2022
     FOnGetIsLoaded: TGetIsLoaded; //Marcelo 17/09/2022
@@ -449,6 +458,7 @@ type
 
 
     procedure DeleteChat(PNumberPhone: string);
+    procedure RecreateChat(vID: string);
 
     procedure deleteConversation(PNumberPhone: string);
     procedure SendContact(PNumberPhone, PNumber: string; PNameContact: string = '');
@@ -533,6 +543,8 @@ type
 
     procedure getWAVersion;
     procedure GetTotalChatsUserRead;
+
+    procedure SaveContact(vNumber, Name, SurName: String);
 
     Function  GetContact(Pindex: Integer): TContactClass;  deprecated;  //Versao 1.0.2.0 disponivel ate Versao 1.0.6.0
     procedure GetAllChats;
@@ -628,6 +640,9 @@ type
 
     property OnGetOutgoingCall           : TGetOutgoingCall           read FOnGetOutgoingCall              write FOnGetOutgoingCall;
 
+    //Marcelo 24/04/2025
+    property OnGetIsWhatsAppWebReady     : TGetIsWhatsAppWebReady     read FOnGetIsWhatsAppWebReady        write FOnGetIsWhatsAppWebReady;
+
     //Marcelo 17/09/2022
     property OnGetIsReady                : TGetIsReady                read FOnGetIsReady                   write FOnGetIsReady;
     property OnGetIsLoaded               : TGetIsLoaded               read FOnGetIsLoaded                  write FOnGetIsLoaded;
@@ -681,6 +696,9 @@ type
 
     property OnGetReactResponseEvento      : TOnGetReactResponseEvento       read FOnGetReactResponseEvento       write FOnGetReactResponseEvento;
     property OnGetNewMessageResponseEvento : TOnGetNewMessageResponseEvento  read FOnGetNewMessageResponseEvento  write FOnGetNewMessageResponseEvento;
+    property OnGetReceived_Message_Socket  : TOnGetReceived_Message_Socket   read FOnGetReceived_Message_Socket   write FOnGetReceived_Message_Socket;
+    property OnGetReceived_Message_Socket2 : TOnGetReceived_Message_Socket2  read FOnGetReceived_Message_Socket2  write FOnGetReceived_Message_Socket2;
+
     property OnGet_SendPollMessageResponse : TOnGet_SendPollMessageResponse  read FOnGet_SendPollMessageResponse  write FOnGet_SendPollMessageResponse;
 
     property OnGetAck_changeEvento      : TOnGetAck_changeEvento       read FOnGetAck_changeEvento       write FOnGetAck_changeEvento;
@@ -3734,15 +3752,21 @@ begin
     exit;
   end;
 
+  if (PTypeHeader In [Th_GetQrCodeWEB]) then
+  begin
+    //if FStatus = Inject_IsReady then
+      //RebootWPP;
 
+    //FStatus := Inject_Initializing;
+  end;
 
   if (PTypeHeader In [Th_GetProfilePicThumb]) then
   Begin
     if not Assigned(FrmConsole) then
-       Exit;
+      Exit;
 
     if not Assigned(FOnGetProfilePicThumb) then
-       Exit;
+      Exit;
 
 
    //FOnGetProfilePicThumb(Self, TResponseGetProfilePicThumb(PReturnClass).Base64);
@@ -3759,17 +3783,35 @@ begin
       OnGetMessages(TGetMessageClass(PReturnClass));
   end;
 
+  //Marcelo 24/04/2025
+  if PTypeHeader = Th_isWhatsAppWebReady then
+  Begin
+    if Assigned(OnGetIsWhatsAppWebReady) then
+    begin
+      FrmConsole.SendNotificationCenterDirect(Th_Initialized);
+      OnGetIsWhatsAppWebReady(TisWhatsAppWebReady(PReturnClass), True);
+      FStatus := Inject_IsWhatsAppWebReady;
+    end;
+  end;
+
   //Marcelo 17/09/2022
   if PTypeHeader = Th_IsReady then
   Begin
     if Assigned(OnGetIsReady) then
+    begin
+      FrmConsole.SendNotificationCenterDirect(Th_Initialized);
       OnGetIsReady( TIsReady(PReturnClass), True);
+      FStatus := Inject_IsReady;
+    end;
   end;
 
   if PTypeHeader = Th_IsLoaded then
   Begin
     if Assigned(OnGetIsLoaded) then
+    begin
       OnGetIsLoaded( TIsLoaded(PReturnClass), True);
+      //FrmConsole.SendNotificationCenterDirect(Th_Initialized);
+    end;
   end;
 
   if PTypeHeader = Th_IsAuthenticated then
@@ -4127,6 +4169,21 @@ begin
       FOnGetPoolResponseEvento(TPoolResponseClass(PReturnClass));
   end;
 
+
+  //Marcelo 09/05/2025
+  if PTypeHeader = Th_OnReceived_Message_Socket  then
+  begin
+    if Assigned(FOnGetReceived_Message_Socket) then
+      FOnGetReceived_Message_Socket(TReceived_Message_SocketClass(PReturnClass));
+  end;
+
+  //Marcelo 19/05/2025
+  if PTypeHeader = Th_OnReceived_Message_Socket2  then
+  begin
+    if Assigned(FOnGetReceived_Message_Socket2) then
+      FOnGetReceived_Message_Socket2(TNewMsgClass(PReturnClass));
+  end;
+
   //Marcelo 25/07/2023
   if PTypeHeader = Th_Getnew_message  then
   begin
@@ -4458,6 +4515,31 @@ begin
   //frmConsole.RebootChromiumNew;
 end;
 
+procedure TWPPConnect.RecreateChat(vID: string);
+var
+  lThread : TThread;
+begin
+  if Application.Terminated Then
+    Exit;
+
+  if not Assigned(FrmConsole) then
+    Exit;
+
+  //Msrcelo 19/05/2025
+  vID := AjustNumber.FormatIn(vID);
+  if (pos('@', vID) = 0) then
+  Begin
+    Int_OnErroInterno(Self, MSG_ExceptPhoneNumberError, vID);
+    Exit;
+  end;
+
+  if Assigned(FrmConsole) then
+  begin
+    FrmConsole.RecreateChat(vID);//Recreate o Chat da conversa
+  end;
+
+end;
+
 procedure TWPPConnect.RebootWhiteScreen(ErrorMessage: string);
 begin
   //Marcelo 16/04/2024 criado evento para registrar a ocorrência da Tela Branca / event created to record the occurrence of the White Screen Crash TChromium
@@ -4500,6 +4582,34 @@ begin
   lThread.FreeOnTerminate := true;
   lThread.Start;
 
+
+end;
+
+procedure TWPPConnect.SaveContact(vNumber, Name, SurName: String);
+begin
+  if Application.Terminated Then
+    Exit;
+
+  if not Assigned(FrmConsole) then
+    Exit;
+
+
+  vNumber := AjustNumber.FormatIn(vNumber);
+
+  if pos('@', vNumber) = 0 then
+  Begin
+    Int_OnErroInterno(Self, MSG_ExceptPhoneNumberError, vNumber);
+    Exit;
+  end;
+
+  if Trim(Name) = '' then
+  begin
+    Int_OnErroInterno(Self, MSG_WarningNothingtoSend, Name);
+    Exit;
+  end;
+
+
+  FrmConsole.SaveContact(vNumber, Name, SurName);
 
 end;
 
@@ -7072,6 +7182,8 @@ begin
     Inject_Destroying          : Result := Text_Status_Serv_Destroying;
     Inject_Destroy             : Result := Text_Status_Serv_Destroy;
     Server_Rebooting           : Result := Text_Status_Serv_Rebooting;
+    Inject_IsReady             : Result := Text_Status_Serv_IsReady;
+    Inject_IsWhatsAppWebReady  : Result := Text_Status_Serv_IsWhatsAppWebReady;
   end;
 end;
 

@@ -45,7 +45,7 @@ Uses
 Const
   //Uso GLOBAL
                                   //Version updates I=HIGH, II=MEDIUM, III=LOW, IV=VERY LOW
-  TWPPConnectVersion              = '4.0.0.1'; //  02/10/2024
+  TWPPConnectVersion              = '5.0.0.3'; //  10/07/2025
   CardContact                     = '@c.us';
   CardGroup                       = '@g.us';
   CardList                        = '@broadcast';
@@ -118,6 +118,404 @@ Const
   FrmConsole_JS_monitorQRCode            = ' var canvas = document.getElementsByTagName("canvas")[0]; if (canvas) { var AQrCode = canvas.toDataURL("image/png"); var result = { AQrCode: AQrCode }; ' +
                                                'console.log(JSON.stringify({ name: "getQrCodeWEB", result: result }));} else {}';
                                                //'console.log(JSON.stringify({ name: "getQrCodeWEB", result: result }));} else {console.log("Canvas element not found.");}';
+
+
+  (*'document.addEventListener("DOMContentLoaded", () => { ' +
+    '  const observer = new MutationObserver(() => { ' +
+    '    element = document.getElementById("pane-side"); ' +
+    '    if (element) { ' +
+    //'      injectScript("js/wa-js.js").then(() => { ' +
+    '        console.log("isReady"); ' +
+    //'        setTimeout(() => { ' +
+    //'          console.log("inject"); ' +
+    //'          console.log("cds inject"); ' +
+    //'          injectScript("js/cds.js"); ' +
+    //'        }, 5000); ' +
+    //'      }); ' +
+
+    '      observer.disconnect(); ' +
+    '    } ' +
+    '  }); ' +
+
+    '  observer.observe(document.body, { ' +
+    '    childList: true, ' +
+    '    subtree: true, ' +
+    '    }); ' +
+    '  }) ';
+
+    *)
+  FrmConsole_JS_MonitorChatLoadComplete =
+    'var observer;' + sLineBreak +
+    '' + sLineBreak +
+
+    'var waitForElement = setInterval(function () {' + sLineBreak +
+    '  var targetElement = document.querySelector(''#pane-side''); // Altere o seletor conforme necessário' + sLineBreak +
+    '' + sLineBreak +
+    '  if (targetElement) {' + sLineBreak +
+    '    clearInterval(waitForElement); // Para de verificar' + sLineBreak +
+    '' + sLineBreak +
+
+    '    if (observer) {' + sLineBreak +
+    '      observer.disconnect();' + sLineBreak +
+    '    }' + sLineBreak +
+    '' + sLineBreak +
+
+    '    observer = new IntersectionObserver(function (entries, obs) {' + sLineBreak +
+    '      entries.forEach(function (entry) {' + sLineBreak +
+    '        if (entry.isIntersecting) {' + sLineBreak +
+    '          console.log(''IsWhatsAppWebReady'');' + sLineBreak +
+    '          SetConsoleMessage("IsWhatsAppWebReady", JSON.stringify({IsWhatsAppWebReady: true})); ' + sLineBreak +
+    '          obs.unobserve(entry.target); // Para observar só uma vez' + sLineBreak +
+    '        }' + sLineBreak +
+    '      });' + sLineBreak +
+    '    }, {' + sLineBreak +
+    '      threshold: 0.1' + sLineBreak +
+    '    });' + sLineBreak +
+    '' + sLineBreak +
+    '    observer.observe(targetElement);' + sLineBreak +
+    '  }' + sLineBreak +
+    '}, 500); // Verifica a cada 500ms';
+
+  FrmConsole_JS_DelayChat =
+    ' var original = original || {}; ' +
+    ' original._processMultipleMessages = require(''WAWebProcessMultipleMsgsAction'')._processMultipleMessages; ' +
+    ' require(''WAWebProcessMultipleMsgsAction'')._processMultipleMessages = function (...args) { ' +
+    ' return new Promise((resolve, reject) => { ' +
+    ' setTimeout(() => { ' +
+    ' original._processMultipleMessages.apply(this, args).then(resolve,reject); ' +
+    ' }, 3000); ' +
+    ' }); ' +
+    ' };';
+
+
+
+  FrmConsole_JS_Monitor_Received_Message_Socket =
+    'function renameKeys(obj) {' + #13#10 +
+    '    if (Array.isArray(obj)) {' + #13#10 +
+    '        return obj.map(renameKeys);' + #13#10 +
+    '    } else if (obj !== null && typeof obj === ''object'') {' + #13#10 +
+    '        const newObj = {};' + #13#10 +
+    '        for (const key in obj) {' + #13#10 +
+    '            let newKey = key;' + #13#10 +
+    '' + #13#10 +
+    '            if (newKey.startsWith(''$$'')) {' + #13#10 +
+    '                // $$* → RET*' + #13#10 +
+    '                newKey = ''RET'' + newKey.slice(2);' + #13#10 +
+    '            } else if (newKey.startsWith(''$'')) {' + #13#10 +
+    '                // $* → RET*' + #13#10 +
+    '                newKey = ''RET'' + newKey.slice(1);' + #13#10 +
+    '            }' + #13#10 +
+    '' + #13#10 +
+    '            newObj[newKey] = renameKeys(obj[key]);' + #13#10 +
+    '        }' + #13#10 +
+    '        return newObj;' + #13#10 +
+    '    }' + #13#10 +
+    '    return obj;' + #13#10 +
+    '}' + #13#10 +
+    '' + #13#10 +
+    '' + #13#10 +
+    'function SetConsoleMessage2(jsName, resultValue, Message) {' + #13#10 +
+    '    let parsedValue;' + #13#10 +
+    '' + #13#10 +
+    '    try {' + #13#10 +
+    '        parsedValue = JSON.parse(resultValue);' + #13#10 +
+    '    } catch (e) {' + #13#10 +
+    '        console.error("Erro ao converter resultValue em JSON:", resultValue);' + #13#10 +
+    '        return;' + #13#10 +
+    '    }' + #13#10 +
+    '' + #13#10 +
+    '    const renamedResult = renameKeys(parsedValue);' + #13#10 +
+    '    const renamedMessage = renameKeys(Message || {});' + #13#10 +
+    '' + #13#10 +
+    '    // Adiciona renamedMessage dentro do campo "message"' + #13#10 +
+    '    var mergedInnerResult = {' + #13#10 +
+    '        ...renamedResult,' + #13#10 +
+    '        message: renamedMessage' + #13#10 +
+    '    };' + #13#10 +
+    '' + #13#10 +
+    '    mergedInnerResult = JSON.stringify(mergedInnerResult);' + #13#10 +
+    '' + #13#10 +
+    '    const Obj = {' + #13#10 +
+    '        name: jsName,' + #13#10 +
+    '        result: ''{"result":'' + mergedInnerResult + ''}''' + #13#10 +
+    '    };' + #13#10 +
+    '' + #13#10 +
+    '    console.log(JSON.stringify(Obj));' + #13#10 +
+    '}' + #13#10 +
+    '' + #13#10 +
+    '' + #13#10 +
+    'if (!window.decodeBackStanza) {' + #13#10 +
+    '    window.decodeBackStanza = require("WAWap").decodeStanza;' + #13#10 +
+    '}' + #13#10 +
+    '' + #13#10 +
+    'if (!window.decodeBack) {' + #13#10 +
+    '    window.decodeBack = require("decodeProtobuf").decodeProtobuf;' + #13#10 +
+    '}' + #13#10 +
+    '' + #13#10 +
+    'require("WAWap").decodeStanza = async (e, t) => {' + #13#10 +
+    '    var result = await window.decodeBackStanza(e, t);' + #13#10 +
+    '    //console.log(''\u001B[31m[RECEIVED]\u001B[0m'', result);' + #13#10 +
+    '' + #13#10 +
+    '    if (result?.tag === "message") {' + #13#10 +
+    '        require("decodeProtobuf").decodeProtobuf = (a, b) => {' + #13#10 +
+    '            var Message = window.decodeBack(a, b);' + #13#10 +
+    '            if (Message?.extendedTextMessage || Message?.imageMessage || Message?.documentMessage || Message?.documentWithCaptionMessage ||' + #13#10 +
+    '                Message?.audioMessage || Message?.videoMessage || Message?.stickerMessage || Message?.ptvMessage ||' + #13#10 +
+    '                Message?.conversation || Message?.contactMessage || Message?.contactsArrayMessage ||' + #13#10 +
+    '                Message?.buttonsMessage || Message?.buttonsResponseMessage ||' + #13#10 +
+    '                Message?.pollCreationMessage || Message?.pollCreationMessageV2 || Message?.pollCreationMessageV3 || Message?.pollCreationMessageV4 || Message?.pollCreationMessageV5 ||' + #13#10 +
+    '                Message?.productMessage || Message?.templateButtonReplyMessage || Message?.templateMessage || Message?.orderMessage ||' + #13#10 +
+    '                Message?.viewOnceMessage || Message?.viewOnceMessage || Message?.viewOnceMessageV2 || Message?.viewOnceMessageV2Extension ||' + #13#10 +
+    '                Message?.locationMessage || Message?.listMessage || Message?.interactiveMessage || Message?.interactiveResponseMessage) {' + #13#10 +
+
+    '            if (result.content && Array.isArray(result.content)) { ' +
+    '                for (let i = 0; i < result.content.length; i++) { ' +
+    '                    if (result.content[i]?.content) { ' +
+    '                        delete result.content[i].content; ' +
+    '                    } ' +
+    '                } ' +
+    '            } ' +
+
+    '                //console.log(''\u001B[33m[DECODE]\u001B[0m'', Message);' + #13#10 +
+    '                SetConsoleMessage2("OnReceived_Message_Socket", JSON.stringify(result), Message);' + #13#10 +
+    '            }' + #13#10 +
+    '            return Message;' + #13#10 +
+    '        };' + #13#10 +
+    '    }' + #13#10 +
+    '    return result;' + #13#10 +
+    '};';
+
+
+  (*FrmConsole_JS_Monitor_Received_Message_Socket2 =
+    'function SetConsoleMessage3(jsName, resultValue) {' + sLineBreak +
+    '    Obj = {' + sLineBreak +
+    '        name: jsName,' + sLineBreak +
+    //'        result: ''{"result":'' + resultValue + ''}''' + sLineBreak +
+    '        result: ''{"result":'' + resultValue + ''}''' + #13#10 +
+    '    }' + sLineBreak +
+    '    console.log(JSON.stringify(Obj));' + sLineBreak +
+    '};' + sLineBreak +
+    '' + sLineBreak +
+    'if (!window.parseMsgProto) {' + sLineBreak +
+    '    window.parseMsgProto = require("WAWebE2EProtoParser").parseMsgProto;' + sLineBreak +
+    '}' + sLineBreak +
+    '' + sLineBreak +
+    //'require("WAWebE2EProtoParser").parseMsgProto = async (e) => {' + sLineBreak +
+    //'    var result = await window.parseMsgProto(e);' + sLineBreak +
+    'require("WAWebE2EProtoParser").parseMsgProto = (e) => {' + sLineBreak +
+    '    var result = window.parseMsgProto(e);' + sLineBreak +
+    '    SetConsoleMessage3("OnReceived_Message_Socket2", JSON.stringify(result));' + sLineBreak +
+    '    return result;' + sLineBreak +
+    '};';*)
+
+  FrmConsole_JS_Monitor_Received_Message_Socket2 =
+    'function SetConsoleMessage3(jsName, resultValue) {' + sLineBreak +
+    '    Obj = {' + sLineBreak +
+    '        name: jsName,' + sLineBreak +
+    '        result: ''{"result":'' + resultValue + ''}''' + sLineBreak +
+    '    };' + sLineBreak +
+    '    console.log(JSON.stringify(Obj));' + sLineBreak +
+    '};' + sLineBreak +
+    '' + sLineBreak +
+    'if (!window.parseMsgProto) {' + sLineBreak +
+    '    window.parseMsgProto = require("WAWebE2EProtoParser").parseMsgProto;' + sLineBreak +
+    '}' + sLineBreak +
+    '' + sLineBreak +
+    'require("WAWebE2EProtoParser").parseMsgProto = (e) => {' + sLineBreak +
+    '    var result = window.parseMsgProto(e);' + sLineBreak +
+    '' + sLineBreak +
+    '    try {' + sLineBreak +
+    '        // Verifica se o campo ''from'' ou ''id.remote'' contém ''@newsletter''' + sLineBreak +
+    '        const from = result?.from;' + sLineBreak +
+    '        const remote = result?.id?.remote;' + sLineBreak +
+    '' + sLineBreak +
+    '        if (' + sLineBreak +
+    '            (typeof from === ''string'' && from.includes(''@newsletter'')) ||' + sLineBreak +
+    '            (typeof remote === ''string'' && remote.includes(''@newsletter''))' + sLineBreak +
+    '        ) {' + sLineBreak +
+    '            // Ignora mensagens de newsletter' + sLineBreak +
+    '            return result;' + sLineBreak +
+    '        }' + sLineBreak +
+    '' + sLineBreak +
+    '        SetConsoleMessage3("OnReceived_Message_Socket2", JSON.stringify(result));' + sLineBreak +
+    '    } catch (err) {' + sLineBreak +
+    '        console.error("Erro ao verificar mensagem:", err);' + sLineBreak +
+    '    }' + sLineBreak +
+    '' + sLineBreak +
+    '    return result;' + sLineBreak +
+    '};';
+
+
+
+  (*FrmConsole_JS_Monitor_Received_Message_Socket =
+
+      'function renameKeys(obj) {'#13#10 +
+      '    if (Array.isArray(obj)) {'#13#10 +
+      '        return obj.map(renameKeys);'#13#10 +
+      '    } else if (obj !== null && typeof obj === ''object'') {'#13#10 +
+      '        const newObj = {};'#13#10 +
+      '        for (const key in obj) {'#13#10 +
+      '            let newKey = key;'#13#10#13#10 +
+      '            if (newKey.startsWith(''$$'')) {'#13#10 +
+      '                newKey = ''RET'' + newKey.slice(2);'#13#10 +
+      '            } else if (newKey.startsWith(''$'')) {'#13#10 +
+      '                newKey = ''RET'' + newKey.slice(1);'#13#10 +
+      '            }'#13#10#13#10 +
+      '            newObj[newKey] = renameKeys(obj[key]);'#13#10 +
+      '        }'#13#10 +
+      '        return newObj;'#13#10 +
+      '    }'#13#10 +
+      '    return obj;'#13#10 +
+      '}'#13#10#13#10 +
+
+      'function SetConsoleMessage2(jsName, resultValue, Message) {'#13#10 +
+      '    let parsedValue;'#13#10#13#10 +
+      '    try {'#13#10 +
+      '        parsedValue = JSON.parse(resultValue);'#13#10 +
+      '    } catch (e) {'#13#10 +
+      '        console.error("Erro ao converter resultValue em JSON:", resultValue);'#13#10 +
+      '        return;'#13#10 +
+      '    }'#13#10#13#10 +
+      '    const renamedResult = renameKeys(parsedValue);'#13#10 +
+      '    const renamedMessage = renameKeys(Message || {});'#13#10#13#10 +
+      '    // Mescla os dois objetos dentro do subcampo "result"'#13#10 +
+
+
+      '    var mergedInnerResult = {'#13#10 +
+      '       ...renamedResult,'#13#10 +
+      '       ...renamedMessage'#13#10 +
+      '   };'#13#10#13#10 +
+      '   mergedInnerResult = JSON.stringify(mergedInnerResult);'#13#10#13#10 +
+      '   const Obj = {'#13#10 +
+      '       name: jsName,'#13#10 +
+      '       result: ''{"result":'' + mergedInnerResult + ''}'''#13#10 +
+      '   };'#13#10#13#10 +
+      '   console.log(JSON.stringify(Obj));' +
+
+
+
+
+
+      'if (!window.decodeBackStanza) {'#13#10 +
+      '    window.decodeBackStanza = require("WAWap").decodeStanza;'#13#10 +
+      '}'#13#10#13#10 +
+      'if (!window.decodeBack) {'#13#10 +
+      '    window.decodeBack = require("decodeProtobuf").decodeProtobuf;'#13#10 +
+      '}'#13#10#13#10 +
+      'require("WAWap").decodeStanza = async (e, t) => {'#13#10 +
+      '    var result = await window.decodeBackStanza(e, t);'#13#10 +
+      '    //console.log(''\u001B[31m[RECEIVED]\u001B[0m'', result);'#13#10#13#10 +
+      '    if (result?.tag === "message") {'#13#10 +
+      '        require("decodeProtobuf").decodeProtobuf = (a, b) => {'#13#10 +
+      '            var Message = window.decodeBack(a, b);'#13#10 +
+      '            if (Message?.extendedTextMessage || Message?.imageMessage || Message?.documentMessage || Message?.documentWithCaptionMessage ||'#13#10 +
+      '                Message?.audioMessage || Message?.videoMessage || Message?.stickerMessage || Message?.ptvMessage ||'#13#10 +
+      '                Message?.conversation || Message?.contactMessage || Message?.contactsArrayMessage ||'#13#10 +
+      '                Message?.buttonsMessage || Message?.buttonsResponseMessage ||'#13#10 +
+      '                Message?.pollCreationMessage || Message?.pollCreationMessageV2 || Message?.pollCreationMessageV3 || Message?.pollCreationMessageV4 || Message?.pollCreationMessageV5 ||'#13#10 +
+      '                Message?.productMessage || Message?.templateButtonReplyMessage || Message?.templateMessage || Message?.orderMessage ||'#13#10 +
+      '                Message?.viewOnceMessage || Message?.viewOnceMessage || Message?.viewOnceMessageV2 || Message?.viewOnceMessageV2Extension ||'#13#10 +
+      '                Message?.locationMessage || Message?.listMessage || Message?.interactiveMessage || Message?.interactiveResponseMessage) {'#13#10 +
+      '                //console.log(''\u001B[33m[DECODE]\u001B[0m'', Message);'#13#10 +
+      '                SetConsoleMessage2("OnReceived_Message_Socket", JSON.stringify(result), Message);'#13#10 +
+      '            }'#13#10 +
+      '            return Message;'#13#10 +
+      '        };'#13#10 +
+      '    }'#13#10 +
+      '    return result;'#13#10 +
+      '};';  *)
+
+
+
+    (*'function renameKeys(obj) {'#13#10 +
+    '    if (Array.isArray(obj)) {'#13#10 +
+    '        return obj.map(renameKeys);'#13#10 +
+    '    } else if (obj !== null && typeof obj === ''object'') {'#13#10 +
+    '        const newObj = {};'#13#10 +
+    '        for (const key in obj) {'#13#10 +
+    '            const newKey = key.startsWith(''$'') ? key.replace(''$'', ''RET'') : key;'#13#10 +
+    '            newObj[newKey] = renameKeys(obj[key]);'#13#10 +
+    '        }'#13#10 +
+    '        return newObj;'#13#10 +
+    '    }'#13#10 +
+    '    return obj;'#13#10 +
+    '}'#13#10#13#10 +
+    'function SetConsoleMessage2(jsName, resultValue) {'#13#10 +
+    '    let parsedValue;'#13#10#13#10 +
+    '    try {'#13#10 +
+    '        parsedValue = JSON.parse(resultValue);'#13#10 +
+    '    } catch (e) {'#13#10 +
+    '        console.error("Erro ao converter resultValue em JSON:", resultValue);'#13#10 +
+    '        return;'#13#10 +
+    '    }'#13#10#13#10 +
+    '    const renamedResult = renameKeys(parsedValue);'#13#10#13#10 +
+    '    const Obj = {'#13#10 +
+    '        name: jsName,'#13#10 +
+    '        result: JSON.stringify({ result: renamedResult })'#13#10 +
+    '    };'#13#10 +
+    '    console.log(JSON.stringify(Obj));'#13#10 +
+    '}'#13#10#13#10 +
+    'if (!window.decodeBackStanza) {'#13#10 +
+    '    window.decodeBackStanza = require("WAWap").decodeStanza'#13#10 +
+    '}'#13#10#13#10 +
+    'require("WAWap").decodeStanza = async (e, t) => {'#13#10 +
+    '    const result = await window.decodeBackStanza(e, t)'#13#10 +
+    '    /*console.log(''\u001B[31m[RECEIVED]\u001B[0m'', result)*/'#13#10 +
+    '    if (result?.tag === "message") {'#13#10 +
+    '      SetConsoleMessage2("OnReceived_Message_Socket", JSON.stringify(result));'#13#10 +
+    '    }'#13#10 +
+    '    return result'#13#10 +
+    '};';*)
+
+
+  FrmConsole_JS_SCRIPT_Basic =
+    'window.WAPI = {};' + sLineBreak +
+    '' + sLineBreak +
+    'function localStorageGetItem(item){' + sLineBreak +
+    '	let aJson = localStorage.getItem(item);' + sLineBreak +
+    '	SetConsoleMessage(''getMyNumber'', aJson.replace(/(?=:)(.*.?)(?=@)/g,''''));' + sLineBreak +
+    '};' + sLineBreak +
+    '' + sLineBreak +
+    'function localStorageGetItemID(item){' + sLineBreak +
+    '	let aNumberID = localStorage.getItem(item);' + sLineBreak +
+    '	return aNumberID;' + sLineBreak +
+    '};' + sLineBreak +
+    '' + sLineBreak +
+    'function getMyNumber() {' + sLineBreak +
+    '	localStorage.getItem(''last-wid-md'') ? ' + sLineBreak +
+    '		localStorageGetItem(''last-wid-md'') : ' + sLineBreak +
+    '		localStorageGetItem(''last-wid'')' + sLineBreak +
+    '' + sLineBreak +
+    '	return true;' + sLineBreak +
+    '};' + sLineBreak +
+    '' + sLineBreak +
+    'function getMyNumberID() {' + sLineBreak +
+    '	let numberID =' + sLineBreak +
+    '		localStorage.getItem(''last-wid-md'') ? ' + sLineBreak +
+    '		localStorageGetItemID(''last-wid-md'') : ' + sLineBreak +
+    '		localStorageGetItemID(''last-wid'')' + sLineBreak +
+    '' + sLineBreak +
+    '	return numberID;' + sLineBreak +
+    '};' + sLineBreak +
+    '' + sLineBreak +
+    'function SetConsoleMessage(jsName, resultValue) {' + sLineBreak +
+    '    Obj = {' + sLineBreak +
+    '        name: jsName,' + sLineBreak +
+    '        result: ''{"result":'' + resultValue + ''}''' + sLineBreak +
+    '    }' + sLineBreak +
+    '    console.log(JSON.stringify(Obj));' + sLineBreak +
+    '};' + sLineBreak +
+    '' + sLineBreak +
+    'window.WAPI.getMe = async function(){' + sLineBreak +
+    '  return;' + sLineBreak +
+    '}' + sLineBreak +
+    '' + sLineBreak +
+    'window.WAPI.getWAVersion = function () {' + sLineBreak +
+    '    const Version = window.Debug.VERSION;' + sLineBreak +
+    '    SetConsoleMessage("getWAVersion", JSON.stringify({WAVersion:Version}));' + sLineBreak +
+    '};';
+
+
 
   FrmConsole_JS_StopMonitor              = 'stopMonitor();';
   FrmConsole_JS_StopMonitorNew           = 'stopMonitorNew();'; //Add Marcelo 25/08/2023
@@ -213,13 +611,13 @@ Const
 
   FrmConsole_JS_VAR_genLinkDeviceCodeForPhoneNumber = 'window.WAPI.genLinkDeviceCodeForPhoneNumber2("<#PHONE#>");';
 
-  //FrmConsole_JS_VAR_getGroupInviteLink      = 'window.WAPI.getGroupInviteLink("<#GROUP_ID#>");'; deprecated
+  //FrmConsole_JS_VAR_getGroupInviteLink    = 'window.WAPI.getGroupInviteLink("<#GROUP_ID#>");'; deprecated
   FrmConsole_JS_VAR_getGroupInviteLink      = 'window.WAPI.getInviteCode2("<#GROUP_ID#>");';
 
   FrmConsole_JS_VAR_sendGroupInviteMessageNew  = 'window.WPP.sendGroupInviteMessageNew("<#CHAT_ID#>","<#GROUP_ID#>","<#INVITE_CODE#>","<#SEUID#>");';
 
   //WPP.group.reject(12345645@g.us, 5554999999999@c.us);
-  FrmConsole_JS_VAR_GroupMembershipReject  = 'WPP.group.reject("<#GROUP_ID#>","<#CHAT_ID#>");';
+  FrmConsole_JS_VAR_GroupMembershipReject   = 'WPP.group.reject("<#GROUP_ID#>","<#CHAT_ID#>");';
   FrmConsole_JS_VAR_GroupMembershipApprove  = 'WPP.group.approve("<#GROUP_ID#>","<#CHAT_ID#>");';
 
   //FrmConsole_JS_VAR_removeGroupInviteLink   = 'window.WAPI.revokeGroupInviteLink("<#GROUP_ID#>");'; deprecated
@@ -229,6 +627,8 @@ Const
 
   FrmConsole_JS_VAR_SetGroupPicture         = 'WPP.group.setIcon("<#GROUP_ID#>","<#BASE_64#>");';
 
+
+  FrmConsole_JS_VAR_SaveContact             = 'WPP.contact.save("<#PHONE#>", "<#NAME_CONTACT#>", { surname: "<#SURNAME_CONTACT#>", syncAdressBook: true,});';
 
 
   FrmConsole_JS_VAR_checkNumberStatus       = 'window.WAPI.checkNumberStatus("<#PHONE#>");';
@@ -343,6 +743,23 @@ Const
   //Marcelo 14/09/2022
   FrmConsole_JS_VAR_DeleteChat          = 'WPP.chat.delete("<#MSG_PHONE#>");';
 
+
+  FrmConsole_JS_VAR_RecreateChatFix =
+  '(async () => {' + sLineBreak +
+  '  let chatId = WPP.util.createWid("<#MSG_PHONE#>");' + sLineBreak +
+  '  let chatParams = { chatId };' + sLineBreak +
+  '' + sLineBreak +
+  '  await WPP.whatsapp.functions.createChat(' + sLineBreak +
+  '    chatParams,' + sLineBreak +
+  '    ''chatListUtils'',' + sLineBreak +
+  '    {' + sLineBreak +
+  '      createdLocally: true,' + sLineBreak +
+  '      lidOriginType: ''general'',' + sLineBreak +
+  '    }' + sLineBreak +
+  '  );' + sLineBreak +
+  '  await WPP.whatsapp.functions.getExisting(chatId);' + sLineBreak +
+  '})();';
+ //Add Marcelo 19/05/2025
 
   //Marcelo 18/05/2022
   FrmConsole_JS_VAR_sendRawMessage      = 'WPP.chat.sendRawMessage("<#MSG_PHONE#>","<#MSG_RAW#>",{<#MSG_OPTIONS#>} );';
@@ -470,6 +887,8 @@ resourcestring
   Text_Status_Serv_Destroying          = '';
   Text_Status_Serv_Destroy             = '';
   Text_Status_Serv_Rebooting           = '';
+  Text_Status_Serv_IsReady             = '';
+  Text_Status_Serv_IsWhatsAppWebReady  = '';
   MSG_WarningNothingtoSend             = '';
   MSG_WarningErrorFile                 = '';
   MSG_Except_Data_TypeObj              = '';
@@ -534,7 +953,10 @@ type
                              Server_Disconnected,           Server_Disconnecting,
                              Server_Connected,              Server_ConnectedDown,
                              Server_Connecting,             Server_ConnectingNoPhone,
-                             Server_ConnectingReaderCode,   Server_TimeOut, Server_Rebooting
+                             Server_ConnectingReaderCode,   Server_TimeOut,
+                             Server_Rebooting
+                             ,Inject_IsReady
+                             ,Inject_IsWhatsAppWebReady
                             );
 
     TTypeHeader = (Th_None = 0,
@@ -605,6 +1027,9 @@ type
                    , Th_Getlive_location_start=93 //Marcelo 13/08/2024
                    , Th_GetEnvrequire_auth=94 //Marcelo 21/08/2024
                    , Th_GetAllParticipantsGroup=95 //Marcelo 01/09/2024
+                   , Th_isWhatsAppWebReady=96 //Marcelo 24/04/2025
+                   , Th_OnReceived_Message_Socket=97 //Marcelo 09/05/2025
+                   , Th_OnReceived_Message_Socket2=98 //Marcelo 19/05/2025
                    );
 
     Function   VerificaCompatibilidadeVersao(PVersaoExterna:String; PversaoInterna:String):Boolean;
@@ -743,7 +1168,7 @@ Begin
 End;
 
 function  StrToTypeHeader(PText: string): TTypeHeader;
-const LmaxCount = 95; //Marcelo 01/09/2024
+const LmaxCount = 98; //Marcelo 19/05/2025
 var
   I: Integer;
   LNome: String;
